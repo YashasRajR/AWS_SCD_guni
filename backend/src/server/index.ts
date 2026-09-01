@@ -1,48 +1,39 @@
-// Must stay the very first import in this file. ES modules evaluate every
-// imported module's top-level code before this file's own top-level code
-// runs, in the order the imports are listed — so this has to be the first
-// import statement, not inline code positioned before the others textually.
-// See bootstrap-env.ts for the full explanation and why plain
-// `import 'dotenv/config'` broke under `npm run dev:backend` (cwd is
-// backend/, not the repo root, when npm launches a workspace script).
-import '../bootstrap-env.js';
-import { createApp } from './app.js';
-import { getEnv } from '../config/env.js';
-import { checkDatabaseConnection, closeDatabasePool } from '../config/database.js';
-import { logger } from '../utils/logger.js';
+import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import { env } from '../config/env.js';
+import { pool } from '../config/database.js';
+import publicRoutes from '../routes/public.routes.js';
 
-async function main(): Promise<void> {
-  const env = getEnv();
+const app = express();
 
-  const connected = await checkDatabaseConnection();
-  if (!connected) {
-    logger.error('Could not connect to the database on startup. Check DATABASE_URL in .env.');
-    process.exit(1);
+app.use(helmet());
+app.use(cors());
+app.use(express.json());
+
+app.use('/api/v1', publicRoutes);
+
+app.get('/health', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({ status: 'ok', database: 'connected', environment: env.NODE_ENV, timestamp: new Date() });
+  } catch (error) {
+    res.status(500).json({ status: 'error', database: 'disconnected', environment: env.NODE_ENV, timestamp: new Date() });
   }
+});
 
-  const app = createApp();
-  const server = app.listen(env.PORT, () => {
-    logger.info(`Backend listening on port ${env.PORT} (${env.NODE_ENV})`);
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err);
+  const statusCode = err.status || 500;
+  res.status(statusCode).json({
+    success: false,
+    error: {
+      code: err.code || 'INTERNAL_ERROR',
+      message: err.message || 'Something went wrong'
+    }
   });
+});
 
-  const shutdown = (signal: string) => {
-    logger.info(`Received ${signal}, shutting down gracefully...`);
-    server.close(async (err) => {
-      if (err) {
-        logger.error({ err }, 'Error while closing HTTP server');
-      }
-      await closeDatabasePool();
-      process.exit(err ? 1 : 0);
-    });
-    // Force-exit if graceful shutdown hangs.
-    setTimeout(() => process.exit(1), 10_000).unref();
-  };
-
-  process.on('SIGTERM', () => shutdown('SIGTERM'));
-  process.on('SIGINT', () => shutdown('SIGINT'));
-}
-
-main().catch((err) => {
-  console.error('Fatal startup error:', err);
-  process.exit(1);
+app.listen(env.PORT, () => {
+  console.log(`Server running on port ${env.PORT} in ${env.NODE_ENV} mode.`);
 });
