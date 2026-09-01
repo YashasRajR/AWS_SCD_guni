@@ -1,1 +1,40 @@
-{ "compilerOptions": { "target": "ES2022", "module": "CommonJS", "strict": true } }
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+    "baseUrl": ".",
+    "paths": {
+      "@scd/types": ["packages/types/src/index.ts"],
+      "@scd/types/*": ["packages/types/src/*"],
+      "@scd/validation": ["packages/validation/src/index.ts"],
+      "@scd/validation/*": ["packages/validation/src/*"],
+      "@scd/constants": ["packages/constants/src/index.ts"],
+      "@scd/constants/*": ["packages/constants/src/*"],
+      "@scd/api-client": ["packages/api-client/src/index.ts"],
+      "@scd/api-client/*": ["packages/api-client/src/*"],
+      "@scd/auth": ["packages/auth/src/index.ts"],
+      "@scd/auth/*": ["packages/auth/src/*"],
+      "@scd/config": ["packages/config/src/index.ts"],
+      "@scd/config/*": ["packages/config/src/*"],
+      "@scd/utils": ["packages/utils/src/index.ts"],
+      "@scd/utils/*": ["packages/utils/src/*"],
+      "@scd/ui": ["packages/ui/src/index.ts"],
+      "@scd/ui/*": ["packages/ui/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist", "build", "coverage"]
+}

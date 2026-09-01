@@ -1,0 +1,78 @@
+import type { ReactElement } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { AuthProvider, useAuth } from './lib/auth.js';
+import { AdminLayout } from './components/AdminLayout.js';
+import { LoginPage } from './pages/LoginPage.js';
+import { DashboardPage } from './pages/DashboardPage.js';
+import { EventPage } from './pages/content/EventPage.js';
+import { SpeakersPage } from './pages/content/SpeakersPage.js';
+import { SessionsPage } from './pages/content/SessionsPage.js';
+import { VenuesPage } from './pages/content/VenuesPage.js';
+import { AgendaPage } from './pages/content/AgendaPage.js';
+import { TimelinePage } from './pages/content/TimelinePage.js';
+import { FaqsPage } from './pages/content/FaqsPage.js';
+import { AnnouncementsPage } from './pages/content/AnnouncementsPage.js';
+import { RegistrationsPage } from './pages/RegistrationsPage.js';
+import { AttendeesPage } from './pages/AttendeesPage.js';
+import { CheckpointsPage } from './pages/CheckpointsPage.js';
+import { VolunteersPage } from './pages/VolunteersPage.js';
+import { AuditLogsPage } from './pages/AuditLogsPage.js';
+
+function RequireAdmin({ children }: { children: ReactElement }) {
+  const { status } = useAuth();
+  if (status === 'checking') {
+    return (
+      <div className="full-page-status">
+        <p>Loading…</p>
+      </div>
+    );
+  }
+  if (status === 'signed-out') {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+}
+
+function AppRoutes() {
+  const { status } = useAuth();
+
+  return (
+    <Routes>
+      <Route path="/login" element={status === 'signed-in' ? <Navigate to="/" replace /> : <LoginPage />} />
+      <Route
+        path="/"
+        element={
+          <RequireAdmin>
+            <AdminLayout />
+          </RequireAdmin>
+        }
+      >
+        <Route index element={<DashboardPage />} />
+        <Route path="content/event" element={<EventPage />} />
+        <Route path="content/speakers" element={<SpeakersPage />} />
+        <Route path="content/sessions" element={<SessionsPage />} />
+        <Route path="content/venues" element={<VenuesPage />} />
+        <Route path="content/agenda" element={<AgendaPage />} />
+        <Route path="content/timeline" element={<TimelinePage />} />
+        <Route path="content/faqs" element={<FaqsPage />} />
+        <Route path="content/announcements" element={<AnnouncementsPage />} />
+        <Route path="registrations" element={<RegistrationsPage />} />
+        <Route path="attendees" element={<AttendeesPage />} />
+        <Route path="checkpoints" element={<CheckpointsPage />} />
+        <Route path="volunteers" element={<VolunteersPage />} />
+        <Route path="audit-logs" element={<AuditLogsPage />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
+export function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
