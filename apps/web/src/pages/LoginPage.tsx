@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth.js';
+import { useDocumentHead } from '../lib/seo.js';
 
 export function LoginPage() {
+  useDocumentHead({ title: 'Log In' });
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -61,6 +63,9 @@ export function LoginPage() {
           </button>
         </form>
 
+        <p className="auth-switch">
+          <Link to="/forgot-password">Forgot password?</Link>
+        </p>
         <p className="auth-switch">
           New here? <Link to="/register">Create an account</Link>
         </p>

@@ -12,6 +12,9 @@ export interface EventConfig {
   registrationOpen: string | null;
   registrationClose: string | null;
   status: EventStatus;
+  /** "0.00" means this edition is free — the payment flow never triggers. */
+  registrationFee: string;
+  currency: string;
   createdAt: string;
   updatedAt: string;
 }

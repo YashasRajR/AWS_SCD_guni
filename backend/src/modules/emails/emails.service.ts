@@ -3,10 +3,15 @@ import { emailsRepository } from './emails.repository.js';
 import { logger } from '../../utils/logger.js';
 
 /**
- * Service boundary only in this phase — no live email provider is wired
- * up. `enqueue` records the intent to send (status PENDING) so the data
- * model and call sites already exist; the actual provider integration
- * (integrations/email) lands in a later phase and will pick these up.
+ * Records the intent to send an email (status PENDING) and returns
+ * immediately — backend/src/jobs/email-worker.ts polls for due rows and
+ * does the actual sending. Callers never wait on a live provider call, so
+ * a slow/unreachable email provider can never stall or fail the request
+ * that triggered the email (registration, password reset, etc.).
+ *
+ * `data` carries whatever the template needs to render (a verification
+ * link, a ticket number, ...) — capture everything the caller already has
+ * in hand here, since the worker has no way to re-derive it later.
  */
 export const emailsService = {
   async enqueue(
@@ -14,9 +19,10 @@ export const emailsService = {
     recipient: string,
     template: EmailTemplate,
     subject: string,
+    data: Record<string, unknown> = {},
   ): Promise<void> {
     try {
-      await emailsRepository.record(userId, recipient, template, subject);
+      await emailsRepository.record(userId, recipient, template, subject, data);
     } catch (err) {
       logger.warn({ err, template, recipient }, 'Failed to record outgoing email intent');
     }

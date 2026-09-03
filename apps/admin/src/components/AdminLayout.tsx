@@ -24,8 +24,13 @@ const NAV_SECTIONS: { title: string; links: { to: string; label: string }[] }[] 
     links: [
       { to: '/registrations', label: 'Registrations' },
       { to: '/attendees', label: 'Attendees' },
+      { to: '/payments', label: 'Payments' },
+      { to: '/tickets', label: 'Tickets' },
       { to: '/checkpoints', label: 'Checkpoints' },
       { to: '/volunteers', label: 'Volunteers' },
+      { to: '/certificates', label: 'Certificates' },
+      { to: '/achievements', label: 'Achievements' },
+      { to: '/emails', label: 'Emails' },
       { to: '/audit-logs', label: 'Audit logs' },
     ],
   },

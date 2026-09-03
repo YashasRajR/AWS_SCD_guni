@@ -1,0 +1,140 @@
+/* ============================================================
+   DESIGN TOKENS — single source of truth for the public site.
+   Every component styles from these variables; no component
+   should hard-code a color, spacing value, radius, or duration.
+   ============================================================ */
+
+:root {
+  color-scheme: light dark;
+
+  /* --- Typography -------------------------------------------------- */
+  --font-sans:
+    'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  /* Fluid type scale — readable at 320px, comfortable at 1920px+. */
+  --text-display: clamp(2rem, 1.35rem + 3.2vw, 3.5rem);
+  --text-h1: clamp(1.65rem, 1.3rem + 1.6vw, 2.5rem);
+  --text-h2: clamp(1.4rem, 1.2rem + 1vw, 1.9rem);
+  --text-h3: clamp(1.15rem, 1.05rem + 0.4vw, 1.35rem);
+  --text-h4: 1.05rem;
+  --text-body: 1rem;
+  --text-small: 0.875rem;
+  --text-caption: 0.75rem;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-extrabold: 800;
+
+  --lh-tight: 1.15;
+  --lh-snug: 1.3;
+  --lh-normal: 1.55;
+  --lh-relaxed: 1.7;
+
+  /* --- Spacing scale (4px base) -------------------------------------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  /* --- Radius ---------------------------------------------------------- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+
+  /* --- Shadows (subtle — depth, not decoration) ------------------------ */
+  --shadow-sm: 0 1px 2px rgba(16, 20, 28, 0.06);
+  --shadow-md: 0 4px 16px rgba(16, 20, 28, 0.08);
+  --shadow-lg: 0 12px 32px rgba(16, 20, 28, 0.14);
+
+  /* --- Containers -------------------------------------------------------- */
+  --container-max: 1180px;
+  --container-narrow: 760px;
+  --container-pad: 1.25rem;
+
+  /* --- Motion ------------------------------------------------------------ */
+  --duration-fast: 150ms;
+  --duration-base: 240ms;
+  --duration-slow: 400ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* --- Z-index scale ------------------------------------------------------ */
+  --z-header: 30;
+  --z-overlay: 40;
+  --z-banner: 25;
+
+  /* --- Color: semantic tokens (light) ------------------------------------- */
+  --background: #f6f7f9;
+  --foreground: #14181f;
+  --surface: #ffffff;
+  --surface-muted: #eef1f5;
+  --primary: #ff9900;
+  --primary-hover: #cc7a00;
+  --primary-foreground: #14181f;
+  --secondary: #16222f;
+  --secondary-foreground: #f4f6f8;
+  --accent: #1a56b0;
+  --border: #e2e5ea;
+  --muted: #656d79;
+
+  --success: #1c7a41;
+  --success-bg: #e5f6ec;
+  --warning: #97650c;
+  --warning-bg: #fdf1dc;
+  --error: #b3261e;
+  --error-bg: #fbe8e8;
+  --info: #1a56b0;
+  --info-bg: #e6f0fd;
+  --neutral: #565d68;
+  --neutral-bg: #eceef1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #12151b;
+    --foreground: #f2f3f5;
+    --surface: #1b1f27;
+    --surface-muted: #232833;
+    --primary: #ff9900;
+    --primary-hover: #ffb43d;
+    --primary-foreground: #14181f;
+    --secondary: #0d1520;
+    --secondary-foreground: #f4f6f8;
+    --accent: #8ab4f8;
+    --border: #2b313c;
+    --muted: #a1a8b3;
+
+    --success: #7fe3a4;
+    --success-bg: #163625;
+    --warning: #f0c674;
+    --warning-bg: #3a2e12;
+    --error: #f28b82;
+    --error-bg: #3a1f1f;
+    --info: #8ab4f8;
+    --info-bg: #182a44;
+    --neutral: #b3b9c2;
+    --neutral-bg: #262a30;
+  }
+}
+
+/* Respect the OS-level reduced-motion preference everywhere. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -36,8 +36,8 @@ export const eventRepository = {
   async create(input: CreateEventInput): Promise<EventRow> {
     const { rows } = await getPool().query<EventRow>(
       `INSERT INTO events
-         (name, slug, description, event_date, start_time, end_time, venue, registration_open, registration_close, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         (name, slug, description, event_date, start_time, end_time, venue, registration_open, registration_close, status, registration_fee, currency)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
       [
         input.name,
@@ -50,6 +50,8 @@ export const eventRepository = {
         input.registrationOpen ?? null,
         input.registrationClose ?? null,
         input.status ?? 'DRAFT',
+        input.registrationFee ?? 0,
+        input.currency ?? 'INR',
       ],
     );
     return rows[0]!;
@@ -67,6 +69,8 @@ export const eventRepository = {
       registration_open: patch.registrationOpen,
       registration_close: patch.registrationClose,
       status: patch.status,
+      registration_fee: patch.registrationFee,
+      currency: patch.currency,
     });
     if (values.length === 0) return this.findById(id);
     values.push(id);

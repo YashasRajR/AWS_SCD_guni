@@ -30,6 +30,9 @@ export const createEventSchema = z.object({
   registrationOpen: z.string().datetime().optional(),
   registrationClose: z.string().datetime().optional(),
   status: z.enum(EVENT_STATUSES).default('DRAFT'),
+  // 0 = a free event; the payment flow is simply never triggered for it.
+  registrationFee: z.coerce.number().min(0).default(0),
+  currency: z.string().trim().toUpperCase().length(3).default('INR'),
 });
 export type CreateEventInput = z.infer<typeof createEventSchema>;
 export const updateEventSchema = createEventSchema.partial();

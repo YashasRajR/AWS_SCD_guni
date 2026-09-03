@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { Attendee, Certificate, Checkpoint, PublicUser, Registration, Ticket } from '@scd/types';
 import { ApiClientError } from '@scd/api-client';
 import { useResource } from '../lib/hooks.js';
 import { apiClient } from '../lib/api.js';
-import { formatDateTime } from '../lib/format.js';
-import { StatusBadge } from '../components/StatusBadge.js';
+import { formatDateTime, statusTone } from '../lib/format.js';
+import { Badge } from '../components/ui/Badge.js';
+import { useDocumentHead } from '../lib/seo.js';
 
 interface MeData {
   user: PublicUser;
@@ -47,6 +49,8 @@ export function DashboardPage() {
 
   const completedCount = progress.filter((p) => p.completed).length;
 
+  useDocumentHead({ title: 'My Dashboard' });
+
   return (
     <div className="page-section dashboard">
       <header className="page-section-header">
@@ -67,7 +71,7 @@ export function DashboardPage() {
           ) : registration ? (
             <>
               <p className="dashboard-card-row">
-                <StatusBadge status={registration.status} />
+                <Badge tone={statusTone(registration.status)}>{registration.status}</Badge>
                 <span className="dashboard-card-meta">#{registration.registrationNumber}</span>
               </p>
               {registration.status === 'PENDING' && (
@@ -102,7 +106,7 @@ export function DashboardPage() {
           {ticket ? (
             <>
               <p className="dashboard-card-row">
-                <StatusBadge status={ticket.status} />
+                <Badge tone={statusTone(ticket.status)}>{ticket.status}</Badge>
                 <span className="dashboard-card-meta">#{ticket.ticketNumber}</span>
               </p>
               <p className="status-line">Issued {formatDateTime(ticket.issuedAt)}.</p>
@@ -162,6 +166,19 @@ export function DashboardPage() {
               ? 'No achievements unlocked yet.'
               : `${achievements.length} unlocked.`}
           </p>
+          <Link to="/dashboard/achievements" className="btn-link">
+            View achievements →
+          </Link>
+        </section>
+
+        <section className="dashboard-card">
+          <h2>Quick links</h2>
+          <ul className="dashboard-links">
+            <li><Link to="/dashboard/profile">My profile</Link></li>
+            <li><Link to="/dashboard/achievements">Achievements</Link></li>
+            <li><Link to="/dashboard/certificates">Certificates</Link></li>
+            <li><Link to="/dashboard/wrapped">Event wrapped</Link></li>
+          </ul>
         </section>
       </div>
     </div>

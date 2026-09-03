@@ -13,6 +13,11 @@ export const attendeesService = {
     return row ? toAttendee(row) : null;
   },
 
+  async getById(id: string): Promise<Attendee | null> {
+    const row = await attendeesRepository.findById(id);
+    return row ? toAttendee(row) : null;
+  },
+
   async requireByUserId(userId: string): Promise<Attendee> {
     const attendee = await this.getByUserId(userId);
     if (!attendee) throw AppError.notFound('Attendee profile');

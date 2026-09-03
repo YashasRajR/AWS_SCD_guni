@@ -34,6 +34,10 @@ export function Layout() {
 
       <nav className="bottom-nav">
         <NavLink to="/" end className={({ isActive }) => (isActive ? 'bottom-nav-link active' : 'bottom-nav-link')}>
+          <span className="bottom-nav-icon">📊</span>
+          <span>Dashboard</span>
+        </NavLink>
+        <NavLink to="/checkpoints" className={({ isActive }) => (isActive ? 'bottom-nav-link active' : 'bottom-nav-link')}>
           <span className="bottom-nav-icon">✓</span>
           <span>Checkpoints</span>
         </NavLink>

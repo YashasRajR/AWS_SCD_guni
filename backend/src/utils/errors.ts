@@ -53,4 +53,10 @@ export class AppError extends Error {
   static internal(message = 'Something went wrong. Please try again.'): AppError {
     return new AppError(ERROR_CODES.INTERNAL_ERROR, message);
   }
+
+  static paymentProviderUnavailable(
+    message = 'Online payment is not configured yet. Contact an organizer to complete your registration.',
+  ): AppError {
+    return new AppError(ERROR_CODES.PAYMENT_PROVIDER_UNAVAILABLE, message);
+  }
 }

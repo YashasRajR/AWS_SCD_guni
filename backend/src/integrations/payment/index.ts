@@ -1,13 +1,58 @@
+import { getEnv } from '../../config/env.js';
+import { logger } from '../../utils/logger.js';
+import { RazorpayPaymentProvider } from './razorpay-provider.js';
+import { UnconfiguredPaymentProvider } from './unconfigured-provider.js';
+
 /**
- * Payment provider integration boundary. NOT implemented in this phase —
- * `PAYMENT_PROVIDER_KEY` / `PAYMENT_WEBHOOK_SECRET` are read from env but
- * unused. A real adapter (Razorpay/Stripe/etc.) implements this interface
- * in the payment implementation phase; `modules/payments` calls it, not a
- * concrete SDK, so the provider stays swappable.
+ * Payment provider integration boundary. Business logic in
+ * modules/payments never talks to a concrete SDK/provider directly — it
+ * only calls this interface, so the provider can be swapped later without
+ * touching call sites. `createOrder` starts a checkout server-side; the
+ * payer completes it on the provider's own page/widget, and the provider
+ * calls our webhook asynchronously. A client-reported "success" redirect
+ * is never trusted as payment confirmation on its own.
  */
 export interface PaymentProvider {
-  createOrder(input: { registrationId: string; amount: string; currency: string }): Promise<{
-    providerOrderId: string;
-  }>;
+  readonly name: string;
+  createOrder(input: {
+    registrationId: string;
+    amount: string;
+    currency: string;
+  }): Promise<{ providerOrderId: string }>;
+  /** True only if `signature` is a valid signature of `rawBody` under our webhook secret. */
   verifyWebhookSignature(rawBody: string, signature: string): boolean;
+}
+
+/**
+ * Thrown by UnconfiguredPaymentProvider — a distinct type so callers can
+ * tell "not configured" apart from a real provider-side failure (network
+ * error, bad request) and respond to each differently.
+ */
+export class PaymentProviderNotConfiguredError extends Error {}
+
+let cachedProvider: PaymentProvider | undefined;
+
+/**
+ * Picks the real Razorpay provider when PAYMENT_PROVIDER_KEY is
+ * configured, else falls back to a provider that refuses to create orders
+ * rather than faking one. Cached for the process lifetime like getPool()/getEnv().
+ */
+export function getPaymentProvider(): PaymentProvider {
+  if (!cachedProvider) {
+    const env = getEnv();
+    if (env.PAYMENT_PROVIDER_KEY && env.PAYMENT_PROVIDER_SECRET) {
+      cachedProvider = new RazorpayPaymentProvider();
+    } else {
+      logger.warn(
+        'PAYMENT_PROVIDER_KEY/PAYMENT_PROVIDER_SECRET are not configured — payment initiation will be refused rather than faked. Set them in .env to accept real payments.',
+      );
+      cachedProvider = new UnconfiguredPaymentProvider();
+    }
+  }
+  return cachedProvider;
+}
+
+/** Test-only: lets tests reset the cached singleton between provider configurations. */
+export function resetPaymentProviderCache(): void {
+  cachedProvider = undefined;
 }

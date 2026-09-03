@@ -17,6 +17,11 @@ import { AttendeesPage } from './pages/AttendeesPage.js';
 import { CheckpointsPage } from './pages/CheckpointsPage.js';
 import { VolunteersPage } from './pages/VolunteersPage.js';
 import { AuditLogsPage } from './pages/AuditLogsPage.js';
+import { PaymentsPage } from './pages/PaymentsPage.js';
+import { TicketsPage } from './pages/TicketsPage.js';
+import { CertificatesPage } from './pages/CertificatesPage.js';
+import { AchievementsPage } from './pages/AchievementsPage.js';
+import { EmailsPage } from './pages/EmailsPage.js';
 
 function RequireAdmin({ children }: { children: ReactElement }) {
   const { status } = useAuth();
@@ -61,6 +66,11 @@ function AppRoutes() {
         <Route path="checkpoints" element={<CheckpointsPage />} />
         <Route path="volunteers" element={<VolunteersPage />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
+        <Route path="payments" element={<PaymentsPage />} />
+        <Route path="tickets" element={<TicketsPage />} />
+        <Route path="certificates" element={<CertificatesPage />} />
+        <Route path="achievements" element={<AchievementsPage />} />
+        <Route path="emails" element={<EmailsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

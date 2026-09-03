@@ -1,15 +1,174 @@
-import type { Payment } from '@scd/types';
+import type { PaginatedData, Payment } from '@scd/types';
 import { paymentsRepository } from './payments.repository.js';
-import { toPayment } from './payments.types.js';
+import { toPayment, type PaymentRow } from './payments.types.js';
+import { getEnv } from '../../config/env.js';
+import { getPaymentProvider, PaymentProviderNotConfiguredError } from '../../integrations/payment/index.js';
+import { attendeesService } from '../attendees/attendees.service.js';
+import { usersService } from '../users/users.service.js';
+import { registrationsService } from '../registrations/registrations.service.js';
+import { eventService } from '../event/event.service.js';
+import { emailsService } from '../emails/emails.service.js';
+import { logger } from '../../utils/logger.js';
+import { AppError } from '../../utils/errors.js';
 
-/**
- * Service boundary only in this phase — no live payment gateway. The real
- * `initiatePayment` / `handleWebhook` methods that talk to a provider are
- * added in the payments implementation phase.
- */
+export interface InitiatePaymentResult {
+  payment: Payment;
+  providerOrderId: string;
+  /** Razorpay's public "key id" half of the credential pair — safe to hand to the checkout widget. */
+  providerKey: string;
+}
+
+/** Defensively-parsed shape of the fields this integration reads from a Razorpay webhook payload. */
+interface RazorpayWebhookPayload {
+  event?: string;
+  payload?: {
+    payment?: {
+      entity?: {
+        id?: string;
+        order_id?: string;
+      };
+    };
+  };
+}
+
 export const paymentsService = {
   async getByRegistrationId(registrationId: string): Promise<Payment | null> {
     const row = await paymentsRepository.findByRegistrationId(registrationId);
     return row ? toPayment(row) : null;
+  },
+
+  async list(page: number, pageSize: number): Promise<PaginatedData<Payment>> {
+    const { rows, total } = await paymentsRepository.list(page, pageSize);
+    return {
+      items: rows.map(toPayment),
+      pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
+    };
+  },
+
+  /**
+   * Attendee-initiated — starts a checkout for the attendee's own PENDING
+   * registration. This only ever creates a provider order for the
+   * frontend checkout widget to open; it never marks anything paid. Only
+   * the provider's own webhook (handleWebhook) is trusted to confirm
+   * payment — a client reporting "success" after checkout is not treated
+   * as confirmation.
+   */
+  async initiatePayment(attendeeId: string): Promise<InitiatePaymentResult> {
+    const registration = await registrationsService.getByAttendeeId(attendeeId);
+    if (!registration) throw AppError.notFound('Registration');
+    if (registration.status !== 'PENDING') {
+      throw AppError.validation('Only a pending registration can be paid for.');
+    }
+
+    const event = await eventService.getCurrent();
+    const fee = Number(event.registrationFee);
+    if (!(fee > 0)) {
+      throw AppError.validation('This event does not require payment.');
+    }
+
+    const existing = await paymentsRepository.findByRegistrationId(registration.id);
+    if (existing?.status === 'PAID') {
+      throw AppError.duplicate('This registration has already been paid for.');
+    }
+    // Reuse an in-flight PENDING/PROCESSING payment row instead of creating
+    // a duplicate one every time the attendee reopens checkout; a
+    // previously FAILED attempt gets a fresh row.
+    const payment =
+      existing && existing.status !== 'FAILED'
+        ? existing
+        : await paymentsRepository.createPending(registration.id, event.registrationFee, event.currency);
+
+    const provider = getPaymentProvider();
+    let providerOrderId: string;
+    try {
+      const order = await provider.createOrder({
+        registrationId: registration.id,
+        amount: payment.amount,
+        currency: payment.currency,
+      });
+      providerOrderId = order.providerOrderId;
+    } catch (err) {
+      if (err instanceof PaymentProviderNotConfiguredError) {
+        throw AppError.paymentProviderUnavailable(err.message);
+      }
+      logger.error({ err, registrationId: registration.id }, 'Payment order creation failed');
+      throw AppError.internal('Could not start the payment. Please try again.');
+    }
+
+    const updated = await paymentsRepository.attachProviderOrder(payment.id, provider.name, providerOrderId);
+    return {
+      payment: toPayment(updated),
+      providerOrderId,
+      providerKey: getEnv().PAYMENT_PROVIDER_KEY,
+    };
+  },
+
+  /**
+   * The only place a payment is ever marked PAID/FAILED. Requires a valid
+   * provider signature over the exact raw request body (see
+   * payments.controller.ts / server/app.ts for how that raw body is
+   * captured). Idempotent: a provider's webhook can and will retry a
+   * delivery, so a payment already in a terminal state is a silent no-op
+   * rather than re-confirming a registration or re-sending emails.
+   */
+  async handleWebhook(rawBody: string, signature: string | undefined): Promise<void> {
+    const provider = getPaymentProvider();
+    if (!signature || !provider.verifyWebhookSignature(rawBody, signature)) {
+      throw AppError.forbidden('Invalid webhook signature.');
+    }
+
+    let parsed: RazorpayWebhookPayload;
+    try {
+      parsed = JSON.parse(rawBody) as RazorpayWebhookPayload;
+    } catch {
+      throw AppError.validation('Malformed webhook payload.');
+    }
+
+    const entity = parsed.payload?.payment?.entity;
+    const orderId = entity?.order_id;
+    const providerPaymentId = entity?.id;
+    if (!orderId) {
+      logger.warn({ event: parsed.event }, 'Payment webhook missing order id — ignoring');
+      return;
+    }
+
+    const payment = await paymentsRepository.findByProviderOrderId(provider.name, orderId);
+    if (!payment) {
+      logger.warn({ orderId, event: parsed.event }, 'Payment webhook references an unknown order — ignoring');
+      return;
+    }
+
+    if (parsed.event === 'payment.captured') {
+      if (payment.status === 'PAID') return; // already processed — idempotent retry
+      const updated = await paymentsRepository.markPaid(payment.id, providerPaymentId ?? orderId);
+      await registrationsService.updateStatus(updated.registration_id, { status: 'CONFIRMED' });
+      await this.notifyPaymentResult(updated, true);
+    } else if (parsed.event === 'payment.failed') {
+      if (payment.status === 'FAILED' || payment.status === 'PAID') return;
+      const updated = await paymentsRepository.markFailed(payment.id);
+      await this.notifyPaymentResult(updated, false);
+    } else {
+      logger.info({ event: parsed.event }, 'Ignoring unhandled payment webhook event type');
+    }
+  },
+
+  /** Best-effort — looked up via each module's own service, same pattern as registrations.service.ts's notifyConfirmed. */
+  async notifyPaymentResult(payment: PaymentRow, success: boolean): Promise<void> {
+    const registration = await registrationsService.getById(payment.registration_id);
+    if (!registration) return;
+    const attendee = await attendeesService.getById(registration.attendeeId);
+    if (!attendee) return;
+    const user = await usersService.getPublicUserById(attendee.userId);
+    if (!user) return;
+
+    if (success) {
+      await emailsService.enqueue(user.id, user.email, 'payment-success', 'Payment received', {
+        fullName: attendee.fullName,
+      });
+    } else {
+      await emailsService.enqueue(user.id, user.email, 'payment-failed', 'Payment unsuccessful', {
+        fullName: attendee.fullName,
+      });
+    }
   },
 };

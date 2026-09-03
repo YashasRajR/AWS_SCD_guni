@@ -50,9 +50,11 @@ export const authService = {
       user.id,
       parseDurationMs(env.EMAIL_VERIFICATION_TOKEN_TTL),
     );
-    // Service boundary only — no live email provider yet (see modules/emails).
-    void verificationToken;
-    await emailsService.enqueue(user.id, user.email, 'email-verification', 'Verify your email');
+    const verificationLink = `${env.PUBLIC_APP_URL}/verify-email?token=${verificationToken}`;
+    await emailsService.enqueue(user.id, user.email, 'email-verification', 'Verify your email', {
+      link: verificationLink,
+      ttl: env.EMAIL_VERIFICATION_TOKEN_TTL,
+    });
 
     const { roles, permissions } = await usersRepository.getIdentitySnapshot(user.id);
     const accessToken = issueAccessToken(user.id, user.email, roles, permissions);
@@ -99,8 +101,11 @@ export const authService = {
       user.id,
       parseDurationMs(env.PASSWORD_RESET_TOKEN_TTL),
     );
-    void token; // service boundary only — no live email provider yet
-    await emailsService.enqueue(user.id, user.email, 'password-reset', 'Reset your password');
+    const resetLink = `${env.PUBLIC_APP_URL}/reset-password?token=${token}`;
+    await emailsService.enqueue(user.id, user.email, 'password-reset', 'Reset your password', {
+      link: resetLink,
+      ttl: env.PASSWORD_RESET_TOKEN_TTL,
+    });
   },
 
   async resetPassword(input: ResetPasswordInput): Promise<void> {

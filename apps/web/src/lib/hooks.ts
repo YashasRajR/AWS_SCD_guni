@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { apiClient } from './api.js';
 import { ApiClientError } from '@scd/api-client';
 
-interface UseResourceResult<T> {
+export interface UseResourceResult<T> {
   /** The raw fetch result — a single object for endpoints like /event or /me/ticket. */
   data: T | null;
   /** For endpoints that return a bare array (every public content list) — [] until loaded. */

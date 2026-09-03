@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { attendeesService } from '../attendees/attendees.service.js';
 import { registrationsService } from '../registrations/registrations.service.js';
 import { ticketsService } from '../tickets/tickets.service.js';
+import { paymentsService } from '../payments/payments.service.js';
 import { checkpointsService } from '../checkpoints/checkpoints.service.js';
 import { certificatesService } from '../certificates/certificates.service.js';
 import { achievementsService } from '../achievements/achievements.service.js';
@@ -53,6 +54,24 @@ export const userDashboardController = {
     sendSuccess(res, await ticketsService.getByRegistrationId(registration.id));
   },
 
+  async getPayment(req: Request, res: Response): Promise<void> {
+    const attendee = await attendeesService.requireByUserId(req.identity!.userId);
+    const registration = await registrationsService.getByAttendeeId(attendee.id);
+    if (!registration) {
+      sendSuccess(res, null);
+      return;
+    }
+    sendSuccess(res, await paymentsService.getByRegistrationId(registration.id));
+  },
+
+  /** Starts a checkout for the authenticated attendee's own PENDING registration. */
+  async initiatePayment(req: Request, res: Response): Promise<void> {
+    const attendee = await attendeesService.requireByUserId(req.identity!.userId);
+    const result = await paymentsService.initiatePayment(attendee.id);
+    await auditLogsService.log(req, 'PAYMENT_INITIATED', 'payment', result.payment.id);
+    sendSuccess(res, result);
+  },
+
   async getProgress(req: Request, res: Response): Promise<void> {
     const attendee = await attendeesService.requireByUserId(req.identity!.userId);
     const event = await eventService.getCurrent();
@@ -83,6 +102,12 @@ export const userDashboardController = {
   async getEventWrapped(req: Request, res: Response): Promise<void> {
     const attendee = await attendeesService.requireByUserId(req.identity!.userId);
     const event = await eventService.getCurrent();
-    sendSuccess(res, await eventWrappedService.getForAttendee(attendee.id, event.id));
+    const existing = await eventWrappedService.getForAttendee(attendee.id, event.id);
+    if (existing) {
+      sendSuccess(res, existing);
+      return;
+    }
+    // Auto-generate if none exists yet
+    sendSuccess(res, await eventWrappedService.generate(attendee.id, event.id));
   },
 };

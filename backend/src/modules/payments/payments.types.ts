@@ -4,6 +4,7 @@ export interface PaymentRow {
   id: string;
   registration_id: string;
   provider: string | null;
+  provider_order_id: string | null;
   provider_payment_id: string | null;
   amount: string;
   currency: string;
@@ -18,6 +19,7 @@ export function toPayment(row: PaymentRow): Payment {
     id: row.id,
     registrationId: row.registration_id,
     provider: row.provider,
+    providerOrderId: row.provider_order_id,
     providerPaymentId: row.provider_payment_id,
     amount: row.amount,
     currency: row.currency,

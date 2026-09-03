@@ -10,6 +10,13 @@ export interface EmailRecordRow {
   provider_message_id: string | null;
   sent_at: string | null;
   failure_reason: string | null;
+  /** Template variables (e.g. a verification link) captured at enqueue
+   * time — this is what lets the worker render the email later without
+   * re-deriving anything from a token or other state that may since have
+   * changed or been consumed. */
+  data: Record<string, unknown>;
+  attempts: number;
+  next_attempt_at: string;
   created_at: string;
   updated_at: string;
 }

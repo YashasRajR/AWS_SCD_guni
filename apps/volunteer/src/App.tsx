@@ -6,6 +6,7 @@ import { LoginPage } from './pages/LoginPage.js';
 import { CheckpointsPage } from './pages/CheckpointsPage.js';
 import { CheckInPage } from './pages/CheckInPage.js';
 import { HistoryPage } from './pages/HistoryPage.js';
+import { DashboardPage } from './pages/DashboardPage.js';
 
 function RequireVolunteer({ children }: { children: ReactElement }) {
   const { status } = useAuth();
@@ -36,7 +37,8 @@ function AppRoutes() {
           </RequireVolunteer>
         }
       >
-        <Route index element={<CheckpointsPage />} />
+        <Route index element={<DashboardPage />} />
+        <Route path="checkpoints" element={<CheckpointsPage />} />
         <Route path="checkpoints/:id" element={<CheckInPage />} />
         <Route path="history" element={<HistoryPage />} />
       </Route>

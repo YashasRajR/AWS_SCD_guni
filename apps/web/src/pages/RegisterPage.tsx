@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth.js';
+import { useDocumentHead } from '../lib/seo.js';
 
 interface FormState {
   email: string;
@@ -25,6 +26,7 @@ const INITIAL_STATE: FormState = {
 };
 
 export function RegisterPage() {
+  useDocumentHead({ title: 'Register' });
   const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState<FormState>(INITIAL_STATE);

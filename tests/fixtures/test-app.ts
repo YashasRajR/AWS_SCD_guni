@@ -35,3 +35,17 @@ export async function registerTestAttendee(label: string) {
 export async function loginAs(email: string, password: string) {
   return getTestAgent().post('/api/v1/auth/login').send({ email, password });
 }
+
+/** Registers a fresh attendee and creates their (PENDING) event registration in one step. */
+export async function registerAndCreatePendingRegistration(label: string) {
+  const { email, response } = await registerTestAttendee(label);
+  const token: string = response.body.data.accessToken;
+  const regRes = await getTestAgent()
+    .post('/api/v1/me/registration')
+    .set('Authorization', `Bearer ${token}`)
+    .send();
+  if (regRes.status !== 201) {
+    throw new Error(`Expected registration to succeed, got ${regRes.status}: ${JSON.stringify(regRes.body)}`);
+  }
+  return { email, token, registrationId: regRes.body.data.id as string };
+}

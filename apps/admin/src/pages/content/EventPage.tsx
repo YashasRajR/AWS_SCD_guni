@@ -26,6 +26,19 @@ const FIELDS: FieldDef[] = [
   { name: 'registrationOpen', label: 'Registration opens', type: 'datetime' },
   { name: 'registrationClose', label: 'Registration closes', type: 'datetime' },
   {
+    name: 'registrationFee',
+    label: 'Registration fee',
+    type: 'number',
+    help: '0 for a free event — attendees are never asked to pay and the payment flow is skipped entirely.',
+  },
+  {
+    name: 'currency',
+    label: 'Currency',
+    type: 'text',
+    placeholder: 'INR',
+    help: '3-letter currency code, e.g. INR.',
+  },
+  {
     name: 'status',
     label: 'Status',
     type: 'select',

@@ -22,6 +22,25 @@ export function formatTime(value: string | null | undefined): string {
   return date.toLocaleTimeString(undefined, { timeStyle: 'short' });
 }
 
+/** Maps a registration/ticket status string to the shared Badge component's tone. */
+export function statusTone(status: string): 'success' | 'warning' | 'neutral' | 'info' | 'error' {
+  switch (status) {
+    case 'CONFIRMED':
+    case 'ISSUED':
+      return 'success';
+    case 'PENDING':
+      return 'warning';
+    case 'WAITLISTED':
+      return 'info';
+    case 'CANCELLED':
+    case 'REJECTED':
+    case 'REVOKED':
+      return 'error';
+    default:
+      return 'neutral';
+  }
+}
+
 /** Groups agenda/timeline items by calendar day (local time) for day-by-day rendering. */
 export function groupByDay<T>(items: T[], getStart: (item: T) => string): Map<string, T[]> {
   const groups = new Map<string, T[]>();
