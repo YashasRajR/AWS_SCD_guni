@@ -1,4 +1,5 @@
 import { getPool } from '../../config/database.js';
+import { paginatedListQuery, type ListQueryParams } from '../../utils/sql.js';
 import { buildUpdateSet } from '../../utils/sql.js';
 import type { VenueRow } from './venues.types.js';
 import type { CreateVenueInput, UpdateVenueInput } from '@scd/validation';
@@ -16,16 +17,13 @@ export const venuesRepository = {
   },
 
   /** Admin listing — every status. */
-  async list(page: number, pageSize: number): Promise<{ rows: VenueRow[]; total: number }> {
-    const offset = (page - 1) * pageSize;
-    const [{ rows }, countResult] = await Promise.all([
-      getPool().query<VenueRow>('SELECT * FROM venues ORDER BY name LIMIT $1 OFFSET $2', [
-        pageSize,
-        offset,
-      ]),
-      getPool().query<{ count: string }>('SELECT count(*) FROM venues'),
-    ]);
-    return { rows, total: Number(countResult.rows[0]?.count ?? 0) };
+  async list(params: ListQueryParams): Promise<{ rows: VenueRow[]; total: number }> {
+    return paginatedListQuery<VenueRow>(getPool(), {
+      table: 'venues',
+      searchColumns: ['name', 'location', 'room'],
+      sortableColumns: { name: 'name', capacity: 'capacity', status: 'status' },
+      defaultOrderBy: 'name',
+    }, params);
   },
 
   async create(input: CreateVenueInput): Promise<VenueRow> {

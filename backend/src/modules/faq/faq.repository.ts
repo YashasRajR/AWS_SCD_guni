@@ -1,4 +1,5 @@
 import { getPool } from '../../config/database.js';
+import { paginatedListQuery, type ListQueryParams } from '../../utils/sql.js';
 import { buildUpdateSet } from '../../utils/sql.js';
 import type { FaqRow } from './faq.types.js';
 import type { CreateFaqInput, UpdateFaqInput } from '@scd/validation';
@@ -17,16 +18,13 @@ export const faqRepository = {
   },
 
   /** Admin listing — every status. */
-  async list(page: number, pageSize: number): Promise<{ rows: FaqRow[]; total: number }> {
-    const offset = (page - 1) * pageSize;
-    const [{ rows }, countResult] = await Promise.all([
-      getPool().query<FaqRow>(
-        'SELECT * FROM faqs ORDER BY category, display_order LIMIT $1 OFFSET $2',
-        [pageSize, offset],
-      ),
-      getPool().query<{ count: string }>('SELECT count(*) FROM faqs'),
-    ]);
-    return { rows, total: Number(countResult.rows[0]?.count ?? 0) };
+  async list(params: ListQueryParams): Promise<{ rows: FaqRow[]; total: number }> {
+    return paginatedListQuery<FaqRow>(getPool(), {
+      table: 'faqs',
+      searchColumns: ['question', 'answer', 'category'],
+      sortableColumns: { category: 'category', displayOrder: 'display_order', status: 'status' },
+      defaultOrderBy: 'category, display_order',
+    }, params);
   },
 
   async create(input: CreateFaqInput): Promise<FaqRow> {

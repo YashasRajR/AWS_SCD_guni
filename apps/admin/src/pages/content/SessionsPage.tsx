@@ -11,7 +11,7 @@ interface SpeakerOption {
 }
 
 const columns: Column<Session>[] = [
-  { key: 'title', label: 'Title', render: (r) => r.title },
+  { key: 'title', sortable: true, label: 'Title', render: (r) => r.title },
   { key: 'sessionType', label: 'Type', render: (r) => r.sessionType },
   { key: 'track', label: 'Track', render: (r) => r.track ?? '—' },
   {
@@ -19,7 +19,7 @@ const columns: Column<Session>[] = [
     label: 'Speakers',
     render: (r) => (r.speakers && r.speakers.length > 0 ? r.speakers.map((s) => s.name).join(', ') : '—'),
   },
-  { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
+  { key: 'status', sortable: true, label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
 ];
 
 export function SessionsPage() {
@@ -72,6 +72,7 @@ export function SessionsPage() {
       columns={columns}
       fields={fields}
       rowToFormValues={(row) => ({ ...row, speakerIds: row.speakers?.map((s) => s.id) ?? [] })}
+      searchPlaceholder="Search sessions by title, description, or track…"
     />
   );
 }

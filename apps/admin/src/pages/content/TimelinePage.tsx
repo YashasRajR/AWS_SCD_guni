@@ -7,10 +7,10 @@ import type { Column } from '../../components/Table.js';
 import type { FieldDef } from '../../components/ResourceForm.js';
 
 const columns: Column<TimelineItem>[] = [
-  { key: 'title', label: 'Title', render: (r) => r.title },
+  { key: 'title', sortable: true, label: 'Title', render: (r) => r.title },
   { key: 'type', label: 'Type', render: (r) => r.type },
-  { key: 'startTime', label: 'Starts', render: (r) => formatDateTime(r.startTime) },
-  { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
+  { key: 'startTime', sortable: true, label: 'Starts', render: (r) => formatDateTime(r.startTime) },
+  { key: 'status', sortable: true, label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
 ];
 
 const fields: FieldDef[] = [
@@ -58,6 +58,7 @@ export function TimelinePage() {
       columns={columns}
       fields={fields}
       rowToFormValues={(row) => ({ ...row })}
+      searchPlaceholder="Search timeline items by title or description…"
       createExtraValues={eventId ? { eventId } : undefined}
     />
   );

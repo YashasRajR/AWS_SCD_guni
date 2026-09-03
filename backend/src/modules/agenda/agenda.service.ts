@@ -3,6 +3,7 @@ import type { CreateAgendaItemInput, UpdateAgendaItemInput } from '@scd/validati
 import { agendaRepository } from './agenda.repository.js';
 import { toAgendaItem } from './agenda.types.js';
 import { AppError } from '../../utils/errors.js';
+import type { ListQueryParams } from '../../utils/sql.js';
 
 interface PgError {
   code?: string;
@@ -17,11 +18,16 @@ export const agendaService = {
   },
 
   /** Admin listing — every status. */
-  async adminList(page: number, pageSize: number): Promise<PaginatedData<AgendaItem>> {
-    const { rows, total } = await agendaRepository.list(page, pageSize);
+  async adminList(params: ListQueryParams): Promise<PaginatedData<AgendaItem>> {
+    const { rows, total } = await agendaRepository.list(params);
     return {
       items: rows.map((row) => toAgendaItem(row)),
-      pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
+      pagination: {
+        page: params.page,
+        pageSize: params.pageSize,
+        totalItems: total,
+        totalPages: Math.ceil(total / params.pageSize),
+      },
     };
   },
 

@@ -13,10 +13,10 @@ interface NamedOption {
 }
 
 const columns: Column<AgendaItem>[] = [
-  { key: 'title', label: 'Title', render: (r) => r.title },
-  { key: 'startTime', label: 'Starts', render: (r) => formatDateTime(r.startTime) },
+  { key: 'title', sortable: true, label: 'Title', render: (r) => r.title },
+  { key: 'startTime', sortable: true, label: 'Starts', render: (r) => formatDateTime(r.startTime) },
   { key: 'endTime', label: 'Ends', render: (r) => formatDateTime(r.endTime) },
-  { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
+  { key: 'status', sortable: true, label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
 ];
 
 export function AgendaPage() {
@@ -62,6 +62,7 @@ export function AgendaPage() {
       columns={columns}
       fields={fields}
       rowToFormValues={(row) => ({ ...row })}
+      searchPlaceholder="Search agenda items by title…"
       createExtraValues={eventId ? { eventId } : undefined}
     />
   );

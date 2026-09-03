@@ -13,6 +13,7 @@
   "dependencies": {
     "@scd/api-client": "*",
     "@scd/auth": "*",
+    "@scd/constants": "*",
     "@scd/types": "*",
     "@scd/ui": "*",
     "@scd/validation": "*",

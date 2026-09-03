@@ -12,21 +12,38 @@ interface UsePaginatedResourceResult<T> {
   reload: () => void;
 }
 
-/** Fetches a PaginatedData<T> admin list endpoint, refetching whenever `path`, `page`, or `reloadToken` change. */
-export function usePaginatedResource<T>(path: string, page: number, pageSize = 20): UsePaginatedResourceResult<T> {
+export interface ListQuery {
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+/** Fetches a PaginatedData<T> admin list endpoint, refetching whenever
+ * `path`, `page`, `query` (search/sort), or `reloadToken` change. Every
+ * admin content-management list endpoint accepts `search`/`sortBy`/
+ * `sortOrder` — see backend/src/utils/sql.ts's paginatedListQuery — an
+ * endpoint that ignores them (or a caller that omits `query`) behaves
+ * exactly as before. */
+export function usePaginatedResource<T>(
+  path: string,
+  page: number,
+  pageSize = 20,
+  query: ListQuery = {},
+): UsePaginatedResourceResult<T> {
   const [items, setItems] = useState<T[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
+  const { search, sortBy, sortOrder } = query;
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
     apiClient
-      .get<PaginatedData<T>>(path, { query: { page, pageSize } })
+      .get<PaginatedData<T>>(path, { query: { page, pageSize, search, sortBy, sortOrder } })
       .then((data) => {
         if (cancelled) return;
         setItems(data.items);
@@ -43,7 +60,7 @@ export function usePaginatedResource<T>(path: string, page: number, pageSize = 2
     return () => {
       cancelled = true;
     };
-  }, [path, page, pageSize, reloadToken]);
+  }, [path, page, pageSize, search, sortBy, sortOrder, reloadToken]);
 
   const reload = useCallback(() => setReloadToken((n) => n + 1), []);
 

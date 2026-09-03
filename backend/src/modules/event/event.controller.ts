@@ -12,8 +12,8 @@ export const eventController = {
 
   /** Admin — GET /api/v1/admin/content/event */
   async list(req: Request, res: Response): Promise<void> {
-    const { page, pageSize } = req.query as unknown as PaginationQuery;
-    sendSuccess(res, await eventService.list(page, pageSize));
+    const params = req.query as unknown as PaginationQuery;
+    sendSuccess(res, await eventService.list(params));
   },
 
   async getById(req: Request, res: Response): Promise<void> {

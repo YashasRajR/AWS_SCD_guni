@@ -3,6 +3,7 @@ import type { CreateEventInput, UpdateEventInput } from '@scd/validation';
 import { eventRepository } from './event.repository.js';
 import { toEventConfig } from './event.types.js';
 import { AppError } from '../../utils/errors.js';
+import type { ListQueryParams } from '../../utils/sql.js';
 
 interface PgError {
   code?: string;
@@ -22,11 +23,16 @@ export const eventService = {
   },
 
   /** Admin listing — every status. */
-  async list(page: number, pageSize: number): Promise<PaginatedData<EventConfig>> {
-    const { rows, total } = await eventRepository.list(page, pageSize);
+  async list(params: ListQueryParams): Promise<PaginatedData<EventConfig>> {
+    const { rows, total } = await eventRepository.list(params);
     return {
       items: rows.map(toEventConfig),
-      pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
+      pagination: {
+        page: params.page,
+        pageSize: params.pageSize,
+        totalItems: total,
+        totalPages: Math.ceil(total / params.pageSize),
+      },
     };
   },
 

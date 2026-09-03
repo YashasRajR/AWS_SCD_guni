@@ -5,6 +5,11 @@ export interface Column<T> {
   label: string;
   render: (row: T) => ReactNode;
   width?: string;
+  /** When true, the column header is clickable and toggles sorting by this
+   * column's `key` — the backend admin list endpoint must recognize `key`
+   * as one of its whitelisted sortable columns (see each module's
+   * repository.ts `sortableColumns`) or the sort is silently ignored. */
+  sortable?: boolean;
 }
 
 interface TableProps<T> {
@@ -14,19 +19,46 @@ interface TableProps<T> {
   loading?: boolean;
   error?: string | null;
   emptyMessage?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  onSortChange?: (key: string) => void;
 }
 
-export function Table<T>({ columns, rows, getRowId, loading, error, emptyMessage }: TableProps<T>) {
+export function Table<T>({
+  columns,
+  rows,
+  getRowId,
+  loading,
+  error,
+  emptyMessage,
+  sortBy,
+  sortOrder,
+  onSortChange,
+}: TableProps<T>) {
   return (
     <div className="table-wrap">
       <table className="table">
         <thead>
           <tr>
-            {columns.map((col) => (
-              <th key={col.key} style={col.width ? { width: col.width } : undefined}>
-                {col.label}
-              </th>
-            ))}
+            {columns.map((col) =>
+              col.sortable && onSortChange ? (
+                <th key={col.key} style={col.width ? { width: col.width } : undefined}>
+                  <button
+                    type="button"
+                    className="table-sort-header"
+                    onClick={() => onSortChange(col.key)}
+                    aria-sort={sortBy === col.key ? (sortOrder === 'desc' ? 'descending' : 'ascending') : 'none'}
+                  >
+                    {col.label}
+                    {sortBy === col.key && <span aria-hidden="true">{sortOrder === 'desc' ? ' ▼' : ' ▲'}</span>}
+                  </button>
+                </th>
+              ) : (
+                <th key={col.key} style={col.width ? { width: col.width } : undefined}>
+                  {col.label}
+                </th>
+              ),
+            )}
           </tr>
         </thead>
         <tbody>

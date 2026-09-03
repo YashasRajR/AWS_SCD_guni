@@ -6,10 +6,10 @@ import type { Column } from '../../components/Table.js';
 import type { FieldDef } from '../../components/ResourceForm.js';
 
 const columns: Column<Venue>[] = [
-  { key: 'name', label: 'Name', render: (r) => r.name },
+  { key: 'name', sortable: true, label: 'Name', render: (r) => r.name },
   { key: 'location', label: 'Location', render: (r) => r.location ?? '—' },
-  { key: 'capacity', label: 'Capacity', render: (r) => r.capacity ?? '—' },
-  { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
+  { key: 'capacity', sortable: true, label: 'Capacity', render: (r) => r.capacity ?? '—' },
+  { key: 'status', sortable: true, label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
 ];
 
 const fields: FieldDef[] = [
@@ -43,6 +43,7 @@ export function VenuesPage() {
       columns={columns}
       fields={fields}
       rowToFormValues={(row) => ({ ...row })}
+      searchPlaceholder="Search venues by name, location, or room…"
       createExtraValues={eventId ? { eventId } : undefined}
     />
   );

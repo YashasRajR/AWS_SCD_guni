@@ -1,4 +1,5 @@
 import { getPool } from '../../config/database.js';
+import { paginatedListQuery, type ListQueryParams } from '../../utils/sql.js';
 import { buildUpdateSet } from '../../utils/sql.js';
 import type { SpeakerRow } from './speakers.types.js';
 import type { CreateSpeakerInput, UpdateSpeakerInput } from '@scd/validation';
@@ -19,16 +20,13 @@ export const speakersRepository = {
   },
 
   /** Admin listing — every status. */
-  async list(page: number, pageSize: number): Promise<{ rows: SpeakerRow[]; total: number }> {
-    const offset = (page - 1) * pageSize;
-    const [{ rows }, countResult] = await Promise.all([
-      getPool().query<SpeakerRow>(
-        'SELECT * FROM speakers ORDER BY display_order, name LIMIT $1 OFFSET $2',
-        [pageSize, offset],
-      ),
-      getPool().query<{ count: string }>('SELECT count(*) FROM speakers'),
-    ]);
-    return { rows, total: Number(countResult.rows[0]?.count ?? 0) };
+  async list(params: ListQueryParams): Promise<{ rows: SpeakerRow[]; total: number }> {
+    return paginatedListQuery<SpeakerRow>(getPool(), {
+      table: 'speakers',
+      searchColumns: ['name', 'designation', 'organization'],
+      sortableColumns: { name: 'name', displayOrder: 'display_order', status: 'status' },
+      defaultOrderBy: 'display_order, name',
+    }, params);
   },
 
   async create(input: CreateSpeakerInput): Promise<SpeakerRow> {

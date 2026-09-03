@@ -3,6 +3,7 @@ import type { CreateTimelineItemInput, UpdateTimelineItemInput } from '@scd/vali
 import { timelineRepository } from './timeline.repository.js';
 import { toTimelineItem } from './timeline.types.js';
 import { AppError } from '../../utils/errors.js';
+import type { ListQueryParams } from '../../utils/sql.js';
 
 export const timelineService = {
   async list(): Promise<TimelineItem[]> {
@@ -10,11 +11,16 @@ export const timelineService = {
   },
 
   /** Admin listing — every status. */
-  async adminList(page: number, pageSize: number): Promise<PaginatedData<TimelineItem>> {
-    const { rows, total } = await timelineRepository.list(page, pageSize);
+  async adminList(params: ListQueryParams): Promise<PaginatedData<TimelineItem>> {
+    const { rows, total } = await timelineRepository.list(params);
     return {
       items: rows.map(toTimelineItem),
-      pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
+      pagination: {
+        page: params.page,
+        pageSize: params.pageSize,
+        totalItems: total,
+        totalPages: Math.ceil(total / params.pageSize),
+      },
     };
   },
 

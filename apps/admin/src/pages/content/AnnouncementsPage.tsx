@@ -6,11 +6,11 @@ import type { Column } from '../../components/Table.js';
 import type { FieldDef } from '../../components/ResourceForm.js';
 
 const columns: Column<Announcement>[] = [
-  { key: 'title', label: 'Title', render: (r) => r.title },
-  { key: 'priority', label: 'Priority', render: (r) => r.priority },
+  { key: 'title', sortable: true, label: 'Title', render: (r) => r.title },
+  { key: 'priority', sortable: true, label: 'Priority', render: (r) => r.priority },
   { key: 'publishAt', label: 'Publishes', render: (r) => formatDateTime(r.publishAt) },
   { key: 'expiresAt', label: 'Expires', render: (r) => formatDateTime(r.expiresAt) },
-  { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
+  { key: 'status', sortable: true, label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
 ];
 
 const fields: FieldDef[] = [
@@ -52,6 +52,7 @@ export function AnnouncementsPage() {
       columns={columns}
       fields={fields}
       rowToFormValues={(row) => ({ ...row })}
+      searchPlaceholder="Search announcements by title or message…"
     />
   );
 }

@@ -1,4 +1,5 @@
 import { getPool } from '../../config/database.js';
+import { paginatedListQuery, type ListQueryParams } from '../../utils/sql.js';
 import { buildUpdateSet } from '../../utils/sql.js';
 import type { TimelineItemRow } from './timeline.types.js';
 import type { CreateTimelineItemInput, UpdateTimelineItemInput } from '@scd/validation';
@@ -20,16 +21,13 @@ export const timelineRepository = {
   },
 
   /** Admin listing — every status. */
-  async list(page: number, pageSize: number): Promise<{ rows: TimelineItemRow[]; total: number }> {
-    const offset = (page - 1) * pageSize;
-    const [{ rows }, countResult] = await Promise.all([
-      getPool().query<TimelineItemRow>(
-        'SELECT * FROM timeline_items ORDER BY start_time, display_order LIMIT $1 OFFSET $2',
-        [pageSize, offset],
-      ),
-      getPool().query<{ count: string }>('SELECT count(*) FROM timeline_items'),
-    ]);
-    return { rows, total: Number(countResult.rows[0]?.count ?? 0) };
+  async list(params: ListQueryParams): Promise<{ rows: TimelineItemRow[]; total: number }> {
+    return paginatedListQuery<TimelineItemRow>(getPool(), {
+      table: 'timeline_items',
+      searchColumns: ['title', 'description'],
+      sortableColumns: { title: 'title', startTime: 'start_time', displayOrder: 'display_order', status: 'status' },
+      defaultOrderBy: 'start_time, display_order',
+    }, params);
   },
 
   async create(input: CreateTimelineItemInput): Promise<TimelineItemRow> {

@@ -15,8 +15,8 @@ export const sessionsController = {
 
   /** Admin — GET /api/v1/admin/content/sessions */
   async adminList(req: Request, res: Response): Promise<void> {
-    const { page, pageSize } = req.query as unknown as PaginationQuery;
-    sendSuccess(res, await sessionsService.adminList(page, pageSize));
+    const params = req.query as unknown as PaginationQuery;
+    sendSuccess(res, await sessionsService.adminList(params));
   },
 
   async create(req: Request, res: Response): Promise<void> {

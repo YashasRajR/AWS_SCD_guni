@@ -3,6 +3,7 @@ import type { CreateAnnouncementInput, UpdateAnnouncementInput } from '@scd/vali
 import { announcementsRepository } from './announcements.repository.js';
 import { toAnnouncement } from './announcements.types.js';
 import { AppError } from '../../utils/errors.js';
+import type { ListQueryParams } from '../../utils/sql.js';
 
 export const announcementsService = {
   async list(): Promise<Announcement[]> {
@@ -10,11 +11,16 @@ export const announcementsService = {
   },
 
   /** Admin listing — every status. */
-  async adminList(page: number, pageSize: number): Promise<PaginatedData<Announcement>> {
-    const { rows, total } = await announcementsRepository.list(page, pageSize);
+  async adminList(params: ListQueryParams): Promise<PaginatedData<Announcement>> {
+    const { rows, total } = await announcementsRepository.list(params);
     return {
       items: rows.map(toAnnouncement),
-      pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
+      pagination: {
+        page: params.page,
+        pageSize: params.pageSize,
+        totalItems: total,
+        totalPages: Math.ceil(total / params.pageSize),
+      },
     };
   },
 

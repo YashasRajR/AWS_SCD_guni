@@ -5,10 +5,10 @@ import type { Column } from '../../components/Table.js';
 import type { FieldDef } from '../../components/ResourceForm.js';
 
 const columns: Column<Speaker>[] = [
-  { key: 'name', label: 'Name', render: (r) => r.name },
+  { key: 'name', sortable: true, label: 'Name', render: (r) => r.name },
   { key: 'organization', label: 'Organization', render: (r) => r.organization ?? '—' },
-  { key: 'displayOrder', label: 'Order', render: (r) => r.displayOrder },
-  { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
+  { key: 'displayOrder', sortable: true, label: 'Order', render: (r) => r.displayOrder },
+  { key: 'status', sortable: true, label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
 ];
 
 const fields: FieldDef[] = [
@@ -42,6 +42,7 @@ export function SpeakersPage() {
       columns={columns}
       fields={fields}
       rowToFormValues={(row) => ({ ...row })}
+      searchPlaceholder="Search speakers by name or organization…"
     />
   );
 }

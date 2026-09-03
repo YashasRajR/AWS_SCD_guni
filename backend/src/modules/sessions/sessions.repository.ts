@@ -1,5 +1,5 @@
 import { getPool, withTransaction } from '../../config/database.js';
-import { buildUpdateSet } from '../../utils/sql.js';
+import { buildUpdateSet, paginatedListQuery, type ListQueryParams } from '../../utils/sql.js';
 import type { SpeakerRow } from '../speakers/speakers.types.js';
 import type { SessionRow } from './sessions.types.js';
 import type { CreateSessionInput, UpdateSessionInput } from '@scd/validation';
@@ -39,16 +39,13 @@ export const sessionsRepository = {
   },
 
   /** Admin listing — every status. */
-  async list(page: number, pageSize: number): Promise<{ rows: SessionRow[]; total: number }> {
-    const offset = (page - 1) * pageSize;
-    const [{ rows }, countResult] = await Promise.all([
-      getPool().query<SessionRow>('SELECT * FROM sessions ORDER BY title LIMIT $1 OFFSET $2', [
-        pageSize,
-        offset,
-      ]),
-      getPool().query<{ count: string }>('SELECT count(*) FROM sessions'),
-    ]);
-    return { rows, total: Number(countResult.rows[0]?.count ?? 0) };
+  async list(params: ListQueryParams): Promise<{ rows: SessionRow[]; total: number }> {
+    return paginatedListQuery<SessionRow>(getPool(), {
+      table: 'sessions',
+      searchColumns: ['title', 'description', 'track'],
+      sortableColumns: { title: 'title', duration: 'duration_minutes', status: 'status' },
+      defaultOrderBy: 'title',
+    }, params);
   },
 
   async replaceSpeakerLinks(client: PoolClient, sessionId: string, speakerIds: string[]): Promise<void> {

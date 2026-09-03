@@ -6,8 +6,8 @@ import type { FieldDef } from '../../components/ResourceForm.js';
 
 const columns: Column<Faq>[] = [
   { key: 'question', label: 'Question', render: (r) => r.question },
-  { key: 'category', label: 'Category', render: (r) => r.category ?? '—' },
-  { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
+  { key: 'category', sortable: true, label: 'Category', render: (r) => r.category ?? '—' },
+  { key: 'status', sortable: true, label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
 ];
 
 const fields: FieldDef[] = [
@@ -37,6 +37,7 @@ export function FaqsPage() {
       columns={columns}
       fields={fields}
       rowToFormValues={(row) => ({ ...row })}
+      searchPlaceholder="Search FAQs by question, answer, or category…"
     />
   );
 }

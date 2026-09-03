@@ -1,4 +1,5 @@
 import { getPool } from '../../config/database.js';
+import { paginatedListQuery, type ListQueryParams } from '../../utils/sql.js';
 import { buildUpdateSet } from '../../utils/sql.js';
 import type { AgendaItemRow } from './agenda.types.js';
 import type { CreateAgendaItemInput, UpdateAgendaItemInput } from '@scd/validation';
@@ -20,16 +21,13 @@ export const agendaRepository = {
   },
 
   /** Admin listing — every status. */
-  async list(page: number, pageSize: number): Promise<{ rows: AgendaItemRow[]; total: number }> {
-    const offset = (page - 1) * pageSize;
-    const [{ rows }, countResult] = await Promise.all([
-      getPool().query<AgendaItemRow>(
-        'SELECT * FROM agenda_items ORDER BY start_time, display_order LIMIT $1 OFFSET $2',
-        [pageSize, offset],
-      ),
-      getPool().query<{ count: string }>('SELECT count(*) FROM agenda_items'),
-    ]);
-    return { rows, total: Number(countResult.rows[0]?.count ?? 0) };
+  async list(params: ListQueryParams): Promise<{ rows: AgendaItemRow[]; total: number }> {
+    return paginatedListQuery<AgendaItemRow>(getPool(), {
+      table: 'agenda_items',
+      searchColumns: ['title'],
+      sortableColumns: { title: 'title', startTime: 'start_time', displayOrder: 'display_order', status: 'status' },
+      defaultOrderBy: 'start_time, display_order',
+    }, params);
   },
 
   async create(input: CreateAgendaItemInput): Promise<AgendaItemRow> {

@@ -12,8 +12,8 @@ export const venuesController = {
 
   /** Admin — GET /api/v1/admin/content/venues */
   async adminList(req: Request, res: Response): Promise<void> {
-    const { page, pageSize } = req.query as unknown as PaginationQuery;
-    sendSuccess(res, await venuesService.adminList(page, pageSize));
+    const params = req.query as unknown as PaginationQuery;
+    sendSuccess(res, await venuesService.adminList(params));
   },
 
   async create(req: Request, res: Response): Promise<void> {

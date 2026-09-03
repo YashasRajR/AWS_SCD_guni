@@ -3,6 +3,7 @@ import type { CreateSpeakerInput, UpdateSpeakerInput } from '@scd/validation';
 import { speakersRepository } from './speakers.repository.js';
 import { toSpeaker } from './speakers.types.js';
 import { AppError } from '../../utils/errors.js';
+import type { ListQueryParams } from '../../utils/sql.js';
 
 export const speakersService = {
   async list(): Promise<Speaker[]> {
@@ -15,11 +16,16 @@ export const speakersService = {
   },
 
   /** Admin listing — every status. */
-  async adminList(page: number, pageSize: number): Promise<PaginatedData<Speaker>> {
-    const { rows, total } = await speakersRepository.list(page, pageSize);
+  async adminList(params: ListQueryParams): Promise<PaginatedData<Speaker>> {
+    const { rows, total } = await speakersRepository.list(params);
     return {
       items: rows.map(toSpeaker),
-      pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
+      pagination: {
+        page: params.page,
+        pageSize: params.pageSize,
+        totalItems: total,
+        totalPages: Math.ceil(total / params.pageSize),
+      },
     };
   },
 

@@ -3,6 +3,7 @@ import type { CreateFaqInput, UpdateFaqInput } from '@scd/validation';
 import { faqRepository } from './faq.repository.js';
 import { toFaq } from './faq.types.js';
 import { AppError } from '../../utils/errors.js';
+import type { ListQueryParams } from '../../utils/sql.js';
 
 export const faqService = {
   async list(): Promise<Faq[]> {
@@ -10,11 +11,16 @@ export const faqService = {
   },
 
   /** Admin listing — every status. */
-  async adminList(page: number, pageSize: number): Promise<PaginatedData<Faq>> {
-    const { rows, total } = await faqRepository.list(page, pageSize);
+  async adminList(params: ListQueryParams): Promise<PaginatedData<Faq>> {
+    const { rows, total } = await faqRepository.list(params);
     return {
       items: rows.map(toFaq),
-      pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
+      pagination: {
+        page: params.page,
+        pageSize: params.pageSize,
+        totalItems: total,
+        totalPages: Math.ceil(total / params.pageSize),
+      },
     };
   },
 

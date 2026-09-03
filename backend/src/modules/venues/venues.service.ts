@@ -3,6 +3,7 @@ import type { CreateVenueInput, UpdateVenueInput } from '@scd/validation';
 import { venuesRepository } from './venues.repository.js';
 import { toVenue } from './venues.types.js';
 import { AppError } from '../../utils/errors.js';
+import type { ListQueryParams } from '../../utils/sql.js';
 
 export const venuesService = {
   async list(): Promise<Venue[]> {
@@ -10,11 +11,16 @@ export const venuesService = {
   },
 
   /** Admin listing — every status. */
-  async adminList(page: number, pageSize: number): Promise<PaginatedData<Venue>> {
-    const { rows, total } = await venuesRepository.list(page, pageSize);
+  async adminList(params: ListQueryParams): Promise<PaginatedData<Venue>> {
+    const { rows, total } = await venuesRepository.list(params);
     return {
       items: rows.map(toVenue),
-      pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
+      pagination: {
+        page: params.page,
+        pageSize: params.pageSize,
+        totalItems: total,
+        totalPages: Math.ceil(total / params.pageSize),
+      },
     };
   },
 

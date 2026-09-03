@@ -1,4 +1,5 @@
 import { getPool } from '../../config/database.js';
+import { paginatedListQuery, type ListQueryParams } from '../../utils/sql.js';
 import { buildUpdateSet } from '../../utils/sql.js';
 import type { AnnouncementRow } from './announcements.types.js';
 import type { CreateAnnouncementInput, UpdateAnnouncementInput } from '@scd/validation';
@@ -25,16 +26,13 @@ export const announcementsRepository = {
   },
 
   /** Admin listing — every status, regardless of publish/expiry window. */
-  async list(page: number, pageSize: number): Promise<{ rows: AnnouncementRow[]; total: number }> {
-    const offset = (page - 1) * pageSize;
-    const [{ rows }, countResult] = await Promise.all([
-      getPool().query<AnnouncementRow>(
-        'SELECT * FROM announcements ORDER BY created_at DESC LIMIT $1 OFFSET $2',
-        [pageSize, offset],
-      ),
-      getPool().query<{ count: string }>('SELECT count(*) FROM announcements'),
-    ]);
-    return { rows, total: Number(countResult.rows[0]?.count ?? 0) };
+  async list(params: ListQueryParams): Promise<{ rows: AnnouncementRow[]; total: number }> {
+    return paginatedListQuery<AnnouncementRow>(getPool(), {
+      table: 'announcements',
+      searchColumns: ['title', 'message'],
+      sortableColumns: { title: 'title', priority: 'priority', createdAt: 'created_at', status: 'status' },
+      defaultOrderBy: 'created_at DESC',
+    }, params);
   },
 
   async create(input: CreateAnnouncementInput): Promise<AnnouncementRow> {

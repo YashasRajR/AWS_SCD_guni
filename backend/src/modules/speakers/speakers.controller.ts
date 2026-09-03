@@ -15,8 +15,8 @@ export const speakersController = {
 
   /** Admin — GET /api/v1/admin/content/speakers */
   async adminList(req: Request, res: Response): Promise<void> {
-    const { page, pageSize } = req.query as unknown as PaginationQuery;
-    sendSuccess(res, await speakersService.adminList(page, pageSize));
+    const params = req.query as unknown as PaginationQuery;
+    sendSuccess(res, await speakersService.adminList(params));
   },
 
   async create(req: Request, res: Response): Promise<void> {

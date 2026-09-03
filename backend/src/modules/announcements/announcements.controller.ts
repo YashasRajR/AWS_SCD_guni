@@ -12,8 +12,8 @@ export const announcementsController = {
 
   /** Admin — GET /api/v1/admin/content/announcements */
   async adminList(req: Request, res: Response): Promise<void> {
-    const { page, pageSize } = req.query as unknown as PaginationQuery;
-    sendSuccess(res, await announcementsService.adminList(page, pageSize));
+    const params = req.query as unknown as PaginationQuery;
+    sendSuccess(res, await announcementsService.adminList(params));
   },
 
   async create(req: Request, res: Response): Promise<void> {

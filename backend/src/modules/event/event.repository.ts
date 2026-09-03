@@ -1,4 +1,5 @@
 import { getPool } from '../../config/database.js';
+import { paginatedListQuery, type ListQueryParams } from '../../utils/sql.js';
 import { buildUpdateSet } from '../../utils/sql.js';
 import type { EventRow } from './event.types.js';
 import type { CreateEventInput, UpdateEventInput } from '@scd/validation';
@@ -21,16 +22,13 @@ export const eventRepository = {
   },
 
   /** Admin listing — every status, not just PUBLISHED. */
-  async list(page: number, pageSize: number): Promise<{ rows: EventRow[]; total: number }> {
-    const offset = (page - 1) * pageSize;
-    const [{ rows }, countResult] = await Promise.all([
-      getPool().query<EventRow>(
-        'SELECT * FROM events ORDER BY event_date DESC LIMIT $1 OFFSET $2',
-        [pageSize, offset],
-      ),
-      getPool().query<{ count: string }>('SELECT count(*) FROM events'),
-    ]);
-    return { rows, total: Number(countResult.rows[0]?.count ?? 0) };
+  async list(params: ListQueryParams): Promise<{ rows: EventRow[]; total: number }> {
+    return paginatedListQuery<EventRow>(getPool(), {
+      table: 'events',
+      searchColumns: ['name', 'slug', 'description'],
+      sortableColumns: { name: 'name', eventDate: 'event_date', status: 'status' },
+      defaultOrderBy: 'event_date DESC',
+    }, params);
   },
 
   async create(input: CreateEventInput): Promise<EventRow> {

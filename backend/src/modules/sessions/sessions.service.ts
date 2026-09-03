@@ -4,6 +4,7 @@ import { sessionsRepository } from './sessions.repository.js';
 import { toSession } from './sessions.types.js';
 import { toSpeaker } from '../speakers/speakers.types.js';
 import { AppError } from '../../utils/errors.js';
+import type { ListQueryParams } from '../../utils/sql.js';
 
 export const sessionsService = {
   async list(): Promise<Session[]> {
@@ -20,12 +21,17 @@ export const sessionsService = {
   },
 
   /** Admin listing — every status. */
-  async adminList(page: number, pageSize: number): Promise<PaginatedData<Session>> {
-    const { rows, total } = await sessionsRepository.list(page, pageSize);
+  async adminList(params: ListQueryParams): Promise<PaginatedData<Session>> {
+    const { rows, total } = await sessionsRepository.list(params);
     const speakerMap = await sessionsRepository.getSpeakersForSessions(rows.map((r) => r.id));
     return {
       items: rows.map((row) => toSession(row, (speakerMap.get(row.id) ?? []).map(toSpeaker))),
-      pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
+      pagination: {
+        page: params.page,
+        pageSize: params.pageSize,
+        totalItems: total,
+        totalPages: Math.ceil(total / params.pageSize),
+      },
     };
   },
 
