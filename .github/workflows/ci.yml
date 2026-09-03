@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A new push to the same branch/PR cancels any in-flight run for it.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # Fast, dependency-free gate: every push/PR gets this without waiting on
+  # a database. Runs first so a broken build/lint fails quickly.
+  lint-typecheck-build:
+    name: Lint, typecheck, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint (zero warnings)
+        run: npm run lint
+
+      - name: Typecheck (all workspaces)
+        run: npm run typecheck
+
+      - name: Build (all workspaces)
+        run: npm run build
+
+  # DB-free unit tests (mocked repositories) — no Postgres service needed,
+  # so this stays fast and can run even if the integration job is skipped.
+  unit-tests:
+    name: Unit tests (backend, no DB)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run backend unit tests
+        run: npm run test:unit --workspace=backend
+
+  # DB-backed integration/API tests — spins up a real Postgres service
+  # container, then vitest's globalSetup (tests/fixtures/global-setup.ts)
+  # migrates + seeds it before the suite runs.
+  integration-tests:
+    name: Integration tests (backend, Postgres)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: scd_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/scd_test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run backend test suite (migrate + seed + integration/API tests)
+        run: npm run test --workspace=backend

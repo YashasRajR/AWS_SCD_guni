@@ -6,6 +6,7 @@ import { requestLogger } from '../middleware/logging/index.js';
 import { createApiRateLimiter } from '../middleware/rate-limit/index.js';
 import { errorHandler, notFoundHandler } from '../middleware/error-handler/index.js';
 import { healthRouter } from '../routes/health.js';
+import { readyRouter } from '../routes/ready.js';
 import { apiRouter } from '../routes/index.js';
 
 /**
@@ -46,9 +47,11 @@ export function createApp(): Express {
   );
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-  // /health is intentionally outside both the rate limiter and /api/v1 —
-  // uptime checks should never be throttled or versioned away.
+  // /health and /ready are intentionally outside both the rate limiter
+  // and /api/v1 — uptime/readiness checks should never be throttled or
+  // versioned away.
   app.use('/health', healthRouter);
+  app.use('/ready', readyRouter);
 
   app.use('/api/v1', createApiRateLimiter(), apiRouter);
 
