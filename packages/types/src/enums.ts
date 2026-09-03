@@ -4,7 +4,7 @@
 // to/from JSON and match Postgres CHECK-constrained text columns.
 // ============================================================
 
-export const ROLE_NAMES = ['ADMIN', 'VOLUNTEER', 'ATTENDEE'] as const;
+export const ROLE_NAMES = ['ADMIN', 'VOLUNTEER', 'ATTENDEE', 'SUPER_ADMIN'] as const;
 export type RoleName = (typeof ROLE_NAMES)[number];
 
 export const USER_STATUSES = ['ACTIVE', 'SUSPENDED', 'DEACTIVATED'] as const;

@@ -21,13 +21,24 @@ export const PERMISSIONS = {
   VIEW_REPORTS: 'VIEW_REPORTS',
   MANAGE_SETTINGS: 'MANAGE_SETTINGS',
   VIEW_AUDIT_LOGS: 'VIEW_AUDIT_LOGS',
+  // SUPER_ADMIN-only: granting/revoking roles (including promoting another
+  // user to ADMIN or SUPER_ADMIN). Deliberately withheld from ADMIN's
+  // default grant below — role/privilege escalation is the one action an
+  // ADMIN must never be able to perform on itself or anyone else.
+  MANAGE_ROLES: 'MANAGE_ROLES',
 } as const;
 
 export type PermissionCode = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
 
 /** Default role → permission grants, applied by the database seed. */
-export const ROLE_PERMISSION_SEED: Record<'ADMIN' | 'VOLUNTEER' | 'ATTENDEE', PermissionCode[]> = {
-  ADMIN: Object.values(PERMISSIONS),
+export const ROLE_PERMISSION_SEED: Record<
+  'SUPER_ADMIN' | 'ADMIN' | 'VOLUNTEER' | 'ATTENDEE',
+  PermissionCode[]
+> = {
+  // Everything ADMIN has, plus MANAGE_ROLES.
+  SUPER_ADMIN: Object.values(PERMISSIONS),
+  // Full operational control of the event, but cannot change anyone's role.
+  ADMIN: Object.values(PERMISSIONS).filter((code) => code !== PERMISSIONS.MANAGE_ROLES),
   VOLUNTEER: [PERMISSIONS.VIEW_ATTENDEE, PERMISSIONS.COMPLETE_CHECKPOINT],
   ATTENDEE: [],
 };

@@ -19,6 +19,16 @@ Payments/Email/Certificates/Achievements/Event Wrapped as non-functional stubs �
 all of that has since been built out; see the module-by-module status below for
 the current, verified state.
 
+**Phase 2 update (2026-09-03):** database/domain-foundation work is complete —
+see [`docs/architecture/domain-and-data-model.md`](architecture/domain-and-data-model.md)
+for the full domain model, ownership model, and the new SUPER_ADMIN role/permission
+boundary. Two concrete gaps this phase's re-audit found and closed: (1) no
+persisted, DB-deduplicated record of payment webhook deliveries (migration
+`036_payment_events`); (2) the platform had only three roles with no
+privilege-escalation boundary — SUPER_ADMIN + `MANAGE_ROLES` now exists, and
+`backend/src/modules/users/*` (previously a reserved-but-empty stub) implements
+the admin role-management endpoints it needs.
+
 ---
 
 ## Repository Summary

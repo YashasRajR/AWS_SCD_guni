@@ -27,3 +27,19 @@ export function toPublicUser(row: UserRow): User {
     lastLoginAt: row.last_login_at,
   };
 }
+
+/** Row shape for the admin user list — includes the aggregated role set. */
+export interface UserWithRolesRow extends UserRow {
+  role_names: RoleName[] | null;
+}
+
+export interface UserWithRoles extends User {
+  roles: RoleName[];
+}
+
+export function toUserWithRoles(row: UserWithRolesRow): UserWithRoles {
+  return {
+    ...toPublicUser(row),
+    roles: row.role_names ?? [],
+  };
+}

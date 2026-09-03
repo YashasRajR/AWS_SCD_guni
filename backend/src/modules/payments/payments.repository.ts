@@ -1,7 +1,47 @@
 import { getPool } from '../../config/database.js';
 import type { PaymentRow } from './payments.types.js';
 
+export interface PaymentEventInsert {
+  provider: string;
+  providerEventId: string;
+  eventType: string;
+  paymentId: string | null;
+  metadata?: Record<string, unknown>;
+}
+
 export const paymentsRepository = {
+  /**
+   * Records a webhook delivery before any processing happens. Returns the
+   * new row's id, or null if (provider, providerEventId) already exists —
+   * i.e. this exact event was already received, so the caller should
+   * treat it as a no-op duplicate rather than reprocessing. This is the
+   * database-enforced half of webhook idempotency; the payment-status
+   * check in payments.service.ts's handleWebhook is the second layer.
+   */
+  async recordWebhookEventIfNew(event: PaymentEventInsert): Promise<string | null> {
+    const { rows } = await getPool().query<{ id: string }>(
+      `INSERT INTO payment_events (provider, provider_event_id, event_type, payment_id, metadata)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (provider, provider_event_id) DO NOTHING
+       RETURNING id`,
+      [event.provider, event.providerEventId, event.eventType, event.paymentId, event.metadata ?? null],
+    );
+    return rows[0]?.id ?? null;
+  },
+
+  async markWebhookEventProcessed(
+    id: string,
+    status: 'PROCESSED' | 'IGNORED' | 'ERROR',
+    errorMessage?: string,
+  ): Promise<void> {
+    await getPool().query(
+      `UPDATE payment_events
+       SET processing_status = $2, processed_at = now(), error_message = $3
+       WHERE id = $1`,
+      [id, status, errorMessage ?? null],
+    );
+  },
+
   async findByRegistrationId(registrationId: string): Promise<PaymentRow | null> {
     const { rows } = await getPool().query<PaymentRow>(
       'SELECT * FROM payments WHERE registration_id = $1 ORDER BY created_at DESC LIMIT 1',

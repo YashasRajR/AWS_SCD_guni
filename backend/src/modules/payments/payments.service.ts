@@ -20,6 +20,11 @@ export interface InitiatePaymentResult {
 
 /** Defensively-parsed shape of the fields this integration reads from a Razorpay webhook payload. */
 interface RazorpayWebhookPayload {
+  /** Razorpay includes a top-level event delivery id on most accounts; not
+   * guaranteed present on every plan/version, so we always fall back to a
+   * deterministic key derived from the payload itself (see
+   * webhookEventIdFor below) rather than depending on it. */
+  id?: string;
   event?: string;
   payload?: {
     payment?: {
@@ -29,6 +34,19 @@ interface RazorpayWebhookPayload {
       };
     };
   };
+}
+
+/**
+ * A stable identifier for this exact webhook delivery, used as the
+ * database dedup key. Prefers the provider's own delivery id when present;
+ * otherwise derives one from the event type + payment/order id, which is
+ * still enough to catch the common case (the provider retrying the exact
+ * same delivery after a timeout).
+ */
+function webhookEventIdFor(parsed: RazorpayWebhookPayload, orderId: string): string {
+  if (parsed.id) return parsed.id;
+  const entity = parsed.payload?.payment?.entity;
+  return `${parsed.event ?? 'unknown'}:${entity?.id ?? 'no-payment-id'}:${orderId}`;
 }
 
 export const paymentsService = {
@@ -133,22 +151,48 @@ export const paymentsService = {
     }
 
     const payment = await paymentsRepository.findByProviderOrderId(provider.name, orderId);
+
+    // Database-enforced dedup: insert the event row first. A NULL id back
+    // means (provider, providerEventId) already existed — this exact
+    // delivery was already received (e.g. the provider retried it), so it
+    // is a no-op regardless of what the payment's current status says.
+    const eventId = await paymentsRepository.recordWebhookEventIfNew({
+      provider: provider.name,
+      providerEventId: webhookEventIdFor(parsed, orderId),
+      eventType: parsed.event ?? 'unknown',
+      paymentId: payment?.id ?? null,
+    });
+    if (!eventId) {
+      logger.info({ orderId, event: parsed.event }, 'Duplicate payment webhook delivery — ignoring');
+      return;
+    }
+
     if (!payment) {
       logger.warn({ orderId, event: parsed.event }, 'Payment webhook references an unknown order — ignoring');
+      await paymentsRepository.markWebhookEventProcessed(eventId, 'IGNORED', 'Unknown provider order id');
       return;
     }
 
     if (parsed.event === 'payment.captured') {
-      if (payment.status === 'PAID') return; // already processed — idempotent retry
+      if (payment.status === 'PAID') {
+        await paymentsRepository.markWebhookEventProcessed(eventId, 'IGNORED', 'Payment already PAID');
+        return;
+      }
       const updated = await paymentsRepository.markPaid(payment.id, providerPaymentId ?? orderId);
       await registrationsService.updateStatus(updated.registration_id, { status: 'CONFIRMED' });
       await this.notifyPaymentResult(updated, true);
+      await paymentsRepository.markWebhookEventProcessed(eventId, 'PROCESSED');
     } else if (parsed.event === 'payment.failed') {
-      if (payment.status === 'FAILED' || payment.status === 'PAID') return;
+      if (payment.status === 'FAILED' || payment.status === 'PAID') {
+        await paymentsRepository.markWebhookEventProcessed(eventId, 'IGNORED', `Payment already ${payment.status}`);
+        return;
+      }
       const updated = await paymentsRepository.markFailed(payment.id);
       await this.notifyPaymentResult(updated, false);
+      await paymentsRepository.markWebhookEventProcessed(eventId, 'PROCESSED');
     } else {
       logger.info({ event: parsed.event }, 'Ignoring unhandled payment webhook event type');
+      await paymentsRepository.markWebhookEventProcessed(eventId, 'IGNORED', 'Unhandled event type');
     }
   },
 

@@ -23,6 +23,7 @@ import { certificatesAdminRouter, certificatesPublicRouter } from '../modules/ce
 import { achievementsAdminRouter } from '../modules/achievements/achievements.routes.js';
 import { emailsAdminRouter } from '../modules/emails/emails.routes.js';
 import { ticketsAdminRouter } from '../modules/tickets/tickets.routes.js';
+import { usersAdminRouter } from '../modules/users/users.routes.js';
 
 /**
  * Everything here is mounted under /api/v1 by server/app.ts. Route
@@ -69,6 +70,7 @@ apiRouter.use('/admin/certificates', certificatesAdminRouter);
 apiRouter.use('/admin/achievements', achievementsAdminRouter);
 apiRouter.use('/admin/emails', emailsAdminRouter);
 apiRouter.use('/admin/tickets', ticketsAdminRouter);
+apiRouter.use('/admin/users', usersAdminRouter);
 
 // --- ADMIN content management (every status, not just PUBLISHED) -----------
 apiRouter.use('/admin/content/event', eventAdminRouter);

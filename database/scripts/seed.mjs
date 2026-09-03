@@ -27,10 +27,13 @@ const PERMISSIONS = [
   'VIEW_REPORTS',
   'MANAGE_SETTINGS',
   'VIEW_AUDIT_LOGS',
+  'MANAGE_ROLES',
 ];
 
 const ROLE_PERMISSIONS = {
-  ADMIN: PERMISSIONS,
+  // MANAGE_ROLES (granting/revoking roles) is SUPER_ADMIN-exclusive.
+  SUPER_ADMIN: PERMISSIONS,
+  ADMIN: PERMISSIONS.filter((code) => code !== 'MANAGE_ROLES'),
   VOLUNTEER: ['VIEW_ATTENDEE', 'COMPLETE_CHECKPOINT'],
   ATTENDEE: [],
 };
@@ -82,7 +85,7 @@ async function main() {
     await client.query('BEGIN');
 
     // --- Roles -----------------------------------------------------------
-    for (const name of ['ADMIN', 'VOLUNTEER', 'ATTENDEE']) {
+    for (const name of ['SUPER_ADMIN', 'ADMIN', 'VOLUNTEER', 'ATTENDEE']) {
       await client.query(
         `INSERT INTO roles (name, description) VALUES ($1, $2)
          ON CONFLICT (name) DO NOTHING`,
@@ -138,6 +141,7 @@ async function main() {
     }
 
     // --- Dev users (CLEARLY FAKE — never real people) ----------------------
+    await upsertUser(client, { email: 'superadmin@dev.local', roleName: 'SUPER_ADMIN' });
     await upsertUser(client, { email: 'admin@dev.local', roleName: 'ADMIN' });
     const volunteerUserId = await upsertUser(client, {
       email: 'volunteer@dev.local',
@@ -177,6 +181,7 @@ async function main() {
     console.log('Seed complete.');
     console.log(`  Event: AWS Student Community Day 2026 (${eventId})`);
     console.log('  Dev accounts (password for all: DevPassw0rd!):');
+    console.log('    superadmin@dev.local  (SUPER_ADMIN)');
     console.log('    admin@dev.local       (ADMIN)');
     console.log('    volunteer@dev.local   (VOLUNTEER, assigned to Registration checkpoint)');
     console.log('    attendee1@dev.local   (ATTENDEE)');

@@ -14,6 +14,8 @@ vi.mock(PAYMENTS_REPO_PATH, () => ({
     markPaid: vi.fn(),
     markFailed: vi.fn(),
     findByRegistrationId: vi.fn(),
+    recordWebhookEventIfNew: vi.fn(),
+    markWebhookEventProcessed: vi.fn(),
   },
 }));
 vi.mock(PAYMENT_PROVIDER_PATH, () => ({
@@ -52,6 +54,8 @@ function mockProvider(verifies: boolean) {
 describe('paymentsService.handleWebhook', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: this is a new event delivery, not a duplicate.
+    vi.mocked(paymentsRepository.recordWebhookEventIfNew).mockResolvedValue('event-id-1');
   });
 
   it('rejects a webhook with an invalid signature and never touches the payment', async () => {
@@ -144,6 +148,25 @@ describe('paymentsService.handleWebhook', () => {
     await paymentsService.handleWebhook(body, 'sig');
 
     expect(paymentsRepository.markFailed).not.toHaveBeenCalled();
+  });
+
+  it('rejects a duplicate webhook delivery at the database layer, before touching the payment', async () => {
+    mockProvider(true);
+    vi.mocked(paymentsRepository.recordWebhookEventIfNew).mockResolvedValue(null); // already seen
+    vi.mocked(paymentsRepository.findByProviderOrderId).mockResolvedValue({
+      id: 'payment-1',
+      status: 'PENDING',
+      registration_id: 'registration-1',
+    });
+    const body = JSON.stringify({
+      event: 'payment.captured',
+      payload: { payment: { entity: { id: 'pay_1', order_id: 'order_1' } } },
+    });
+
+    await paymentsService.handleWebhook(body, 'sig');
+
+    expect(paymentsRepository.markPaid).not.toHaveBeenCalled();
+    expect(registrationsService.updateStatus).not.toHaveBeenCalled();
   });
 
   it('throws on a malformed JSON payload instead of silently ignoring it', async () => {
