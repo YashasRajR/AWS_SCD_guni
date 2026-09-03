@@ -3,7 +3,9 @@ import type { CreateCheckpointInput, UpdateCheckpointInput } from '@scd/validati
 import { checkpointsRepository } from './checkpoints.repository.js';
 import { toCheckpoint, toCheckpointAttendance, type CheckpointProgressItem } from './checkpoints.types.js';
 import { attendeesRepository } from '../attendees/attendees.repository.js';
+import { achievementsService } from '../achievements/achievements.service.js';
 import { AppError } from '../../utils/errors.js';
+import { logger } from '../../utils/logger.js';
 
 interface PgError {
   code?: string;
@@ -84,9 +86,9 @@ export const checkpointsService = {
     const existing = await checkpointsRepository.findCompletedAttendance(attendeeId, checkpointId);
     if (existing) throw AppError.checkpointAlreadyCompleted();
 
+    let row;
     try {
-      const row = await checkpointsRepository.createAttendance(attendeeId, checkpointId, volunteerId);
-      return toCheckpointAttendance(row);
+      row = await checkpointsRepository.createAttendance(attendeeId, checkpointId, volunteerId);
     } catch (err) {
       if ((err as PgError).code === '23505') {
         // Lost the race to a concurrent completion — same outcome either way.
@@ -94,5 +96,14 @@ export const checkpointsService = {
       }
       throw err;
     }
+
+    // Best-effort: a freshly recorded attendance may unlock an achievement
+    // (e.g. "attended first activity"). Evaluation failing must never undo
+    // or fail the attendance record that already committed above.
+    achievementsService.evaluateForAttendee(attendeeId).catch((err) => {
+      logger.warn({ err, attendeeId, checkpointId }, 'Achievement evaluation after checkpoint failed');
+    });
+
+    return toCheckpointAttendance(row);
   },
 };

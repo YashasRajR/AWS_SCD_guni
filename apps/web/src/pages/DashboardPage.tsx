@@ -19,17 +19,50 @@ interface ProgressItem {
   completedAt: string | null;
 }
 
+/** Shared "this section failed to load" fallback — every dashboard card renders
+ * its own error state instead of silently showing nothing, per the platform's
+ * "every page must have an error state" requirement. */
+function SectionError({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  return (
+    <div className="status-line form-error">
+      <p>{message}</p>
+      {onRetry && (
+        <button type="button" className="btn-link" onClick={onRetry}>
+          Try again
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function DashboardPage() {
-  const { data: me, loading: meLoading } = useResource<MeData>('/me');
+  const { data: me, loading: meLoading, error: meError, reload: reloadMe } = useResource<MeData>('/me');
   const {
     data: registration,
     loading: regLoading,
+    error: regError,
     reload: reloadRegistration,
   } = useResource<Registration>('/me/registration');
-  const { data: ticket } = useResource<Ticket>('/me/ticket', Boolean(registration));
-  const { items: progress } = useResource<ProgressItem>('/me/progress');
-  const { items: certificates } = useResource<Certificate>('/me/certificates');
-  const { items: achievements } = useResource<unknown>('/me/achievements');
+  const {
+    data: ticket,
+    error: ticketError,
+    reload: reloadTicket,
+  } = useResource<Ticket>('/me/ticket', Boolean(registration));
+  const {
+    items: progress,
+    error: progressError,
+    reload: reloadProgress,
+  } = useResource<ProgressItem>('/me/progress');
+  const {
+    items: certificates,
+    error: certificatesError,
+    reload: reloadCertificates,
+  } = useResource<Certificate>('/me/certificates');
+  const {
+    items: achievements,
+    error: achievementsError,
+    reload: reloadAchievements,
+  } = useResource<unknown>('/me/achievements');
 
   const [registering, setRegistering] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
@@ -55,12 +88,13 @@ export function DashboardPage() {
     <div className="page-section dashboard">
       <header className="page-section-header">
         <h1>My dashboard</h1>
-        {!meLoading && me?.attendee && (
+        {!meLoading && !meError && me?.attendee && (
           <p className="page-section-lede">
             {me.attendee.fullName}
             {me.attendee.university ? ` · ${me.attendee.university}` : ''}
           </p>
         )}
+        {!meLoading && meError && <SectionError message={meError} onRetry={reloadMe} />}
       </header>
 
       <div className="dashboard-grid">
@@ -68,6 +102,8 @@ export function DashboardPage() {
           <h2>Event registration</h2>
           {regLoading ? (
             <p className="status-line">Loading…</p>
+          ) : regError ? (
+            <SectionError message={regError} onRetry={reloadRegistration} />
           ) : registration ? (
             <>
               <p className="dashboard-card-row">
@@ -103,7 +139,9 @@ export function DashboardPage() {
 
         <section className="dashboard-card">
           <h2>Ticket</h2>
-          {ticket ? (
+          {ticketError ? (
+            <SectionError message={ticketError} onRetry={reloadTicket} />
+          ) : ticket ? (
             <>
               <p className="dashboard-card-row">
                 <Badge tone={statusTone(ticket.status)}>{ticket.status}</Badge>
@@ -120,7 +158,9 @@ export function DashboardPage() {
 
         <section className="dashboard-card">
           <h2>Checkpoint progress</h2>
-          {progress.length === 0 ? (
+          {progressError ? (
+            <SectionError message={progressError} onRetry={reloadProgress} />
+          ) : progress.length === 0 ? (
             <p className="status-line">Checkpoints haven&apos;t been set up yet.</p>
           ) : (
             <>
@@ -146,7 +186,9 @@ export function DashboardPage() {
 
         <section className="dashboard-card">
           <h2>Certificates</h2>
-          {certificates.length === 0 ? (
+          {certificatesError ? (
+            <SectionError message={certificatesError} onRetry={reloadCertificates} />
+          ) : certificates.length === 0 ? (
             <p className="status-line">No certificates yet — these are issued after the event.</p>
           ) : (
             <ul className="checkpoint-list">
@@ -161,11 +203,15 @@ export function DashboardPage() {
 
         <section className="dashboard-card">
           <h2>Achievements</h2>
-          <p className="status-line">
-            {achievements.length === 0
-              ? 'No achievements unlocked yet.'
-              : `${achievements.length} unlocked.`}
-          </p>
+          {achievementsError ? (
+            <SectionError message={achievementsError} onRetry={reloadAchievements} />
+          ) : (
+            <p className="status-line">
+              {achievements.length === 0
+                ? 'No achievements unlocked yet.'
+                : `${achievements.length} unlocked.`}
+            </p>
+          )}
           <Link to="/dashboard/achievements" className="btn-link">
             View achievements →
           </Link>

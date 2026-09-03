@@ -1,6 +1,12 @@
+import type { Pool, PoolClient } from 'pg';
 import { getPool } from '../../config/database.js';
 import type { RoleName } from '@scd/types';
 import type { IdentitySnapshot, UserRow } from './users.types.js';
+
+/** Accepts either the shared pool or a transaction client, so callers can
+ * opt into atomicity (see auth.service.ts's register()) without every
+ * method needing two copies. */
+type Queryable = Pool | PoolClient;
 
 export const usersRepository = {
   async findByEmail(email: string): Promise<UserRow | null> {
@@ -15,8 +21,8 @@ export const usersRepository = {
     return rows[0] ?? null;
   },
 
-  async create(email: string, passwordHash: string): Promise<UserRow> {
-    const { rows } = await getPool().query<UserRow>(
+  async create(email: string, passwordHash: string, db: Queryable = getPool()): Promise<UserRow> {
+    const { rows } = await db.query<UserRow>(
       `INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING *`,
       [email, passwordHash],
     );
@@ -38,8 +44,8 @@ export const usersRepository = {
     await getPool().query('UPDATE users SET last_login_at = now() WHERE id = $1', [userId]);
   },
 
-  async assignRole(userId: string, roleName: RoleName): Promise<void> {
-    await getPool().query(
+  async assignRole(userId: string, roleName: RoleName, db: Queryable = getPool()): Promise<void> {
+    await db.query(
       `INSERT INTO user_roles (user_id, role_id)
        SELECT $1, id FROM roles WHERE name = $2
        ON CONFLICT DO NOTHING`,

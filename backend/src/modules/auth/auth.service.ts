@@ -8,6 +8,7 @@ import type {
   VerifyEmailInput,
 } from '@scd/validation';
 import { getEnv } from '../../config/env.js';
+import { withTransaction } from '../../config/database.js';
 import { AppError } from '../../utils/errors.js';
 import { usersRepository } from '../users/users.repository.js';
 import { toPublicUser } from '../users/users.types.js';
@@ -34,17 +35,32 @@ export const authService = {
     }
 
     const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
-    const user = await usersRepository.create(input.email, passwordHash);
-    await usersRepository.assignRole(user.id, 'ATTENDEE');
-    await attendeesRepository.create({
-      userId: user.id,
-      fullName: input.fullName,
-      phone: input.phone,
-      university: input.university,
-      department: input.department,
-      year: input.year,
+
+    // user + role + attendee must succeed or fail together — a failure
+    // partway through (e.g. the attendee insert violating a constraint)
+    // must never leave a user row with no role or no attendee profile.
+    const user = await withTransaction(async (client) => {
+      const createdUser = await usersRepository.create(input.email, passwordHash, client);
+      await usersRepository.assignRole(createdUser.id, 'ATTENDEE', client);
+      await attendeesRepository.create(
+        {
+          userId: createdUser.id,
+          fullName: input.fullName,
+          phone: input.phone,
+          university: input.university,
+          department: input.department,
+          year: input.year,
+        },
+        client,
+      );
+      return createdUser;
     });
 
+    // Token issuance + the verification email are best-effort follow-ups,
+    // not part of the account's atomicity — emailsService.enqueue never
+    // throws, so a failure here can't undo the account that was already
+    // committed above (and shouldn't: the user can still request a fresh
+    // verification email once delivery is fixed).
     const env = getEnv();
     const verificationToken = await authRepository.createEmailVerificationToken(
       user.id,

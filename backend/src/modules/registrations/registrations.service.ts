@@ -10,6 +10,10 @@ import { emailsService } from '../emails/emails.service.js';
 import { logger } from '../../utils/logger.js';
 import { AppError } from '../../utils/errors.js';
 
+interface PgError {
+  code?: string;
+}
+
 export const registrationsService = {
   async getByAttendeeId(attendeeId: string): Promise<Registration | null> {
     const row = await registrationsRepository.findByAttendeeId(attendeeId);
@@ -50,8 +54,20 @@ export const registrationsService = {
       }
     }
 
-    const row = await registrationsRepository.create(attendeeId);
-    return toRegistration(row);
+    // The findByAttendeeId check above is not race-safe on its own — two
+    // simultaneous submits can both pass it before either INSERT lands.
+    // registrations_attendee_id_unique (see database/migrations/033) is
+    // the real backstop: catch its violation here and surface the same
+    // clean 409 instead of a raw constraint error.
+    try {
+      const row = await registrationsRepository.create(attendeeId);
+      return toRegistration(row);
+    } catch (err) {
+      if ((err as PgError).code === '23505') {
+        throw AppError.duplicate('You are already registered for this event.');
+      }
+      throw err;
+    }
   },
 
   /**

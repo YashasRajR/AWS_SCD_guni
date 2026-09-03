@@ -14,6 +14,11 @@ const issueCertificateSchema = z.object({
   title: z.string().trim().min(1).max(300),
 });
 
+/** Mounted at /api/v1/certificates — public, no authentication. */
+export const certificatesPublicRouter = Router();
+certificatesPublicRouter.get('/verify/:certificateNumber', asyncHandler(certificatesController.verify));
+
+/** Mounted at /api/v1/admin/certificates. */
 export const certificatesAdminRouter = Router();
 
 certificatesAdminRouter.get(

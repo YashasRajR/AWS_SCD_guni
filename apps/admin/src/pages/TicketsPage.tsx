@@ -16,28 +16,21 @@ const columns: Column<Ticket>[] = [
 export function TicketsPage() {
   const [page, setPage] = useState(1);
   const { items, totalItems, totalPages, loading, error } = usePaginatedResource<Ticket>(
-    '/admin/registrations',
+    '/admin/tickets',
     page,
   );
-
-  // Note: Tickets don't have their own list endpoint yet — they are derived
-  // from registrations. For now, we show registrations which implicitly
-  // indicates ticket status. A dedicated /admin/tickets endpoint can be added
-  // when needed.
 
   return (
     <div className="page">
       <div className="page-header">
         <div>
           <h1>Tickets</h1>
-          <p className="page-description">Tickets are automatically issued when registration is confirmed.</p>
+          <p className="page-description">Tickets are automatically issued when a registration is confirmed.</p>
         </div>
       </div>
 
-      <p className="status-line">
-        Tickets are managed through the registration flow. Check the{' '}
-        <a href="/registrations">Registrations</a> page for registration status.
-      </p>
+      <Table columns={columns} rows={items} getRowId={(r) => r.id} loading={loading} error={error} />
+      <Pagination page={page} totalPages={totalPages} totalItems={totalItems} onChange={setPage} />
     </div>
   );
 }

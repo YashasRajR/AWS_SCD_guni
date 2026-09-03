@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeAll } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { renderEmailTemplate } from '../../../backend/src/integrations/email/templates.js';
 
 describe('renderEmailTemplate', () => {

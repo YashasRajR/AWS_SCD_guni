@@ -1,4 +1,5 @@
--- AUTO-DOCUMENTED FROM database/migrations/007_registrations.up.sql
+-- AUTO-DOCUMENTED FROM database/migrations/007_registrations.up.sql,
+-- 033_registrations_attendee_unique.up.sql
 -- This file is the current-state reference copy; migrations/*.sql remain
 -- the canonical, applied source of truth. Do not hand-edit this file
 -- without also adding a new migration.
@@ -17,7 +18,10 @@ CREATE TABLE registrations (
 );
 
 CREATE UNIQUE INDEX registrations_registration_number_unique ON registrations (registration_number);
-CREATE INDEX registrations_attendee_id_idx ON registrations (attendee_id);
+-- One registration per attendee, ever (this platform is single-edition —
+-- see docs/architecture). Race-safe backstop for the app-level
+-- check-then-insert in registrations.service.ts's create().
+ALTER TABLE registrations ADD CONSTRAINT registrations_attendee_id_unique UNIQUE (attendee_id);
 CREATE INDEX registrations_status_idx ON registrations (status);
 
 CREATE TRIGGER trg_registrations_updated_at

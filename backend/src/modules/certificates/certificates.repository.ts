@@ -19,6 +19,15 @@ export const certificatesRepository = {
     return rows[0] ?? null;
   },
 
+  /** Public verification lookup — by the certificate number printed on it, not its internal id. */
+  async findByCertificateNumber(certificateNumber: string): Promise<CertificateRow | null> {
+    const { rows } = await getPool().query<CertificateRow>(
+      'SELECT * FROM certificates WHERE certificate_number = $1',
+      [certificateNumber],
+    );
+    return rows[0] ?? null;
+  },
+
   async findActiveByAttendeeAndType(attendeeId: string, certificateType: string): Promise<CertificateRow | null> {
     const { rows } = await getPool().query<CertificateRow>(
       `SELECT * FROM certificates WHERE attendee_id = $1 AND certificate_type = $2 AND status = 'ISSUED' LIMIT 1`,

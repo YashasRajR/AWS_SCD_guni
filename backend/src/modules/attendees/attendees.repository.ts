@@ -1,9 +1,14 @@
+import type { Pool, PoolClient } from 'pg';
 import { getPool } from '../../config/database.js';
 import type { AttendeeRow, CreateAttendeeInput } from './attendees.types.js';
 
+/** Accepts either the shared pool or a transaction client — see
+ * users.repository.ts's Queryable for why. */
+type Queryable = Pool | PoolClient;
+
 export const attendeesRepository = {
-  async create(input: CreateAttendeeInput): Promise<AttendeeRow> {
-    const { rows } = await getPool().query<AttendeeRow>(
+  async create(input: CreateAttendeeInput, db: Queryable = getPool()): Promise<AttendeeRow> {
+    const { rows } = await db.query<AttendeeRow>(
       `INSERT INTO attendees (user_id, full_name, phone, university, department, year, registration_type)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,

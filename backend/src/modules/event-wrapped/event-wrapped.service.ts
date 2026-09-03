@@ -58,6 +58,9 @@ export const eventWrappedService = {
     if (achievements.length > 0) {
       summaryParts.push(`You earned ${achievements.length} achievement${achievements.length > 1 ? 's' : ''}.`);
     }
+    if (requiredCheckpoints.length > 0 && requiredCompleted.length === requiredCheckpoints.length) {
+      summaryParts.push('You completed every required activity at the event.');
+    }
     if (certRows.length > 0) {
       summaryParts.push('You received your event certificate.');
     }

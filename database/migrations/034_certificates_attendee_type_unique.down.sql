@@ -1,0 +1,1 @@
+DROP INDEX certificates_attendee_type_issued_unique;

@@ -3,7 +3,6 @@ import { achievementsRepository } from './achievements.repository.js';
 import { toAchievement, toAttendeeAchievement } from './achievements.types.js';
 import { checkpointsRepository } from '../checkpoints/checkpoints.repository.js';
 import { AppError } from '../../utils/errors.js';
-import { getPool } from '../../config/database.js';
 import { logger } from '../../utils/logger.js';
 
 interface EvaluationResult {
@@ -85,8 +84,8 @@ export const achievementsService = {
             alreadyUnlocked: false,
           });
         } catch (err) {
-          // Race condition: another request unlocked it first — that's fine
-          logger.debug({ achievementId: achievement.id, attendeeId }, 'Achievement unlock race');
+          // Race condition: another request unlocked it first — that's fine.
+          logger.debug({ err, achievementId: achievement.id, attendeeId }, 'Achievement unlock race');
           results.push({
             achievementId: achievement.id,
             name: achievement.name,

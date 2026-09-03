@@ -28,4 +28,9 @@ export const certificatesController = {
   async getById(req: Request, res: Response): Promise<void> {
     sendSuccess(res, await certificatesService.getById(req.params.id!));
   },
+
+  /** Public — no authentication. Looked up by certificate number, not internal id. */
+  async verify(req: Request, res: Response): Promise<void> {
+    sendSuccess(res, await certificatesService.verify(req.params.certificateNumber!));
+  },
 };

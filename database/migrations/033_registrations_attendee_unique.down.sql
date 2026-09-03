@@ -1,0 +1,1 @@
+ALTER TABLE registrations DROP CONSTRAINT registrations_attendee_id_unique;

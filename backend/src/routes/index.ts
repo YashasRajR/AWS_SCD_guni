@@ -19,7 +19,7 @@ import { attendeesRouter } from '../modules/attendees/attendees.routes.js';
 import { checkpointsRouter } from '../modules/checkpoints/checkpoints.routes.js';
 import { auditLogsRouter } from '../modules/audit-logs/audit-logs.routes.js';
 import { paymentsPublicRouter, paymentsAdminRouter } from '../modules/payments/payments.routes.js';
-import { certificatesAdminRouter } from '../modules/certificates/certificates.routes.js';
+import { certificatesAdminRouter, certificatesPublicRouter } from '../modules/certificates/certificates.routes.js';
 import { achievementsAdminRouter } from '../modules/achievements/achievements.routes.js';
 import { emailsAdminRouter } from '../modules/emails/emails.routes.js';
 import { ticketsAdminRouter } from '../modules/tickets/tickets.routes.js';
@@ -43,6 +43,7 @@ apiRouter.use('/timeline', timelineRouter);
 apiRouter.use('/venues', venuesRouter);
 apiRouter.use('/faqs', faqRouter);
 apiRouter.use('/announcements', announcementsRouter);
+apiRouter.use('/certificates', certificatesPublicRouter);
 
 // --- AUTH -------------------------------------------------------------------
 apiRouter.use('/auth', authRouter);
