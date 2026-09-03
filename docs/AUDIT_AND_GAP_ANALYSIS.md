@@ -177,13 +177,14 @@ bcrypt password hashing (cost factor as a named constant, not a magic number), J
 access tokens signed with `AUTH_SECRET` (schema-enforced ≥16 chars, no default —
 `getEnv()` throws a readable error if unset), separate `auth_tokens` table for
 single-use email-verification/password-reset tokens (not reusing the JWT
-mechanism for those, which is the correct separation). No refresh-token rotation
-was found (`AUTH_REFRESH_TOKEN_TTL` exists as a config value in `.env.example` but
-was not traced to an actual issuance path this pass — flagged for follow-up
-verification, not confirmed broken). Logout exists (`POST /auth/logout`) but with
-stateless JWTs there is no server-side session to invalidate; this is a known
-tradeoff of the JWT approach, not obviously wrong for this platform's scale, but
-worth a conscious decision. Ownership is enforced structurally — `/me/*` never
+mechanism for those, which is the correct separation). **Update, same day**: refresh tokens have since been implemented — see
+`docs/architecture/authentication.md`. `POST /auth/refresh` rotates a
+DB-backed, hashed refresh token (`refresh_tokens` table, migration 035) on
+every use; `POST /auth/logout` now really revokes the presented refresh
+token instead of being a no-op; a password reset revokes every outstanding
+refresh token for that user. `@scd/api-client` transparently refreshes on a
+401 across all three frontends. The access token itself is still a
+stateless JWT with no denylist — an accepted tradeoff, not a gap. Ownership is enforced structurally — `/me/*` never
 takes a client-supplied id, resolving everything from `req.identity` set by
 `authenticate` — so IDOR/BOLA on attendee-owned resources is architecturally hard
 to introduce by accident, and this session added integration tests
@@ -336,7 +337,7 @@ environment).
 | Rate limiting | — | Present, general + stricter auth-specific limiter |
 | Sensitive data in logs | LOW (mitigated this session) | Logger redact list extended this session to cover payment secrets and card fields beyond the original password/token coverage |
 | Admin attendee list has no search | LOW / usability, not security | See Admin Status |
-| Refresh-token rotation path unverified | **MEDIUM (needs follow-up)** | `AUTH_REFRESH_TOKEN_TTL` exists in config but its actual issuance/rotation code path wasn't traced this pass — verify before relying on it |
+| Refresh-token rotation | — | Implemented same day: DB-backed, hashed, rotated on every use, revoked on logout and on password reset |
 | Mass assignment | Not found | Every write path was seen going through a zod schema + explicit field mapping (`toX()` functions), not raw `req.body` spread into a query |
 | File uploads | N/A | No file upload endpoints exist in this codebase |
 
@@ -379,7 +380,7 @@ unavailable from this bridge).
 | Real email delivery | PARTIAL | `backend/src/integrations/email` | Implement an SMTP-backed `EmailProvider`; wire `EMAIL_SMTP_*` env into it | **P1** | none — additive |
 | Admin attendee search/filter | MISSING | `backend/src/modules/attendees` | Apply the same `paginatedListQuery` pattern used for the 8 content modules | P2 | none |
 | E2E test suite | MISSING | `tests/e2e/*` (empty) | Install Playwright, cover the 17-step flow from the master spec | P2 | a running dev server (or CI service) to test against |
-| Refresh-token rotation verification | UNVERIFIED | `backend/src/modules/auth` | Trace/confirm the actual code path for `AUTH_REFRESH_TOKEN_TTL`; implement if missing | P1 | none |
+| Refresh-token rotation | COMPLETE | `backend/src/modules/auth`, migration 035, `@scd/api-client` | — | — | — |
 | Repo cleanup (dead scaffold dirs) | MISSING | root `config/`, `infrastructure/`, `scripts/{database,deployment,development,testing}`, `backend/src/{repositories,services,queues,validators}`, each app's 5 empty `src/*` dirs | Delete once confirmed unused (this pass confirmed 0 references) | P3 | none |
 | README accuracy | STALE | `README.md` | Update "foundation phase complete" status line to reflect payments/certs/achievements/CI now built | P3 | none |
 | CD / live deployment | MISSING (by design) | `docs/deployment/deployment.md` | Choose a host, then wire `.github/workflows/` deploy job | P2 | a chosen hosting target (business decision, not made yet) |
@@ -392,9 +393,7 @@ unavailable from this bridge).
    visible to an actual attendee at go-live (no verification/ticket/confirmation
    email actually arrives). Everything upstream of it (templates, outbox, retry
    worker, triggers) is correct and ready for a real provider to be plugged in.
-2. **Refresh-token behavior is unverified**, not confirmed broken — needs a
-   focused trace before relying on it in production.
-3. **No E2E coverage** — the individual pieces are integration-tested, but the
+2. **No E2E coverage** — the individual pieces are integration-tested, but the
    full attendee journey (register → verify → pay → get ticket → attend → get
    certificate) has never been exercised as one continuous flow.
 
@@ -426,17 +425,16 @@ also followed in that order. No reordering is recommended.
 Given the audit above, most of the master prompt's 28-step roadmap is **already
 done**. The remaining, re-ordered work:
 
-1. Implement a real SMTP `EmailProvider` (P1 — the one attendee-visible gap)
-2. Verify/implement refresh-token rotation (P1 — security-adjacent, needs a
-   focused trace)
-3. Admin attendee search/filter (P2 — parity with the other 8 admin lists)
-4. Playwright E2E suite covering the master spec's 17-step flow (P2)
-5. Remaining edge-case tests: session expiry mid-checkout, expired reset token,
+1. Implement a real SMTP `EmailProvider` (P1 — the one remaining attendee-visible
+   gap; refresh-token rotation was also P1 and is now done — see above)
+2. Admin attendee search/filter (P2 — parity with the other 8 admin lists)
+3. Playwright E2E suite covering the master spec's 17-step flow (P2)
+4. Remaining edge-case tests: session expiry mid-checkout, expired reset token,
    malformed/malicious input (P2)
-6. Choose a deployment host, wire CD (P2 — business decision first)
-7. Repo cleanup: delete the confirmed-dead scaffold directories, update the stale
+5. Choose a deployment host, wire CD (P2 — business decision first)
+6. Repo cleanup: delete the confirmed-dead scaffold directories, update the stale
    README status line (P3)
-8. UI/UX polish, accessibility pass (P3 — explicitly last, per the master
+7. UI/UX polish, accessibility pass (P3 — explicitly last, per the master
    prompt's own "do not start UI polish" instruction in section 30)
 
 Security hardening and performance review are folded into items 1-3 above rather
@@ -447,7 +445,7 @@ dedicated hardening pass beyond what's already listed.
 
 - **P0 (Critical):** none found — no broken core flow, no confirmed security
   hole.
-- **P1 (High):** real SMTP email provider; refresh-token verification.
+- **P1 (High):** real SMTP email provider (refresh-token rotation was P1 and is now done).
 - **P2 (Medium):** admin attendee search; E2E suite; remaining edge-case tests;
   choosing + wiring a deployment target.
 - **P3 (Low):** dead scaffold directory cleanup; README accuracy.

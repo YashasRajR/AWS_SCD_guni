@@ -11,6 +11,16 @@ export interface AuthResult {
   user: PublicUser;
   accessToken: string;
   expiresIn: string;
+  refreshToken: string;
+}
+
+export interface RefreshTokenRow {
+  id: string;
+  user_id: string;
+  token_hash: string;
+  expires_at: string;
+  revoked_at: string | null;
+  created_at: string;
 }
 
 export interface PasswordResetTokenRow {

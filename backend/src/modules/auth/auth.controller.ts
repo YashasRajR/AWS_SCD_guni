@@ -16,8 +16,13 @@ export const authController = {
     sendSuccess(res, result, 'Logged in.');
   },
 
+  async refresh(req: Request, res: Response): Promise<void> {
+    const result = await authService.refresh(req.body);
+    sendSuccess(res, result, 'Session refreshed.');
+  },
+
   async logout(req: Request, res: Response): Promise<void> {
-    await authService.logout();
+    await authService.logout(req.body?.refreshToken);
     await auditLogsService.log(req, 'USER_LOGOUT', 'user', req.identity?.userId ?? null);
     sendSuccess(res, null, 'Logged out.');
   },

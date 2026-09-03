@@ -18,7 +18,15 @@ export interface ApiClientOptions {
   baseUrl: string;
   /** Returns the current auth token (if any) at call time — never stored here. */
   getToken?: () => string | null | undefined;
-  /** Called whenever a response has success:false and status 401, e.g. to log the user out. */
+  /**
+   * Returns the current refresh token, if the app supports silent
+   * refresh. Omit (along with onTokenRefreshed) to keep the old
+   * behavior: a 401 goes straight to onUnauthorized.
+   */
+  getRefreshToken?: () => string | null | undefined;
+  /** Called with a freshly rotated access+refresh token pair after a silent refresh succeeds — the app is responsible for persisting them. */
+  onTokenRefreshed?: (accessToken: string, refreshToken: string) => void;
+  /** Called whenever a response has success:false and status 401 and no refresh was possible/succeeded, e.g. to log the user out. */
   onUnauthorized?: () => void;
   /** Default request timeout in ms. */
   timeoutMs?: number;
@@ -40,19 +48,58 @@ function buildUrl(baseUrl: string, path: string, query?: RequestOptions['query']
   return url.toString();
 }
 
+interface RefreshResponseData {
+  accessToken: string;
+  refreshToken: string;
+}
+
 /**
  * Minimal typed HTTP client for the SCD backend API. This layer only
  * knows how to make requests and unwrap the standard ApiResponse envelope —
  * it deliberately contains no business/domain logic.
  */
 export class ApiClient {
+  /** Shared in-flight refresh so N concurrent 401s trigger exactly one /auth/refresh call, not N. */
+  private refreshPromise: Promise<string | null> | null = null;
+
   constructor(private readonly options: ApiClientOptions) {}
+
+  private async attemptRefresh(): Promise<string | null> {
+    const { getRefreshToken, onTokenRefreshed } = this.options;
+    if (!getRefreshToken || !onTokenRefreshed) return null;
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) return null;
+
+    if (!this.refreshPromise) {
+      this.refreshPromise = (async () => {
+        try {
+          const res = await fetch(buildUrl(this.options.baseUrl, '/auth/refresh'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken }),
+          });
+          const json = (await res.json().catch(() => null)) as ApiResponse<RefreshResponseData> | null;
+          if (!json?.success) return null;
+          onTokenRefreshed(json.data.accessToken, json.data.refreshToken);
+          return json.data.accessToken;
+        } catch {
+          return null;
+        }
+      })();
+    }
+    try {
+      return await this.refreshPromise;
+    } finally {
+      this.refreshPromise = null;
+    }
+  }
 
   private async request<T>(
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     path: string,
     body?: unknown,
     opts: RequestOptions = {},
+    isRetry = false,
   ): Promise<T> {
     const controller = new AbortController();
     const timeoutMs = opts.timeoutMs ?? this.options.timeoutMs ?? 15000;
@@ -81,6 +128,12 @@ export class ApiClient {
       }
 
       if (!json.success) {
+        if (res.status === 401 && !isRetry && path !== '/auth/refresh') {
+          const newAccessToken = await this.attemptRefresh();
+          if (newAccessToken) {
+            return this.request<T>(method, path, body, opts, true);
+          }
+        }
         if (res.status === 401) this.options.onUnauthorized?.();
         throw new ApiClientError(res.status, json.error);
       }

@@ -1,5 +1,11 @@
 import { ApiClient } from '@scd/api-client';
-import { getStoredToken, clearStoredSession } from './auth-storage.js';
+import {
+  getStoredToken,
+  getStoredRefreshToken,
+  setStoredToken,
+  setStoredRefreshToken,
+  clearStoredSession,
+} from './auth-storage.js';
 
 /**
  * A single shared ApiClient instance for the whole app. `getToken` is read
@@ -12,5 +18,16 @@ export const apiClient = new ApiClient({
   // Every route this app calls lives under /api/v1 — see backend/src/server/app.ts.
   baseUrl: import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api/v1',
   getToken: () => getStoredToken(),
+  getRefreshToken: () => getStoredRefreshToken(),
+  // A silent refresh succeeded — persist the rotated pair. No React
+  // state update is triggered here (api.ts intentionally doesn't import
+  // AuthProvider, to avoid a cycle); the decoded identity in memory
+  // stays as-is until next reload, which is fine since a refresh only
+  // changes roles/permissions in the rare case an admin edited them
+  // mid-session.
+  onTokenRefreshed: (accessToken, refreshToken) => {
+    setStoredToken(accessToken);
+    setStoredRefreshToken(refreshToken);
+  },
   onUnauthorized: () => clearStoredSession(),
 });

@@ -5,11 +5,19 @@ import type { RegisterInput } from '@scd/validation';
 import { decodeAccessToken, isTokenExpired } from '@scd/auth';
 import { ApiClientError } from '@scd/api-client';
 import { apiClient } from './api.js';
-import { getStoredToken, setStoredToken, clearStoredSession, AUTH_CLEARED_EVENT } from './auth-storage.js';
+import {
+  getStoredToken,
+  getStoredRefreshToken,
+  setStoredToken,
+  setStoredRefreshToken,
+  clearStoredSession,
+  AUTH_CLEARED_EVENT,
+} from './auth-storage.js';
 
 interface AuthResponseData {
   user: PublicUser;
   accessToken: string;
+  refreshToken: string;
   expiresIn: string;
 }
 
@@ -20,7 +28,7 @@ interface AuthContextValue {
   user: PublicUser | null;
   login: (email: string, password: string) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -54,7 +62,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    // Best-effort: revoke the refresh token server-side so it can't be
+    // silently reused, but never let a network failure block signing out
+    // locally — clearStoredSession (below) always runs regardless.
+    const refreshToken = getStoredRefreshToken();
+    if (refreshToken) {
+      try {
+        await apiClient.post('/auth/logout', { refreshToken });
+      } catch {
+        // ignore — local sign-out proceeds either way
+      }
+    }
     // clearStoredSession fires AUTH_CLEARED_EVENT, which the listener
     // below picks up to reset identity/user/status — one code path for
     // both an explicit logout and an API-driven 401.
@@ -65,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const decoded = loadIdentity(result.accessToken);
     if (!decoded) throw new Error('Sign-in succeeded but the session token was invalid.');
     setStoredToken(result.accessToken);
+    setStoredRefreshToken(result.refreshToken);
     setIdentity(decoded);
     setUser(result.user);
     setStatus('signed-in');

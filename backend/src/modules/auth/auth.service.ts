@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import type {
   ForgotPasswordInput,
   LoginInput,
+  RefreshTokenInput,
   RegisterInput,
   ResetPasswordInput,
   VerifyEmailInput,
@@ -25,6 +26,22 @@ function issueAccessToken(userId: string, email: string, roles: string[], permis
   const payload: AccessTokenPayload = { sub: userId, email, roles: roles as never, permissions };
   const options: jwt.SignOptions = { expiresIn: env.AUTH_TOKEN_TTL as jwt.SignOptions['expiresIn'] };
   return jwt.sign(payload, env.AUTH_SECRET, options);
+}
+
+/** Issues a fresh access + refresh token pair for a user whose identity snapshot has already been loaded. */
+async function issueSessionTokens(
+  userId: string,
+  email: string,
+  roles: string[],
+  permissions: string[],
+): Promise<{ accessToken: string; refreshToken: string; expiresIn: string }> {
+  const env = getEnv();
+  const accessToken = issueAccessToken(userId, email, roles, permissions);
+  const refreshToken = await authRepository.createRefreshToken(
+    userId,
+    parseDurationMs(env.AUTH_REFRESH_TOKEN_TTL),
+  );
+  return { accessToken, refreshToken, expiresIn: env.AUTH_TOKEN_TTL };
 }
 
 export const authService = {
@@ -73,9 +90,9 @@ export const authService = {
     });
 
     const { roles, permissions } = await usersRepository.getIdentitySnapshot(user.id);
-    const accessToken = issueAccessToken(user.id, user.email, roles, permissions);
+    const tokens = await issueSessionTokens(user.id, user.email, roles, permissions);
 
-    return { user: toPublicUser(user), accessToken, expiresIn: env.AUTH_TOKEN_TTL };
+    return { user: toPublicUser(user), ...tokens };
   },
 
   async login(input: LoginInput): Promise<AuthResult> {
@@ -91,20 +108,51 @@ export const authService = {
 
     await usersRepository.touchLastLogin(user.id);
     const { roles, permissions } = await usersRepository.getIdentitySnapshot(user.id);
-    const env = getEnv();
-    const accessToken = issueAccessToken(user.id, user.email, roles, permissions);
+    const tokens = await issueSessionTokens(user.id, user.email, roles, permissions);
 
-    return { user: toPublicUser(user), accessToken, expiresIn: env.AUTH_TOKEN_TTL };
+    return { user: toPublicUser(user), ...tokens };
   },
 
   /**
-   * Stateless JWT logout: there is no server-side session to destroy, so
-   * this is a documented no-op the client pairs with discarding its token.
-   * (A denylist/refresh-token revocation store can be added in a later
-   * phase if long-lived sessions are introduced.)
+   * Rotates a refresh token: the presented token is revoked and a new
+   * access/refresh pair is issued, re-reading roles/permissions fresh (so
+   * a permission change an admin made since the last login takes effect
+   * on the next silent refresh, not only on a full re-login). Rotation
+   * (rather than reusing the same refresh token indefinitely) means a
+   * stolen-then-used refresh token is only ever valid for one hop before
+   * the legitimate client's next refresh fails — a signal worth acting on
+   * later (e.g. revoking the whole family), though that reuse-detection
+   * escalation is not built yet.
    */
-  async logout(): Promise<void> {
-    return;
+  async refresh(input: RefreshTokenInput): Promise<AuthResult> {
+    const tokenRow = await authRepository.findValidRefreshToken(input.refreshToken);
+    if (!tokenRow) throw AppError.authRequired('Your session has expired. Please log in again.');
+
+    const user = await usersRepository.findById(tokenRow.user_id);
+    if (!user || user.status !== 'ACTIVE') {
+      await authRepository.revokeRefreshToken(tokenRow.id);
+      throw AppError.authRequired('Your session has expired. Please log in again.');
+    }
+
+    await authRepository.revokeRefreshToken(tokenRow.id);
+    const { roles, permissions } = await usersRepository.getIdentitySnapshot(user.id);
+    const tokens = await issueSessionTokens(user.id, user.email, roles, permissions);
+
+    return { user: toPublicUser(user), ...tokens };
+  },
+
+  /**
+   * Revokes the presented refresh token (real revocation now, not a
+   * no-op) so it can't be used for a further silent refresh. The access
+   * token itself is still a stateless JWT and remains valid until it
+   * expires (at most AUTH_TOKEN_TTL, now short — see issueAccessToken) —
+   * there is still no access-token denylist, which is an accepted
+   * tradeoff at this scale.
+   */
+  async logout(refreshToken?: string): Promise<void> {
+    if (!refreshToken) return;
+    const tokenRow = await authRepository.findValidRefreshToken(refreshToken);
+    if (tokenRow) await authRepository.revokeRefreshToken(tokenRow.id);
   },
 
   async forgotPassword(input: ForgotPasswordInput): Promise<void> {
@@ -131,6 +179,10 @@ export const authService = {
     const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
     await usersRepository.updatePasswordHash(tokenRow.user_id, passwordHash);
     await authRepository.consumePasswordResetToken(tokenRow.id);
+    // A password reset can mean the old password was compromised — every
+    // existing session (every outstanding refresh token) is revoked so a
+    // stale device/browser can't keep silently refreshing past it.
+    await authRepository.revokeAllRefreshTokensForUser(tokenRow.user_id);
   },
 
   async verifyEmail(input: VerifyEmailInput): Promise<void> {

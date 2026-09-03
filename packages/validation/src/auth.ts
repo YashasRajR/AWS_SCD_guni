@@ -33,6 +33,17 @@ export const loginSchema = z.object({
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 
+export const refreshTokenSchema = z.object({
+  refreshToken: z.string().trim().min(1, 'refreshToken is required'),
+});
+export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
+
+/** Logout's refresh token is optional — a client that lost it (or never had one, e.g. an old session) can still hit this to clear its own state. */
+export const logoutSchema = z.object({
+  refreshToken: z.string().trim().min(1).optional(),
+});
+export type LogoutInput = z.infer<typeof logoutSchema>;
+
 export const forgotPasswordSchema = z.object({
   email: emailSchema,
 });
