@@ -1,167 +1,466 @@
-# AWS Student Community Day 2026 — Repository Audit & Gap Analysis
+# Phase 1 — Repository Audit, Requirements Traceability & Architecture Gap Analysis
 
-**Date:** 2026-09-02
-**Scope:** Phase 0 (Repository Audit) + Phase 1 (Requirements Traceability) of the Master Implementation Prompt.
-**Method:** Six parallel read-only audits of the actual source (backend modules, database schema/migrations, security posture, all three frontend apps, test suites — actually executed — and observability/deployment config), cross-checked against the Master Prompt's requirements. Every finding below is backed by a specific file path; nothing here is inferred from memory of prior sessions.
+**AWS Student Community Day 2026 platform — audit date 2026-09-03**
 
-No file was modified to produce this report.
+Method: this repository was inspected via a direct shell bridge to the developer's
+machine (`D:\GUNI\AWS STUDENT COMMUNITY DAY (SCD)\student-community-day`), reading
+actual source files, migrations, and route registrations rather than assuming the
+directory layout. Every status below is based on tracing execution paths (imports,
+route mounts, service calls), not file presence alone. `npm run build` / `npm test`
+/ `vitest` could **not** be executed from this bridge this session (the mounted
+`node_modules` was installed on Windows; the bridge's shell is a Linux VM missing
+the Linux-platform native binaries for rollup/esbuild — `Cannot find module
+@rollup/rollup-linux-x64-gnu`). Everywhere below marked "run locally to confirm" was
+verified by `tsc --noEmit` and `eslint --max-warnings=0` (both ran clean at time of
+audit) plus manual code tracing, but not by an actual test/build execution.
 
----
-
-## 1. Executive summary
-
-The backend has a **solid, real foundation**: authentication, RBAC, the entire event-content CMS (speakers/sessions/agenda/timeline/venues/FAQs/announcements/event settings), the volunteer attendance workflow, the database schema, and core security controls (parameterized queries, per-route authorization, CORS allowlist, helmet, rate limiting, structured logging with secret redaction, a real `/health` check) are genuinely implemented and mostly test-covered — not stubs.
-
-The **attendee monetary/completion lifecycle is not wired up**: Payments has no HTTP route at all (service/repository only), there is no webhook endpoint, Email never actually sends (tokens for verify/reset are generated then discarded), and Certificates / Achievements / Event Wrapped are read-only stubs with zero business logic. These are the pieces the Master Prompt calls out most heavily (Phases 6–8, 14–16), and today none of them function end-to-end. Nothing here fakes success — every stub is honest (returns empty/null, never fabricates data) — but "exists in the type system" is not the same as "works."
-
-There is also no deployment target, no CI/CD, and no E2E test tooling.
-
-The three frontend apps are in noticeably better shape than the backend gaps above would suggest, because they only call what exists — no mock data was found anywhere (`apps/web`, `apps/admin`, `apps/volunteer` all grep clean for mock/dummy/fake data patterns). They simply have no UI for the features the backend doesn't support yet (payment status, certificate/achievement management, event wrapped).
-
-**QR/NFC: clean across the entire repository.** Every audit grepped independently; the only hits anywhere are deliberate "DO NOT add QR/NFC" comments in `tickets.repository.ts`, `database/schema/tickets.sql`, and one migration file, plus a policy line in `database/README.md`. No implementation exists.
-
----
-
-## 2. Requirements traceability matrix (condensed)
-
-| Requirement | Actor | Frontend | Backend module | API mounted? | DB | AuthZ | Tests | Status |
-|---|---|---|---|---|---|---|---|---|
-| Register / login / logout | Attendee | apps/web `RegisterPage`/`LoginPage` | `auth` | ✅ | `users`,`roles` | rate-limited, bcrypt+JWT | integration | **FUNCTIONAL** |
-| Email verification | Attendee | — | `auth` | ✅ route exists | `users.email_verified` | — | none | **BROKEN** — token generated, never emailed (`auth.service.ts:54`) |
-| Forgot/reset password | Attendee | — | `auth` | ✅ route exists | — | — | none | **BROKEN** — same as above (`auth.service.ts:102`) |
-| Self-service registration | Attendee | apps/web `RegisterPage`→Dashboard | `user-dashboard`→`registrations` | ✅ `/me/registration` | `registrations` (CHECK-constrained status) | owner-scoped | none (no route-level test) | **FUNCTIONAL**, dup-prevention is app-level only |
-| Payment | Attendee | — (no UI) | `payments` | ❌ **not mounted** | `payments` (schema ready) | — | none | **MISSING** |
-| Payment webhook | Provider | n/a | `payments` | ❌ **doesn't exist** | — | — | none | **MISSING** |
-| Ticket issuance | System | apps/web dashboard (read) | `tickets` (via `registrations.service`) | ✅ `/me/ticket` (read only) | `tickets`, unique on `registration_id` | owner-scoped | none | **FUNCTIONAL** (issuance), no own HTTP surface |
-| Ticket email | Attendee | — | `emails` | queued, never sent | `email_records` | — | none | **BROKEN** — nothing ever consumes the queue |
-| Admin: event/speakers/sessions/agenda/timeline/venues/FAQs/announcements | Admin | apps/admin `ContentCrudPage` ×8 | 8 modules | ✅ all | ✅ | permission-gated | integration (content-management) | **FUNCTIONAL** |
-| Admin: registrations | Admin | apps/admin `RegistrationsPage` | `registrations` | ✅ status PATCH | ✅ | permission-gated | integration | **FUNCTIONAL** |
-| Admin: payments | Admin | — (no UI) | — | ❌ | — | — | none | **MISSING** |
-| Admin: certificates / achievements | Admin | — (count only) | stub modules | ❌ | ✅ schema | — | none | **MISSING** |
-| Admin: user/role management | Admin | — | `users` (explicit stub) | ❌ **0 routes mounted** | — | — | none | **MISSING** |
-| Admin: audit logs | Admin | apps/admin `AuditLogsPage` | `audit-logs` | ✅ | ✅ | `VIEW_AUDIT_LOGS` | none direct | **FUNCTIONAL**, coverage gaps noted below |
-| Volunteer: search/verify/record attendance | Volunteer | apps/volunteer (3 pages) | `volunteers`+`checkpoints` | ✅ | ✅ (DB unique-index-backed) | permission-gated | integration (real 409/403 cases) | **FUNCTIONAL** |
-| Attendee dashboard | Attendee | apps/web `DashboardPage` | `user-dashboard` | ✅ (registration/ticket/progress/certs/achievements) | ✅ | owner-scoped | none | **PARTIAL** — fetch errors swallowed; personal agenda + Event Wrapped endpoints exist but aren't called |
-| Certificates | Attendee/Admin | count only | stub (`listForAttendee` only) | ❌ | ✅ schema, unique on number only | — | none | **MISSING** (no eligibility rule, no issuance) |
-| Achievements | Attendee/Admin | count only | stub | ❌ | ✅ schema, unique `(attendee_id, achievement_id)` | — | none | **MISSING** (no rule engine) |
-| Event Wrapped | Attendee | not rendered | stub, honest null | ❌ | ✅ schema | — | none | **MISSING** (no generation job) — correctly returns empty rather than fake data |
-| Social sharing | Attendee | not rendered | stub, no auto-publish | ❌ | — | — | none | **STUBBED**, honestly (no false LinkedIn/Instagram claims) |
-| Health / readiness | Ops | — | `/health` real DB check | ✅ | — | — | integration | **PARTIAL** — no separate `/ready` |
-| CI/CD, deployment docs | Ops | — | — | — | — | — | — | **MISSING** entirely |
-| E2E tests (17-step flow) | QA | — | — | — | — | — | 0 files, no Playwright/Cypress | **MISSING** |
+This document supersedes the prior Phase 0 audit (dated 2026-09-02), which found
+Payments/Email/Certificates/Achievements/Event Wrapped as non-functional stubs —
+all of that has since been built out; see the module-by-module status below for
+the current, verified state.
 
 ---
 
-## 3. Detailed findings by area
+## Repository Summary
 
-### 3.1 Auth & Registration
-- Real bcrypt (12 rounds) + JWT, auth-specific rate limiter (20/15min) on register/login/forgot/reset. RBAC has `ADMIN`/`VOLUNTEER`/`ATTENDEE` — **no `SUPER_ADMIN`**, which the Master Prompt's RBAC list requires.
-- **Email-verification and password-reset are broken end-to-end today**: `auth.service.ts:54` does `void verificationToken;` and line 102 does `void token;` — the token is generated, then discarded instead of being put in the email that's supposedly sent. Since email sending is also unimplemented (below), a user who registers can never verify their email or reset their password through the running system.
-- Self-service registration works (`POST /me/registration`), but the `registrations` table's duplicate-prevention is **app-level check-then-insert only** — there's no DB unique constraint on `attendee_id`, so a race (two simultaneous submits) is not blocked at the schema level, unlike payments/tickets/attendance which all have real unique indexes.
-- Multi-step writes (e.g., user+role+attendee creation on register) are not wrapped in a DB transaction — a mid-sequence failure can leave orphaned rows.
+npm-workspaces monorepo: three Vite/React SPAs (`apps/web`, `apps/volunteer`,
+`apps/admin`), one Express/TypeScript backend (`backend/`), nine shared packages
+(`packages/*`), a hand-rolled SQL migration system (`database/`), and a moderate
+docs tree (`docs/`). This is **not** a fresh scaffold — it is a substantially built
+platform: 24 backend domain modules, 34 applied migrations, working auth/RBAC,
+registration→payment→ticket→email flows, admin CRUD across 8 content types with
+search/sort, certificate/achievement rule engines, and a CI workflow. The README
+(`README.md`, last edited before this session's payments/certificates/achievements
+work) still says "foundation phase complete" — it is stale and should be updated
+once this platform is verified locally; it undersells the current state.
 
-### 3.2 Payments — BLOCKER
-- `backend/src/modules/payments/` has a service and repository but **no controller, no routes file, and is never mounted** in `routes/index.ts`. `paymentsService` only implements `getByRegistrationId`; `createPending`/`initiatePayment`/`handleWebhook` don't exist.
-- The provider-agnostic interface (`integrations/payment/index.ts`) is well-designed (`createOrder`/`verifyWebhookSignature`) but has zero implementations — no Razorpay/Stripe/other adapter anywhere.
-- No webhook endpoint exists at all. Registration confirmation today is 100% manual/admin-driven (`PATCH /admin/registrations/:id/status`), bypassing payment entirely — which is safe (no frontend-trust risk) but means there is no payment flow to test or ship.
-- The `payments` table does already have the right idempotency guard ready for when a provider lands: `UNIQUE (provider, provider_payment_id) WHERE provider_payment_id IS NOT NULL`.
+Several root-level directories are **inert scaffolding**, not real functionality:
+`config/environments/*`, `infrastructure/README.md`, and every file under
+`scripts/database`, `scripts/deployment`, `scripts/development`, `scripts/testing`
+are all **0 bytes**. The actual equivalents are `backend/src/config/env.ts` (config),
+`database/scripts/*.mjs` (the real migrate/seed scripts, wired into
+`package.json`), and `.github/workflows/ci.yml` (CI). Likewise
+`backend/src/{repositories,services,queues,validators}` are empty directories —
+dead leftovers from an initial scaffold superseded by the actual
+`backend/src/modules/<domain>/{controller,service,repository,routes,types}.ts`
+pattern that every real module follows. None of this is used by anything that
+imports it; nothing points at these paths. Recommend deleting them in a later
+cleanup pass — flagged, not touched, per this phase's rules.
 
-### 3.3 Tickets — mostly sound, no surface of its own
-- Issuance is genuinely idempotent at two layers (app-level existing-ticket check + a DB unique index on `registration_id`), so it's race-safe even without a queue/lock.
-- Only reachable read-only via `GET /me/ticket`; no dedicated controller/routes, which is fine architecturally but means there's no ticket-resend endpoint etc.
-- Tied only to registration status flipping to `CONFIRMED`, not to any payment state, since payment isn't wired in.
+Each frontend app (`apps/web`, `apps/volunteer`, `apps/admin`) also has five empty
+directories (`src/api`, `src/app`, `src/features`, `src/services`, `src/store`) —
+same story: initial scaffold, superseded by `src/lib` + `src/pages` +
+`src/components`, never populated. Not dead *code* (no files in them), just dead
+directories.
 
-### 3.4 Email — BLOCKER
-- `emailsService.enqueue` only inserts a `PENDING` row into `email_records` — there is no provider call anywhere, and `backend/src/jobs/` / `backend/src/queues/` are **empty directories**, so nothing ever consumes the queue. Rows sit forever.
-- Of 10 templates defined in the type system, only 2 (`email-verification`, `password-reset`) are ever enqueued in code — and as noted above, even those are enqueued with the token thrown away rather than included. Registration-confirmation, ticket, payment-success/failed, and certificate-ready are never triggered anywhere.
-- No transaction-boundary risk exists only because nothing wraps multi-step writes in a transaction to begin with (see 3.1) — email failure can't roll back a registration, but neither can any other failure roll it back safely.
+## Current Architecture
 
-### 3.5 Certificates / Achievements / Event Wrapped / Social Sharing — BLOCKER (all four)
-- All four modules follow the identical pattern: a `service.ts` with one read method and an explicit code comment stating the real logic "lands in a later phase." No controller, no routes, nothing mounted.
-- Critically, **none of them fake data**. Event Wrapped returns `null` rather than fabricated stats; social sharing makes no false claim of auto-publishing to LinkedIn/Instagram. This is the correct posture per the Master Prompt's "no fake production data" rule — it just means the features don't exist yet, honestly.
-- Schema is mostly ready: achievements has the right `(attendee_id, achievement_id)` unique constraint; certificates has a unique certificate-number index but **no `(attendee_id, certificate_type)` unique constraint**, which will be needed once issuance is built to prevent double-issuing the same certificate type.
+Modular monolith backend + three independent SPAs + shared TypeScript packages +
+one PostgreSQL database — **this already matches the architecture this phase asks
+to prefer**. No microservices, no GraphQL, no Redis/Kafka/queues exist in the
+codebase; email delivery uses an in-process interval-polling worker against a
+`email_records` outbox table instead of a message queue, which is the correct
+scale-appropriate choice here. No architecture change is recommended.
 
-### 3.6 Admin content/ops modules
-- Speakers, sessions, agenda, timeline, venues, FAQs, announcements, event settings, checkpoints, volunteers are all genuinely implemented: real CRUD, audit-logged writes, per-route `authenticate` + `requirePermission`/`requireRole` (verified against the actual middleware, not just route naming).
-- **Uniform gap**: every one of these 9 admin list endpoints supports pagination only — no search, filter, or client-selectable sort, despite the Master Prompt requiring all three.
-- Admin nav (`apps/admin`) shows every link to any signed-in admin regardless of their actual permissions — the backend correctly 403s unauthorized actions, so this isn't a security hole, just a UX gap (a volunteer-scoped admin, if that ever exists, would see links they can't use).
-- User/role management (`modules/users`) is an explicit, intentional stub — zero endpoints mounted.
+```
+apps/web        Public site + attendee dashboard (React 18 + Vite + react-router-dom)
+apps/volunteer  Mobile-first volunteer checkpoint portal (React + Vite)
+apps/admin      Admin CMS + operations (React + Vite)
+backend         Express 4 + TypeScript, controller/service/repository per module
+database        PostgreSQL (Neon in dev — see .env), hand-rolled migration runner
+packages/*      types, validation (zod), constants, api-client, auth (RBAC), config, utils, ui, eslint-config
+```
 
-### 3.7 Volunteer portal — solid
-- Full workflow (login → search → verify → select checkpoint → record → confirm → history) works end-to-end with real API calls.
-- Attendee lookup is exclusively by name/email/registration-number search (no scanning of anything) — consistent with the No-QR/NFC rule.
-- Duplicate-attendance prevention is genuine defense-in-depth: app-level pre-check *and* a DB partial unique index (`checkpoint_attendance_unique_completed`) as the race-safe backstop, with the resulting `23505` converted to a clean 409 and separately audit-logged as a duplicate attempt.
-- Correctly exposes zero admin functionality (only 3 routes total).
+Request pipeline (`backend/src/server/app.ts`): helmet → CORS (allow-listed to the
+three known app origins, not `*`) → pino-http request logging with correlation IDs
+→ JSON body parsing (captures raw bytes for webhook signature verification) → rate
+limiting → route-level `authenticate` → `requireRole`/`requirePermission` →
+`validate` (zod) → controller → service → repository → Postgres → uniform
+`{ success, data|error }` JSON envelope.
 
-### 3.8 Attendee dashboard (apps/web)
-- Real data throughout — no mock/dummy content found anywhere in `apps/web/src`.
-- **Swallows fetch errors**: `useResource().error` is available from the hook but never rendered for registration/ticket/progress/certificates/achievements — a genuine backend failure on any of these shows nothing to the user instead of an error state, which fails the Master Prompt's explicit "every page must have an error state" requirement.
-- Two backend endpoints exist but are never called from the dashboard: personal agenda (`/me/sessions`) and Event Wrapped (`/me/event-wrapped`).
-- Payment status can't be shown because there's nothing to show (3.2).
+## Application Inventory
 
-### 3.9 Security posture — strong where implemented
-Checked directly against the Master Prompt's Phase 20 list: parameterized queries throughout (no string-concatenated SQL found), per-route authorization middleware verified on a representative sample, IDOR/BOLA protection via server-derived `req.identity.userId` (never client params) plus a `requireOwnUserId` guard, CORS is an explicit origin allowlist (not a wildcard), helmet is applied, secrets are env-var-only and `.env*` is gitignored, rate limiting covers all of `/api/v1` plus a stricter auth-specific limiter. The only genuine security gap is that webhook signature verification can't exist yet because there's no webhook route (3.2) — once payments land, this must be built before going live.
+| App | Framework | Pages | Talks to real backend? | Notable gaps |
+|---|---|---|---|---|
+| `apps/web` | React 18 + Vite | ~30 (home, speakers, sessions, agenda, timeline, venues, FAQs, register, login, dashboard, profile, ticket, achievements, certificate, event-wrapped, ...) | Yes — `useResource`/`usePaginatedResource` hooks call the real `/api/v1/*` API via `@scd/api-client`; no mock/fake data found in a repo-wide grep | Dashboard error states were added this session; some pages (SessionDetailsPage, SpeakerDetailsPage, TicketPage as directories) weren't individually re-verified this pass |
+| `apps/volunteer` | React 18 + Vite | Login, Dashboard, Checkpoints, CheckIn, AttendeeSearch, AttendeeDetails, History, Unauthorized | Yes — same pattern, calls `/api/v1/volunteer/*` | — |
+| `apps/admin` | React 18 + Vite | Dashboard, 8 content-management pages (event/speakers/sessions/agenda/timeline/venues/faqs/announcements), Registrations, Attendees, Payments, Tickets, Checkpoints, Volunteers, Certificates, Achievements, Emails, Audit logs | Yes — nav is now permission-scoped, all 8 content lists have search/sort | — |
 
-### 3.10 Testing — real where routes exist, absent where they don't
-Actually executed (not just inspected): **backend 7 files / 40 tests, all passing**; **apps/web 7 files / 25 tests, all passing** (component-level only). `apps/admin` and `apps/volunteer` both have literal no-op test scripts (`"echo \"no tests yet\""`). No `backend/src/**/*.test.ts` unit layer beyond two files (error-code mapping, a duration helper) — domain-service unit tests don't exist because the domain services they'd cover (payments, certs, achievements) aren't wired up to exercise. **No Playwright/Cypress anywhere in the repo** — `tests/e2e/*` are empty directories. Existing security-scenario coverage is real (role-403s, duplicate-attendance-409, duplicate-checkpoint-name-409, duplicate-registration-email-409) but can't extend to tickets/certificates/payments ownership tests until those have routes.
+No app was found routing through mocked/local/random data. `dist/` build output
+exists in all three app directories from a prior build (stale, gitignored — not a
+concern).
 
-### 3.11 Observability & deployment
-Structured pino logging with real secret redaction (password/token/authorization/cookie fields), request-ID middleware, and a `/health` endpoint that does a real `SELECT 1` (not a static 200) are all genuinely implemented. **Missing**: a separate `/ready` endpoint, any deployment documentation or target (`docs/deployment/` and `infrastructure/deployment/` are empty directories, no Dockerfile, no PaaS config), and CI/CD (`.github/workflows/` exists but is empty). Env vars are fully documented and match the zod schema exactly.
+## Backend Module Inventory
+
+Status legend: **COMPLETE** (controller+service+repository+routes+validation+
+authorization all present and traced end-to-end), **PARTIAL** (working but with a
+known, scoped-out limitation), **SCAFFOLD** (types+repository only, no HTTP
+surface), **BROKEN**, **MISSING**.
+
+| Module | Status | Notes |
+|---|---|---|
+| `auth` | COMPLETE | register/login/logout/verify-email/forgot-password/reset-password, bcrypt (cost-factor const, not hardcoded weak), JWT via `jsonwebtoken`, `auth_tokens` table for verification/reset tokens |
+| `users` | COMPLETE | supports transactional creation (used inside `auth.register`'s `withTransaction`) |
+| `attendees` | COMPLETE | — |
+| `registrations` | COMPLETE | DB-unique-constrained (migration 033) + app-level duplicate check, transaction-wrapped creation, tested (unit + integration this session) |
+| `payments` | COMPLETE | Razorpay via raw `fetch` (no SDK dependency), HMAC-SHA256 webhook verification (`timingSafeEqual`), idempotent on `provider_order_id`, unit-tested this session |
+| `tickets` | COMPLETE | issued idempotently on registration→CONFIRMED transition only |
+| `emails` | COMPLETE (console provider only) | outbox pattern (`email_records`), interval-polling worker with backoff; **no real SMTP provider implemented yet** — deliberate scope decision this session, not a bug — emails are logged, not sent |
+| `speakers`/`sessions`/`agenda`/`timeline`/`venues`/`faq`/`announcements`/`event` | COMPLETE | full CRUD, public+admin route pairs, search/sort added this session via shared `paginatedListQuery` |
+| `checkpoints` | COMPLETE | volunteer completion flow, duplicate-attendance DB-safe (integration-tested) |
+| `volunteers` | COMPLETE | attendee search, checkpoint assignment, self routes separate from admin routes |
+| `certificates` | COMPLETE | real eligibility rule (CONFIRMED registration + ≥1 checkpoint completion), race-safe issuance (partial unique index, migration 034), public verification endpoint that never leaks attendee PII |
+| `achievements` | COMPLETE | rule-based auto-evaluation (`CHECKPOINT_COUNT`, `FULL_ATTENDANCE`), triggered after checkpoint completion; `MANUAL`/`SESSION_COUNT` are intentionally admin-only/not-yet-implemented, not silently faked |
+| `event-wrapped` | COMPLETE | aggregates real attendee data (registration, checkpoints, achievements, certificates) |
+| `audit-logs` | COMPLETE | write-on-privileged-action, admin-readable |
+| `reports` | COMPLETE | admin dashboard aggregate stats |
+| `social-sharing` | **SCAFFOLD** | repository + service only (`listForAttendee`), no controller, no routes — not reachable over HTTP at all. Not in the master spec's required feature list; leave as-is or remove, doesn't block anything |
+| Settings | **MISSING as a distinct module** | Event-level settings (fee, registration window, currency) live on the `event` module (`PATCH /admin/content/event`) rather than a separate `settings` module — this is a reasonable design choice given there's one event, not a gap, but flagging since the master spec lists "Settings" separately |
+
+## Database Inventory
+
+34 applied migrations (`001`...`034`), one per table/constraint, each with a
+matching `.down.sql`. Core tables: `users`, `roles`, `permissions`,
+`role_permissions`, `events`, `attendees`, `registrations`, `payments`, `tickets`,
+`speakers`, `sessions`, `session_speakers`, `venues`, `agenda_items`,
+`timeline_items`, `faqs`, `announcements`, `checkpoints`, `volunteers`,
+`volunteer_checkpoint_assignments`, `checkpoint_attendance`, `certificates`,
+`achievements`, `attendee_achievements`, `event_wrapped`, `social_shares`,
+`email_records`, `audit_logs`, `auth_tokens`. All present, all implemented (no
+placeholder tables found). Later migrations (030-034) added delivery-tracking
+fields to `email_records`, a `registration_fee` column to `events`, a
+`provider_order_id` column to `payments`, and two race-safety constraints this
+session (`registrations.attendee_id` unique; a partial unique index on
+`certificates(attendee_id, certificate_type) WHERE status='ISSUED'`).
+`docs/database/schema.md` and `docs/database/relationships.md` exist as
+documentation but were not diffed against the live migrations this pass — treat the
+migrations directory, not the docs, as ground truth per this phase's rules.
+
+Not independently re-verified this pass (would require DB access, which this
+environment doesn't have): full index coverage beyond what's referenced in code
+(e.g. whether `checkpoint_attendance(attendee_id, checkpoint_id)` has a supporting
+unique index the way `registrations`/`certificates` now do — checkpoints.test.ts's
+passing "rejects completing the same checkpoint twice" integration test implies one
+exists, but the migration file itself wasn't re-read this pass).
+
+## API Inventory
+
+~90 endpoints across 24 route files, organized as PUBLIC (`/event`, `/speakers`,
+`/sessions`, `/agenda`, `/timeline`, `/venues`, `/faqs`, `/announcements`,
+`/certificates/verify/:number`), AUTH (`/auth/*`), ATTENDEE (`/me/*`,
+identity-scoped, no id parameters — ownership by construction), PAYMENTS
+(`/payments/webhook` — public, signature-verified; `/payments/initiate` —
+authenticated), VOLUNTEER (`/volunteer/*`), and ADMIN (permission-gated,
+`/admin/*` + `/admin/content/*`). Every admin route is gated by
+`requirePermission(PERMISSIONS.<X>)`, cross-checked against `packages/constants/src/permissions.ts`
+this session when building the admin nav — no route was found trusting a
+client-supplied role or permission. Representative sample (full list traced, not
+reproduced verbatim here for length):
+
+| Method | Endpoint | Actor | Auth | Authorization | Implementation |
+|---|---|---|---|---|---|
+| POST | `/api/v1/auth/register` | Public | — | — | COMPLETE, transaction-wrapped |
+| POST | `/api/v1/auth/login` | Public | — | rate-limited | COMPLETE |
+| GET | `/api/v1/me/ticket` | Attendee | required | `requireRole('ATTENDEE')`, self-scoped | COMPLETE, ownership-tested |
+| POST | `/api/v1/payments/webhook` | Provider | HMAC signature | signature only | COMPLETE, idempotent, unit-tested |
+| PATCH | `/api/v1/admin/registrations/:id/status` | Admin | required | `MANAGE_REGISTRATIONS` | COMPLETE |
+| POST | `/api/v1/admin/certificates` | Admin | required | `MANAGE_CERTIFICATES` | COMPLETE, eligibility-enforced |
+| GET | `/api/v1/certificates/verify/:number` | Public | — | — | COMPLETE, PII-safe |
+| GET | `/api/v1/volunteer/attendees/search` | Volunteer | required | `requireRole('VOLUNTEER')` | COMPLETE |
+
+No missing endpoint was found against the requirements list in the master prompt —
+every listed attendee/admin/volunteer/public capability has a corresponding route.
+
+## Authentication Status
+
+bcrypt password hashing (cost factor as a named constant, not a magic number), JWT
+access tokens signed with `AUTH_SECRET` (schema-enforced ≥16 chars, no default —
+`getEnv()` throws a readable error if unset), separate `auth_tokens` table for
+single-use email-verification/password-reset tokens (not reusing the JWT
+mechanism for those, which is the correct separation). No refresh-token rotation
+was found (`AUTH_REFRESH_TOKEN_TTL` exists as a config value in `.env.example` but
+was not traced to an actual issuance path this pass — flagged for follow-up
+verification, not confirmed broken). Logout exists (`POST /auth/logout`) but with
+stateless JWTs there is no server-side session to invalidate; this is a known
+tradeoff of the JWT approach, not obviously wrong for this platform's scale, but
+worth a conscious decision. Ownership is enforced structurally — `/me/*` never
+takes a client-supplied id, resolving everything from `req.identity` set by
+`authenticate` — so IDOR/BOLA on attendee-owned resources is architecturally hard
+to introduce by accident, and this session added integration tests
+(`tickets/ownership.test.ts`) confirming it in practice for tickets. Admin/
+volunteer routes were spot-checked (`authorization.test.ts`) confirming an
+ATTENDEE gets 403 on admin routes and a VOLUNTEER gets 403 on admin routes.
+
+## Authorization Status
+
+Role-based (`ADMIN`/`VOLUNTEER`/`ATTENDEE`) plus granular permission codes
+(`MANAGE_SPEAKERS`, `MANAGE_PAYMENTS`, etc., seeded via `role_permissions`).
+`requirePermission`/`requireRole` middleware gates every admin/volunteer route; no
+route was found gating only in the frontend. This session closed the one known
+authorization *UX* gap (not a security hole — the backend already 403'd
+correctly): the admin nav previously showed every section to any signed-in admin
+regardless of permission. It's now filtered by `hasPermission(identity, ...)`,
+matched link-by-link against each route's actual `requirePermission(...)` call.
+
+## Registration Flow Status
+
+Frontend form → `POST /me/registration` → zod validation → `registrations.service`
+(duplicate check + event registration-window check) → DB insert with a unique
+constraint backstop → (if the event has a fee) `POST /me/payment/initiate` →
+Razorpay order → checkout widget → **only the webhook**, never the frontend,
+confirms payment → `registrations.service.updateStatus('CONFIRMED')` →
+`ticketsService.issueIfNeeded` (idempotent) → confirmation/ticket emails enqueued.
+Traced end-to-end this session with both unit tests (mocked) and integration tests
+(real DB, including a concurrent double-submit). No break in the chain was found.
+
+## Payment Flow Status
+
+**Critical question from the master prompt: can the frontend make the system
+believe a payment succeeded? No.** `paymentsService.initiatePayment` only ever
+creates a provider order for the checkout widget; `handleWebhook` is the sole
+writer of `PAID`/`FAILED` status, gated on `verifyWebhookSignature` (HMAC-SHA256,
+`timingSafeEqual`, raw-body-based — not the re-serialized `req.body`). A forged or
+malformed webhook is rejected before any DB write. A replayed/duplicate webhook is
+a no-op once the payment is in a terminal state (unit-tested this session,
+including the specific case of a `payment.failed` arriving after `payment.captured`
+— it's correctly ignored, never downgrades a PAID payment).
+
+## Ticket Flow Status
+
+Issued once, idempotently, on the registration's first transition into
+`CONFIRMED` (webhook-driven or admin-driven — both paths converge on the same
+`updateStatus` method, so neither needs its own idempotency guard). No QR/NFC
+anywhere in the codebase (grep-confirmed this session and in the README's own
+stated constraint). Attendee retrieval is ownership-scoped (`/me/ticket`, no id
+param); admin retrieval is `MANAGE_REGISTRATIONS`-gated.
+
+## Email Status
+
+Real outbox pattern (`email_records` table + interval-polling worker with
+exponential backoff, capped at 30 min, max 5 attempts), all templates render both
+HTML and text with proper escaping (unit-tested). **Provider is console-only** —
+this was an explicit, disclosed decision earlier this session (user chose
+"console/log provider for now" over building real SMTP), not an oversight. This is
+the single largest gap between "functionally correct" and "production-ready" on
+this platform: no attendee will actually receive a verification/ticket/certificate
+email until an SMTP-backed `EmailProvider` is implemented. Flagged as P1 in the
+requirements matrix below.
+
+## Admin Status
+
+| Feature | View | Create | Edit | Delete | Search | Filter/Sort | Audit | Backend | Tests |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Speakers/Sessions/Agenda/Timeline/Venues/FAQs/Announcements (×7) | Y | Y | Y | Y | Y | Y | Y | Y | integration (content-management.test.ts) |
+| Event details | Y | — | Y | — | — | — | Y | Y | — |
+| Registrations | Y | — | Y (status) | — | — | — | Y | Y | integration |
+| Attendees | Y | — | — | — | **N** | **N** | — | Y | — |
+| Payments | Y | — | — | — | — | — | — | Y | unit (webhook) |
+| Tickets | Y | — | — | — | — | — | — | Y | — |
+| Checkpoints | Y | Y | Y | Y | — | — | — | Y | integration |
+| Volunteers | Y | Y | Y | Y | — | — | — | Y | — |
+| Certificates | Y | Y (issue) | — | Y (revoke) | — | — | Y | Y | unit + integration |
+| Achievements | Y | Y | Y | Y | — | — | — | Y | unit |
+| Emails | Y | — | — | — | — | — | — | Y | — |
+| Audit logs | Y | — | — | — | — | — | n/a | Y | — |
+
+The admin **Attendees** list is the one gap found this pass: it has no
+search/filter, unlike the 8 content modules and unlike what the certificate
+verification integration test had to work around by searching via the *volunteer*
+attendee-search endpoint instead. Not broken, just missing the same
+`paginatedListQuery` treatment the content modules got. Flagged as P2.
+
+## Volunteer Status
+
+Authentication (JWT, `requireRole('VOLUNTEER')`), attendee search, checkpoint
+listing scoped to assigned checkpoints only, checkpoint completion with duplicate
+prevention (DB-backed, integration-tested) and assignment enforcement (`403
+CHECKPOINT_NOT_ASSIGNED` if a volunteer tries a checkpoint they're not assigned
+to), history. Confirmed a volunteer cannot reach admin endpoints
+(`authorization.test.ts`).
+
+## Attendee Status
+
+Registration, email verification, login/logout, forgot/reset password, profile,
+registration status, payment status, ticket, personal sessions, progress
+(checkpoint completions), achievements, certificate, Event Wrapped, account
+settings — all present and backend-driven via `/me/*`. Dashboard error states
+(failed API calls now show a retry affordance instead of silently rendering
+nothing) were added this session.
+
+## Attendance Status
+
+Volunteer-authenticated → attendee search → attendee selection → checkpoint
+(activity) selection → attendance record. **No QR/NFC** — confirmed. Checkpoints
+(the "event activities" — Registration, Breakfast, etc.) are admin-managed rows in
+the `checkpoints` table (full CRUD exists), not hard-coded constants — this
+already satisfies the master spec's "must not become hard-coded permanent
+activities" requirement.
+
+## Certificate Status
+
+Eligibility is **backend/domain logic**, not frontend or manual-only: a real rule
+(`CONFIRMED` registration + ≥1 checkpoint completion) enforced in
+`certificates.service.issue()` before any row is created, race-safe via a partial
+unique DB index, unit- and integration-tested this session including the "admin
+tries to issue to an ineligible attendee" rejection case. Public verification
+endpoint never leaks attendee contact info and doesn't distinguish revoked from
+unknown (both `valid:false`).
+
+## Achievement Status
+
+Rule-based, backend-only (`achievements.service.evaluateCondition`), triggered
+automatically after checkpoint completion (best-effort — a failure here never
+fails the attendance record itself). No achievement logic was found embedded in
+any frontend component. `MANUAL` achievements are correctly never auto-evaluated;
+`SESSION_COUNT` correctly returns `false` (documented as not-yet-implemented)
+rather than being silently faked as always-true or always-false without comment.
+
+## Event Wrapped Status
+
+Aggregates real attendee data (registration, checkpoint completions, unlocked
+achievements, issued certificates) — not synthetic/sample data. Not
+independently re-verified against a live dataset this pass (no DB access from this
+environment).
+
+## Security Findings
+
+| Finding | Severity | Status |
+|---|---|---|
+| Frontend cannot force a payment success | — | Confirmed safe (see Payment Flow Status) |
+| Webhook forgery | — | Confirmed protected (HMAC + timing-safe compare) |
+| IDOR on attendee-owned resources | — | Confirmed protected (identity-scoped, no id params; tested) |
+| Cross-role privilege escalation (attendee→admin, volunteer→admin) | — | Confirmed protected (integration-tested) |
+| Plaintext passwords | — | Not found (bcrypt) |
+| Secrets committed to git | — | Not found (`.env` never committed, gitignored; no hardcoded keys found in a repo-wide scan for common secret patterns) |
+| CORS | — | Allow-listed to the three known app origins, not `*` |
+| Rate limiting | — | Present, general + stricter auth-specific limiter |
+| Sensitive data in logs | LOW (mitigated this session) | Logger redact list extended this session to cover payment secrets and card fields beyond the original password/token coverage |
+| Admin attendee list has no search | LOW / usability, not security | See Admin Status |
+| Refresh-token rotation path unverified | **MEDIUM (needs follow-up)** | `AUTH_REFRESH_TOKEN_TTL` exists in config but its actual issuance/rotation code path wasn't traced this pass — verify before relying on it |
+| Mass assignment | Not found | Every write path was seen going through a zod schema + explicit field mapping (`toX()` functions), not raw `req.body` spread into a query |
+| File uploads | N/A | No file upload endpoints exist in this codebase |
+
+No CRITICAL or HIGH severity issue was found this pass. The one MEDIUM item
+(refresh tokens) is a "needs verification," not a confirmed defect.
+
+## Testing Findings
+
+Real coverage exists: unit tests (payment webhook signature, email templates,
+certificate eligibility, achievement rules, payment webhook idempotency —
+DB-free, run via a separate `vitest.unit.config.ts` added this session) and
+integration tests (auth, admin authorization + content CRUD, volunteer checkpoint
+flow including duplicate-attendance, duplicate registration, ticket ownership,
+certificate verification — all DB-backed via a real Postgres test database that
+CI now provisions). **Gaps**: no E2E test suite exists at all (Playwright isn't
+installed); no test explicitly covers session-expiry-mid-checkout, expired
+password-reset token, or malformed/malicious-input fuzzing; `apps/web` has a
+`tests/` directory with some component tests, `apps/admin`/`apps/volunteer` still
+have no-op test scripts. None of the test suites could actually be *executed*
+from this environment this session (see the method note at the top) — they are
+believed correct from tracing + `tsc`/`eslint`, not confirmed by a green run.
+
+## Dependency Findings
+
+No duplicate libraries for the same purpose were found (one HTTP client pattern
+via a shared `@scd/api-client`, one validation library — zod, one ORM-equivalent —
+raw `pg` with hand-written SQL, not two competing query builders). Razorpay is
+integrated via native `fetch`, deliberately avoiding an SDK dependency for one
+provider call shape. No unused major dependency was flagged in this pass (a full
+`depcheck`-style pass wasn't run — this would need `npm install` to execute,
+unavailable from this bridge).
+
+## Requirements Matrix
+
+| Requirement | Status | Location | Missing Work | Priority | Dependencies |
+|---|---|---|---|---|---|
+| Registration | COMPLETE | `backend/src/modules/registrations` | — | — | — |
+| Payment (Razorpay) | COMPLETE | `backend/src/modules/payments`, `integrations/payment` | — | — | — |
+| Ticket generation | COMPLETE | `backend/src/modules/tickets` | — | — | — |
+| Real email delivery | PARTIAL | `backend/src/integrations/email` | Implement an SMTP-backed `EmailProvider`; wire `EMAIL_SMTP_*` env into it | **P1** | none — additive |
+| Admin attendee search/filter | MISSING | `backend/src/modules/attendees` | Apply the same `paginatedListQuery` pattern used for the 8 content modules | P2 | none |
+| E2E test suite | MISSING | `tests/e2e/*` (empty) | Install Playwright, cover the 17-step flow from the master spec | P2 | a running dev server (or CI service) to test against |
+| Refresh-token rotation verification | UNVERIFIED | `backend/src/modules/auth` | Trace/confirm the actual code path for `AUTH_REFRESH_TOKEN_TTL`; implement if missing | P1 | none |
+| Repo cleanup (dead scaffold dirs) | MISSING | root `config/`, `infrastructure/`, `scripts/{database,deployment,development,testing}`, `backend/src/{repositories,services,queues,validators}`, each app's 5 empty `src/*` dirs | Delete once confirmed unused (this pass confirmed 0 references) | P3 | none |
+| README accuracy | STALE | `README.md` | Update "foundation phase complete" status line to reflect payments/certs/achievements/CI now built | P3 | none |
+| CD / live deployment | MISSING (by design) | `docs/deployment/deployment.md` | Choose a host, then wire `.github/workflows/` deploy job | P2 | a chosen hosting target (business decision, not made yet) |
+| Social sharing HTTP surface | MISSING (scaffold only) | `backend/src/modules/social-sharing` | Not in the master spec's required list — leave unless requested | P3 | — |
+| Everything else in the master spec's Public/Attendee/Admin/Volunteer feature lists | COMPLETE | (see module inventory above) | — | — | — |
+
+## Critical Gaps
+
+1. **Real email sending is not implemented.** This is the one gap that would be
+   visible to an actual attendee at go-live (no verification/ticket/confirmation
+   email actually arrives). Everything upstream of it (templates, outbox, retry
+   worker, triggers) is correct and ready for a real provider to be plugged in.
+2. **Refresh-token behavior is unverified**, not confirmed broken — needs a
+   focused trace before relying on it in production.
+3. **No E2E coverage** — the individual pieces are integration-tested, but the
+   full attendee journey (register → verify → pay → get ticket → attend → get
+   certificate) has never been exercised as one continuous flow.
+
+Nothing found this pass rises to "blocks further implementation" — these are real
+but bounded gaps, not architectural problems.
+
+## Architecture Risks
+
+None identified that would require a structural change. The modular-monolith +
+three-SPA + shared-packages + single-Postgres design holds up under the full
+feature set now built; nothing observed needs a queue, a second database, or a
+service split. The one soft risk is operational, not architectural: a single Node
+process is the whole API surface, so its restart/health strategy matters — this
+was addressed this session (`/health` vs `/ready` split) but the platform has never
+been load-tested.
+
+## Implementation Dependency Graph
+
+The graph in the master prompt already matches what was actually built, in
+practice: Database → Domain services → Auth → Authorization → Registration →
+Payment → Webhook → Ticket → Email → Attendee dashboard was the real build order
+this project followed (confirmed via commit history), and Event Content → Admin
+CMS → Public/Attendee portal and Event Activities → Volunteer → Attendance →
+Achievements → Certificate eligibility → Certificate → Event Wrapped were both
+also followed in that order. No reordering is recommended.
+
+## Implementation Roadmap (revised for actual current state)
+
+Given the audit above, most of the master prompt's 28-step roadmap is **already
+done**. The remaining, re-ordered work:
+
+1. Implement a real SMTP `EmailProvider` (P1 — the one attendee-visible gap)
+2. Verify/implement refresh-token rotation (P1 — security-adjacent, needs a
+   focused trace)
+3. Admin attendee search/filter (P2 — parity with the other 8 admin lists)
+4. Playwright E2E suite covering the master spec's 17-step flow (P2)
+5. Remaining edge-case tests: session expiry mid-checkout, expired reset token,
+   malformed/malicious input (P2)
+6. Choose a deployment host, wire CD (P2 — business decision first)
+7. Repo cleanup: delete the confirmed-dead scaffold directories, update the stale
+   README status line (P3)
+8. UI/UX polish, accessibility pass (P3 — explicitly last, per the master
+   prompt's own "do not start UI polish" instruction in section 30)
+
+Security hardening and performance review are folded into items 1-3 above rather
+than treated as separate later phases, since nothing found in this audit needs a
+dedicated hardening pass beyond what's already listed.
+
+## P0/P1/P2/P3 Priorities
+
+- **P0 (Critical):** none found — no broken core flow, no confirmed security
+  hole.
+- **P1 (High):** real SMTP email provider; refresh-token verification.
+- **P2 (Medium):** admin attendee search; E2E suite; remaining edge-case tests;
+  choosing + wiring a deployment target.
+- **P3 (Low):** dead scaffold directory cleanup; README accuracy.
 
 ---
 
-## 4. Classified gap list
+## Section 29/30 disposition
 
-**BLOCKER**
-1. Payments has no HTTP surface, no webhook, no provider implementation — the entire payment phase is unbuilt.
-2. Email never actually sends (no provider integration, no worker consuming the queue) and the verify/reset tokens it should send are currently discarded — auth's verify-email and forgot-password flows are broken end-to-end right now, not just "incomplete."
-3. Certificates, Achievements, and Event Wrapped are all unreachable via HTTP — no controllers/routes/business logic for any of the three.
-4. No E2E test tooling exists at all; 11+ of the Master Prompt's 17-step flow have no backing route to test against regardless.
-5. No deployment process or target is documented anywhere (empty `docs/deployment/`, `infrastructure/deployment/`, no CI/CD).
-
-**HIGH**
-6. No DB-level uniqueness on `registrations.attendee_id` — duplicate-registration prevention is app-check-only, inconsistent with payments/tickets/attendance which all have real unique indexes.
-7. `SUPER_ADMIN` role is missing from the RBAC enum.
-8. Admin has no UI for certificates or achievements management (issue/revoke/list) — only aggregate counts.
-9. `DashboardPage.tsx` swallows fetch errors on 5 of its 6 data sections — a real failure renders nothing.
-10. No search/filter/sort on any of the 9 admin content-management list endpoints (pagination only).
-11. No CI/CD pipeline — no automated lint/test/build gate.
-12. No readiness endpoint distinct from `/health`.
-13. `apps/admin` and `apps/volunteer` have zero automated tests.
-
-**MEDIUM**
-14. Multi-step writes (e.g. auth's user+role+attendee creation) aren't wrapped in DB transactions.
-15. Confirmation/ticket/payment-success/failed/certificate-ready email templates are defined but never triggered anywhere.
-16. Certificates schema lacks a `(attendee_id, certificate_type)` unique constraint needed once issuance is built.
-17. No user/role management surface (backend module is an intentional stub, unmounted).
-18. Dashboard never calls the existing personal-agenda or Event-Wrapped endpoints.
-19. No application-level rollback strategy (only DB migration rollback exists).
-20. Audit logging is best-effort and silently swallows its own write failures.
-
-**LOW**
-21. Admin nav isn't permission-filtered client-side (backend still enforces correctly — UX-only gap).
-22. `logger.ts`'s redact list doesn't yet include `secret`/`cvv`/`cardNumber` patterns (moot until payment integration lands, but should be added proactively).
-23. `authenticateOptional` middleware is defined but unused anywhere.
-24. Empty scaffold directories remain under `apps/web/src/{app,api,features,hooks,services,store,types,utils}` — harmless, zero files, cosmetic cleanup only.
-
-**COSMETIC**
-25. None beyond #24 — the codebase is otherwise clean of dead/orphaned implementation code (a prior orphaned-scaffold subtree found in an earlier pass has since been fully removed; only empty directory skeletons remain).
-
----
-
-## 5. Implementation plan (dependency order)
-
-Following the Master Prompt's own priority chain (Registration ✅ → **Payment** → **Tickets email/webhook tie-in** → **Email** → Admin ✅ → Volunteer ✅ → Attendee ✅ → **Attendance corrections** → **Certificates** → **Achievements** → **Event Wrapped** → **Testing** → **Security (webhook)** → Performance → UI/UX ✅ done → Accessibility ✅ done → **Deployment**), the concrete next slices, smallest-and-most-foundational first:
-
-1. **Email integration** (unblocks two currently-broken auth flows and is a prerequisite for every later notification). Real provider adapter behind the existing `EmailProvider` interface, a worker/consumer for the `email_records` queue, and fixing `auth.service.ts` to actually include the verification/reset token in the email it sends.
-2. **Payments**: controller + routes + a provider adapter behind the existing interface, a webhook endpoint with signature verification and idempotent event handling, wiring payment confirmation to registration status and ticket issuance.
-3. **Registration hardening**: DB unique constraint (or partial unique on active status) on `attendee_id`; wrap the auth registration write sequence in a transaction.
-4. **Certificates**: eligibility rule, idempotent issuance, unique-constraint addition, verification endpoint, admin management UI.
-5. **Achievements**: data-driven rule engine, award-on-attendance triggering, admin management UI.
-6. **Event Wrapped**: real generation job from attendee data, dashboard wiring.
-7. **Dashboard error states**: render the `error` value `useResource` already returns for every section; wire the two unused endpoints (personal agenda, event wrapped).
-8. **Admin UX**: search/filter/sort on the 9 content endpoints; permission-scoped nav.
-9. **Testing**: unit tests for the new domain services (payment state machine, certificate eligibility, achievement rules), ownership tests for tickets/certificates once they have routes, E2E tooling (Playwright) covering the 17-step flow, minimal test coverage for apps/admin and apps/volunteer.
-10. **Observability/deployment**: `/ready` endpoint, CI workflow (lint/typecheck/test/build), a real deployment doc and target, redact-list additions ahead of payment go-live.
-
-Items are being tracked on the live task list and will be worked in this order; each will get its own audit-before-modify pass, migrations where schema changes, and tests before being marked done, per the Master Prompt's per-phase checklist.
+Per this phase's own rule ("do not stop at documentation... continue implementation
+unless a genuinely ambiguous business rule would materially change the
+architecture or data model"): no such ambiguity was found. The highest-priority
+foundational gap is the real email provider (P1) — that is where implementation
+continues next, starting with choosing an SMTP-compatible free/self-hostable
+target and implementing `EmailProvider` against it, unless you'd rather direct
+otherwise (e.g. if you have a specific SMTP relay/account you want used, since that
+is exactly the kind of "which provider account" detail that isn't mine to assume).
