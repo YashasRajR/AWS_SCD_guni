@@ -10,6 +10,7 @@
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:unit": "vitest run --config vitest.unit.config.ts",
     "test:watch": "vitest",
     "db:migrate": "node ../database/scripts/migrate.mjs up",
     "db:seed": "node ../database/scripts/seed.mjs"
