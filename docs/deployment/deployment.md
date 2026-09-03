@@ -54,14 +54,15 @@ variables:
   content-only soft launch, not fine once registration needs to collect
   fees.
 - `EMAIL_SMTP_HOST` / `EMAIL_SMTP_PORT` / `EMAIL_SMTP_USER` /
-  `EMAIL_SMTP_PASSWORD` / `EMAIL_FROM_ADDRESS` — SMTP credentials. Left
-  blank, the backend currently always uses the console provider (see
-  `src/integrations/email/index.ts`) and only *logs* rendered emails
-  instead of sending them — this was a deliberate scope decision earlier in
-  the project, not a bug. **Before a real go-live, an SMTP-backed
-  `EmailProvider` needs to be implemented and wired into `getEnv()`
-  configured**; a free-tier relay (Brevo, Mailtrap) or a Gmail app password
-  both work for a self-hostable choice.
+  `EMAIL_SMTP_PASSWORD` / `EMAIL_FROM_ADDRESS` — SMTP credentials.
+  `SmtpEmailProvider` (`src/integrations/email/smtp-provider.ts`, via
+  nodemailer) is implemented and picked automatically once
+  `EMAIL_SMTP_HOST` is set; left blank, the backend falls back to the
+  console provider and only *logs* rendered emails instead of sending
+  them. **This platform has not had real SMTP credentials configured or
+  tested end-to-end yet** — set these before go-live. A free-tier relay
+  (Brevo, Mailtrap) or a Gmail app password both work as a self-hostable
+  choice.
 - `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX_REQUESTS` — tune for expected
   traffic; defaults are conservative dev-mode values.
 - `NODE_ENV=production`.
@@ -130,10 +131,10 @@ should be entered once through the admin portal instead.
 - No CD (auto-deploy on merge) — added once an actual host is chosen; a
   workflow that deploys to nowhere would be exactly the kind of fake
   functionality this project avoids.
-- No SMTP-backed `EmailProvider` — see step 2. The console provider is a
-  correct, working choice for development and a pre-payment content
-  launch; it is not correct for a live event with real attendees waiting
-  on confirmation emails.
+- SMTP credentials are not yet configured/tested against a real mailbox
+  — the provider code exists (`SmtpEmailProvider`) but `.env`'s
+  `EMAIL_SMTP_*` values need to be filled in and verified before real
+  attendees can receive confirmation/ticket/certificate emails.
 - No container/orchestration layer — deliberately, per the project's
   "avoid unnecessary infrastructure" rule. Revisit only if a single Node
   process genuinely can't handle event-day load, not preemptively.

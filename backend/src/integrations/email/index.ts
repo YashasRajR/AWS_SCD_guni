@@ -1,13 +1,16 @@
 import type { EmailTemplate } from '@scd/types';
+import { getEnv } from '../../config/env.js';
 import { logger } from '../../utils/logger.js';
 import { ConsoleEmailProvider } from './console-provider.js';
+import { SmtpEmailProvider } from './smtp-provider.js';
 
 /**
  * Email provider integration boundary — deliberately provider-agnostic so
  * a real transport (SMTP, SES, Resend, ...) can be added later without
- * touching call sites. Only ConsoleEmailProvider is implemented right
- * now: real emails aren't wired up yet on purpose, so verify/reset/ticket
- * links are logged (never discarded) instead of actually delivered.
+ * touching call sites. Picks SmtpEmailProvider once EMAIL_SMTP_HOST is
+ * configured (see env.ts / .env.example); otherwise falls back to
+ * ConsoleEmailProvider so verify/reset/ticket links are still logged
+ * (never silently discarded) during local development.
  */
 export interface EmailProvider {
   send(input: {
@@ -20,18 +23,23 @@ export interface EmailProvider {
 
 let cachedProvider: EmailProvider | undefined;
 
-/**
- * Always returns the console provider today. Cached for the process
- * lifetime like getPool()/getEnv()/getPaymentProvider(). When a real
- * transport is ready, this is the one place that changes — it should pick
- * it based on env config the same way getPaymentProvider() does.
- */
 export function getEmailProvider(): EmailProvider {
   if (!cachedProvider) {
-    logger.warn(
-      'No real email provider is configured — emails are logged to the console, not sent. This must change before go-live.',
-    );
-    cachedProvider = new ConsoleEmailProvider();
+    const env = getEnv();
+    if (env.EMAIL_SMTP_HOST) {
+      logger.info({ host: env.EMAIL_SMTP_HOST }, 'Using SMTP email provider');
+      cachedProvider = new SmtpEmailProvider();
+    } else {
+      logger.warn(
+        'No EMAIL_SMTP_HOST configured — emails are logged to the console, not sent. Set EMAIL_SMTP_* to enable real delivery before go-live.',
+      );
+      cachedProvider = new ConsoleEmailProvider();
+    }
   }
   return cachedProvider;
+}
+
+/** Test-only: clears the cached provider so a test can reconfigure env and re-resolve. */
+export function resetEmailProviderCache(): void {
+  cachedProvider = undefined;
 }

@@ -239,13 +239,13 @@ param); admin retrieval is `MANAGE_REGISTRATIONS`-gated.
 
 Real outbox pattern (`email_records` table + interval-polling worker with
 exponential backoff, capped at 30 min, max 5 attempts), all templates render both
-HTML and text with proper escaping (unit-tested). **Provider is console-only** —
-this was an explicit, disclosed decision earlier this session (user chose
-"console/log provider for now" over building real SMTP), not an oversight. This is
-the single largest gap between "functionally correct" and "production-ready" on
-this platform: no attendee will actually receive a verification/ticket/certificate
-email until an SMTP-backed `EmailProvider` is implemented. Flagged as P1 in the
-requirements matrix below.
+HTML and text with proper escaping (unit-tested). **Update, same day**: `SmtpEmailProvider` (nodemailer-based) has since been
+implemented and is picked automatically once `EMAIL_SMTP_HOST` is set — see
+`src/integrations/email/smtp-provider.ts`. It is not yet configured or
+tested against a real mailbox (no SMTP account credentials were provided
+this session); until `.env`'s `EMAIL_SMTP_*` values are filled in and
+verified, the platform still falls back to the console provider. This is
+now a **configuration task**, not an implementation gap.
 
 ## Admin Status
 
@@ -377,7 +377,7 @@ unavailable from this bridge).
 | Registration | COMPLETE | `backend/src/modules/registrations` | — | — | — |
 | Payment (Razorpay) | COMPLETE | `backend/src/modules/payments`, `integrations/payment` | — | — | — |
 | Ticket generation | COMPLETE | `backend/src/modules/tickets` | — | — | — |
-| Real email delivery | PARTIAL | `backend/src/integrations/email` | Implement an SMTP-backed `EmailProvider`; wire `EMAIL_SMTP_*` env into it | **P1** | none — additive |
+| Real email delivery | PARTIAL | `backend/src/integrations/email` | `SmtpEmailProvider` is implemented; fill in and verify real `EMAIL_SMTP_*` credentials in `.env` | P2 (config, not code) | an SMTP account (Gmail app password / Brevo / Mailtrap / self-hosted) |
 | Admin attendee search/filter | MISSING | `backend/src/modules/attendees` | Apply the same `paginatedListQuery` pattern used for the 8 content modules | P2 | none |
 | E2E test suite | MISSING | `tests/e2e/*` (empty) | Install Playwright, cover the 17-step flow from the master spec | P2 | a running dev server (or CI service) to test against |
 | Refresh-token rotation | COMPLETE | `backend/src/modules/auth`, migration 035, `@scd/api-client` | — | — | — |
@@ -389,10 +389,11 @@ unavailable from this bridge).
 
 ## Critical Gaps
 
-1. **Real email sending is not implemented.** This is the one gap that would be
-   visible to an actual attendee at go-live (no verification/ticket/confirmation
-   email actually arrives). Everything upstream of it (templates, outbox, retry
-   worker, triggers) is correct and ready for a real provider to be plugged in.
+1. **Real email sending has no configured credentials yet.** The provider code
+   (`SmtpEmailProvider`) is implemented and auto-selected once `EMAIL_SMTP_HOST`
+   is set, but no SMTP account has been provided/tested this session — until
+   `.env` is filled in, the platform still falls back to logging emails instead
+   of sending them.
 2. **No E2E coverage** — the individual pieces are integration-tested, but the
    full attendee journey (register → verify → pay → get ticket → attend → get
    certificate) has never been exercised as one continuous flow.
@@ -425,8 +426,9 @@ also followed in that order. No reordering is recommended.
 Given the audit above, most of the master prompt's 28-step roadmap is **already
 done**. The remaining, re-ordered work:
 
-1. Implement a real SMTP `EmailProvider` (P1 — the one remaining attendee-visible
-   gap; refresh-token rotation was also P1 and is now done — see above)
+1. Configure and verify real SMTP credentials in `.env` (P2 — code is done, this
+   is filling in an account; refresh-token rotation and SmtpEmailProvider were
+   both P1 and are now implemented — see above)
 2. Admin attendee search/filter (P2 — parity with the other 8 admin lists)
 3. Playwright E2E suite covering the master spec's 17-step flow (P2)
 4. Remaining edge-case tests: session expiry mid-checkout, expired reset token,
@@ -445,7 +447,7 @@ dedicated hardening pass beyond what's already listed.
 
 - **P0 (Critical):** none found — no broken core flow, no confirmed security
   hole.
-- **P1 (High):** real SMTP email provider (refresh-token rotation was P1 and is now done).
+- **P1 (High):** none open — refresh-token rotation and the SMTP `EmailProvider` were both P1 and are now implemented. Configuring real SMTP credentials in `.env` is a P2 (a config/business task, not code).
 - **P2 (Medium):** admin attendee search; E2E suite; remaining edge-case tests;
   choosing + wiring a deployment target.
 - **P3 (Low):** dead scaffold directory cleanup; README accuracy.
