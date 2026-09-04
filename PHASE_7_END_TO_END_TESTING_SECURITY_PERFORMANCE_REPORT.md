@@ -42,7 +42,7 @@ Section 6, with the exact commands to run locally.
 | `tsc --noEmit` | `backend` | **PASS** |
 | `tsc --noEmit` | `apps/web`, `apps/volunteer`, `apps/admin` | **PASS** (all three) |
 | `tsc --noEmit` | all 8 `packages/*` with a tsconfig | **PASS** (all eight) |
-| `vitest run` (unit, no DB) | `backend` | **Could not run** — rollup native binary missing |
+| `vitest run --config vitest.unit.config.ts` (unit, no DB) | `backend` | **PASS (on your machine)** — 12/12 suites, after fixing two real bugs surfaced along the way (see Section 4b) |
 | `npm audit` | root | **Could not run** — timed out (network) |
 | Build, migrations, E2E, accessibility, performance | all | **Could not run/observe** — no working dev server or browser-reachable app from this environment |
 
@@ -140,6 +140,34 @@ No other release blockers were found in the code paths reviewed. This was
 input-validation boundary, or every admin CRUD endpoint (Sections 7, 8, 16)
 — that is a much larger effort than fit in this session; see Section 6.
 
+## 4b. Two more defects found once real test execution became possible
+
+You ran `npm run test:unit --workspace=backend` locally (this environment
+still can't run it) and it surfaced two real bugs in the 5 test files that
+use `vi.mock()`, neither visible from static code review alone:
+
+- **TDZ crash**: each file declared its mocked-module path as a plain
+  `const X_PATH = '...'` *after* `vi.mock()` calls that referenced it, but
+  Vitest hoists `vi.mock()` above everything else in the file — so the
+  const didn't exist yet when the mock call ran. Fixed with `vi.hoisted()`.
+  Commit `8d81a62`.
+- **Mock interception silently not applying**: fixing the crash revealed
+  that Vitest's `vi.mock()` only intercepts a *literal string* module
+  specifier, not a variable (even a hoisted one) — so `await import()`
+  calls using that same variable were falling through to the real
+  (nonexistent, TS-only) compiled file. Fixed by inlining literal paths
+  directly, matching Vitest's own documented pattern. This also had a
+  useful side effect: TypeScript could finally statically resolve those
+  imports to their real types, which surfaced ~30 places where partial
+  test fixtures didn't match the real row/DTO shapes (previously masked
+  because the variable-path import was silently typed `any`). Each fixed
+  with an explicit cast to the real type. Commit `a746b49`.
+
+Result: all 12 unit test files now pass (confirmed by you, not by this
+environment). This is a good illustration of exactly the gap Section 0
+describes — static review and typecheck cannot catch either of these; only
+actually running the tests could.
+
 ## 5. UI theme work (unrelated to Phase 7, done earlier this session)
 
 Not part of this phase, noted for completeness: the public site's palette
@@ -177,13 +205,25 @@ not silently skipped):**
 
 ## 7. Final readiness decision
 
-**NOT RELEASE READY** — not because a blocker is known to exist, but because
-the mandatory verification (Section 43: tests, build, migrations, E2E,
-accessibility, dependency audit) has not actually been run against current
-`main` by anyone, in or out of this session, since these Phase 7 changes
-landed. The one concrete defect found was fixed and reasoned through, but a
-release decision resting only on code review (however careful) instead of
-green tests is not a real release gate. Once you run the commands in
-Section 6 locally and they pass, this becomes a much shorter conversation
-about the specific remaining items in Section 6 rather than a blanket
-re-audit.
+**NOT RELEASE READY** — closer than before, but not there. Backend unit
+tests (12/12) now pass on your machine, which is real signal, not a
+code-review guess. Still outstanding before this can honestly move to
+RELEASE READY WITH NON-BLOCKING ISSUES:
+
+- `npm run test --workspace=backend` against a real (throwaway) Postgres
+  -- not yet run; needs a local DB (see Section 6, it will not use your
+  real Neon database by default).
+- `npm run build` -- never run since the theme changes or the ticket-race
+  fix landed.
+- `npm run db:migrate:status` / a clean-DB migration check.
+- `npm audit` -- retry now that the earlier 503 was npm's registry, not
+  your code.
+- Everything in the "not attempted this session" list below is still
+  genuinely not attempted (IDOR sweep, injection/XSS, E2E, performance,
+  CI gates, docs).
+
+The one concrete defect originally found by code review (ticket issuance
+race) plus the two surfaced by your actual test run (vi.mock TDZ crash,
+mock-interception/type-masking bug) are all fixed and committed. Keep
+running the Section 6 commands and reporting back what breaks -- that
+loop is more valuable than another round of static review.
