@@ -704,24 +704,10 @@ ol {
 
 .hero {
   position: relative;
-  background:
-    linear-gradient(155deg, var(--secondary) 0%, var(--primary) 100%),
-    /* Faint blueprint/grid motif -- echoes the event's print branding
-       without competing with the headline. */
-    repeating-linear-gradient(
-      0deg,
-      rgba(255, 255, 255, 0.06) 0,
-      rgba(255, 255, 255, 0.06) 1px,
-      transparent 1px,
-      transparent 48px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.06) 0,
-      rgba(255, 255, 255, 0.06) 1px,
-      transparent 1px,
-      transparent 48px
-    );
+  /* Clean two-stop poster-purple gradient -- no grid overlay, no
+     jagged shard graphic. Keep the hero band simple so it reads as
+     the poster's own background, not a separate decorative device. */
+  background: linear-gradient(160deg, var(--secondary) 0%, var(--primary) 100%);
   color: var(--secondary-foreground);
   padding: var(--space-16) 0 var(--space-12);
   overflow: hidden;
@@ -731,25 +717,9 @@ ol {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle at 15% 20%, rgba(242, 138, 69, 0.22), transparent 45%),
-    radial-gradient(circle at 85% 75%, rgba(255, 255, 255, 0.14), transparent 45%);
-  pointer-events: none;
-}
-
-/* Jagged accent shard, bottom-right -- a low-cost CSS echo of the sharp,
-   angular graphic accents used across the event's print branding.
-   Decorative only (aria-hidden via being a ::after with no content
-   role), and purely geometric so it never competes with real content. */
-.hero::after {
-  content: '';
-  position: absolute;
-  right: -40px;
-  bottom: -60px;
-  width: 220px;
-  height: 260px;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
-  clip-path: polygon(60% 0%, 100% 20%, 85% 100%, 40% 90%, 55% 45%, 20% 55%, 0% 30%);
-  opacity: 0.35;
+  /* Single soft orange glow -- the poster's script-accent color,
+     used sparingly rather than as a competing graphic. */
+  background-image: radial-gradient(circle at 80% 15%, rgba(242, 138, 69, 0.22), transparent 55%);
   pointer-events: none;
 }
 
