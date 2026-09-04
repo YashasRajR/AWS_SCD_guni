@@ -1,24 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+import type { PaymentRow } from '../../../backend/src/modules/payments/payments.types.js';
 
-const {
-  PAYMENTS_REPO_PATH,
-  PAYMENT_PROVIDER_PATH,
-  REGISTRATIONS_SERVICE_PATH,
-  ATTENDEES_SERVICE_PATH,
-  USERS_SERVICE_PATH,
-  EMAILS_SERVICE_PATH,
-  EVENT_SERVICE_PATH,
-} = vi.hoisted(() => ({
-  PAYMENTS_REPO_PATH: '../../../backend/src/modules/payments/payments.repository.js',
-  PAYMENT_PROVIDER_PATH: '../../../backend/src/integrations/payment/index.js',
-  REGISTRATIONS_SERVICE_PATH: '../../../backend/src/modules/registrations/registrations.service.js',
-  ATTENDEES_SERVICE_PATH: '../../../backend/src/modules/attendees/attendees.service.js',
-  USERS_SERVICE_PATH: '../../../backend/src/modules/users/users.service.js',
-  EMAILS_SERVICE_PATH: '../../../backend/src/modules/emails/emails.service.js',
-  EVENT_SERVICE_PATH: '../../../backend/src/modules/event/event.service.js',
-}));
-
-vi.mock(PAYMENTS_REPO_PATH, () => ({
+vi.mock('../../../backend/src/modules/payments/payments.repository.js', () => ({
   paymentsRepository: {
     findByProviderOrderId: vi.fn(),
     markPaid: vi.fn(),
@@ -28,29 +11,31 @@ vi.mock(PAYMENTS_REPO_PATH, () => ({
     markWebhookEventProcessed: vi.fn(),
   },
 }));
-vi.mock(PAYMENT_PROVIDER_PATH, () => ({
+vi.mock('../../../backend/src/integrations/payment/index.js', () => ({
   getPaymentProvider: vi.fn(),
   PaymentProviderNotConfiguredError: class PaymentProviderNotConfiguredError extends Error {},
 }));
-vi.mock(REGISTRATIONS_SERVICE_PATH, () => ({
+vi.mock('../../../backend/src/modules/registrations/registrations.service.js', () => ({
   registrationsService: { updateStatus: vi.fn(), getById: vi.fn() },
 }));
-vi.mock(ATTENDEES_SERVICE_PATH, () => ({
+vi.mock('../../../backend/src/modules/attendees/attendees.service.js', () => ({
   attendeesService: { getById: vi.fn() },
 }));
-vi.mock(USERS_SERVICE_PATH, () => ({
+vi.mock('../../../backend/src/modules/users/users.service.js', () => ({
   usersService: { getPublicUserById: vi.fn() },
 }));
-vi.mock(EMAILS_SERVICE_PATH, () => ({
+vi.mock('../../../backend/src/modules/emails/emails.service.js', () => ({
   emailsService: { enqueue: vi.fn() },
 }));
-vi.mock(EVENT_SERVICE_PATH, () => ({
+vi.mock('../../../backend/src/modules/event/event.service.js', () => ({
   eventService: { getCurrent: vi.fn() },
 }));
 
-const { paymentsRepository } = await import(PAYMENTS_REPO_PATH);
-const { getPaymentProvider } = await import(PAYMENT_PROVIDER_PATH);
-const { registrationsService } = await import(REGISTRATIONS_SERVICE_PATH);
+const { paymentsRepository } =
+  await import('../../../backend/src/modules/payments/payments.repository.js');
+const { getPaymentProvider } = await import('../../../backend/src/integrations/payment/index.js');
+const { registrationsService } =
+  await import('../../../backend/src/modules/registrations/registrations.service.js');
 const { paymentsService } =
   await import('../../../backend/src/modules/payments/payments.service.js');
 
@@ -109,12 +94,12 @@ describe('paymentsService.handleWebhook', () => {
       id: 'payment-1',
       status: 'PENDING',
       registration_id: 'registration-1',
-    });
+    } as PaymentRow);
     vi.mocked(paymentsRepository.markPaid).mockResolvedValue({
       id: 'payment-1',
       status: 'PAID',
       registration_id: 'registration-1',
-    });
+    } as PaymentRow);
     vi.mocked(registrationsService.getById).mockResolvedValue(null); // short-circuits notifyPaymentResult
     const body = JSON.stringify({
       event: 'payment.captured',
@@ -135,7 +120,7 @@ describe('paymentsService.handleWebhook', () => {
       id: 'payment-1',
       status: 'PAID',
       registration_id: 'registration-1',
-    });
+    } as PaymentRow);
     const body = JSON.stringify({
       event: 'payment.captured',
       payload: { payment: { entity: { id: 'pay_1', order_id: 'order_1' } } },
@@ -153,7 +138,7 @@ describe('paymentsService.handleWebhook', () => {
       id: 'payment-1',
       status: 'PAID',
       registration_id: 'registration-1',
-    });
+    } as PaymentRow);
     const body = JSON.stringify({
       event: 'payment.failed',
       payload: { payment: { entity: { id: 'pay_1', order_id: 'order_1' } } },
@@ -171,7 +156,7 @@ describe('paymentsService.handleWebhook', () => {
       id: 'payment-1',
       status: 'PENDING',
       registration_id: 'registration-1',
-    });
+    } as PaymentRow);
     const body = JSON.stringify({
       event: 'payment.captured',
       payload: { payment: { entity: { id: 'pay_1', order_id: 'order_1' } } },

@@ -1,11 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+import type { UserRow } from '../../../backend/src/modules/users/users.types.js';
 
-const { AUTH_REPO_PATH, USERS_REPO_PATH } = vi.hoisted(() => ({
-  AUTH_REPO_PATH: '../../../backend/src/modules/auth/auth.repository.js',
-  USERS_REPO_PATH: '../../../backend/src/modules/users/users.repository.js',
-}));
-
-vi.mock(AUTH_REPO_PATH, () => ({
+vi.mock('../../../backend/src/modules/auth/auth.repository.js', () => ({
   authRepository: {
     createRefreshToken: vi.fn(),
     findValidRefreshToken: vi.fn(),
@@ -19,7 +15,7 @@ vi.mock(AUTH_REPO_PATH, () => ({
     consumeEmailVerificationToken: vi.fn(),
   },
 }));
-vi.mock(USERS_REPO_PATH, () => ({
+vi.mock('../../../backend/src/modules/users/users.repository.js', () => ({
   usersRepository: {
     findById: vi.fn(),
     findByEmail: vi.fn(),
@@ -31,11 +27,11 @@ vi.mock(USERS_REPO_PATH, () => ({
   },
 }));
 
-const { authRepository } = await import(AUTH_REPO_PATH);
-const { usersRepository } = await import(USERS_REPO_PATH);
+const { authRepository } = await import('../../../backend/src/modules/auth/auth.repository.js');
+const { usersRepository } = await import('../../../backend/src/modules/users/users.repository.js');
 const { authService } = await import('../../../backend/src/modules/auth/auth.service.js');
 
-const ACTIVE_USER = {
+const ACTIVE_USER: UserRow = {
   id: 'user-1',
   email: 'attendee@example.test',
   password_hash: 'hashed',

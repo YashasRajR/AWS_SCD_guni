@@ -1,11 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-const { USERS_REPO_PATH, DATABASE_PATH } = vi.hoisted(() => ({
-  USERS_REPO_PATH: '../../../backend/src/modules/users/users.repository.js',
-  DATABASE_PATH: '../../../backend/src/config/database.js',
-}));
-
-vi.mock(USERS_REPO_PATH, () => ({
+vi.mock('../../../backend/src/modules/users/users.repository.js', () => ({
   usersRepository: {
     findById: vi.fn(),
     findByIdWithRoles: vi.fn(),
@@ -16,13 +11,13 @@ vi.mock(USERS_REPO_PATH, () => ({
   },
 }));
 
-vi.mock(DATABASE_PATH, () => ({
+vi.mock('../../../backend/src/config/database.js', () => ({
   // The service only needs the transaction to run its callback with some
   // opaque "client" value — the repository calls inside are mocked anyway.
   withTransaction: vi.fn(async (fn: (client: unknown) => Promise<unknown>) => fn({})),
 }));
 
-const { usersRepository } = await import(USERS_REPO_PATH);
+const { usersRepository } = await import('../../../backend/src/modules/users/users.repository.js');
 const { usersService } = await import('../../../backend/src/modules/users/users.service.js');
 
 describe('usersService.revokeRole — last SUPER_ADMIN protection', () => {

@@ -1,54 +1,44 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+import type { Registration, EventConfig, User } from '@scd/types';
+import type { CheckpointAttendanceRow } from '../../../backend/src/modules/checkpoints/checkpoints.types.js';
+import type { AttendeeRow } from '../../../backend/src/modules/attendees/attendees.types.js';
+import type { CertificateRow } from '../../../backend/src/modules/certificates/certificates.types.js';
 
-const {
-  REPO_PATH,
-  REGISTRATIONS_SERVICE_PATH,
-  CHECKPOINTS_REPO_PATH,
-  EVENT_SERVICE_PATH,
-  ATTENDEES_REPO_PATH,
-  USERS_SERVICE_PATH,
-  EMAILS_SERVICE_PATH,
-} = vi.hoisted(() => ({
-  REPO_PATH: '../../../backend/src/modules/certificates/certificates.repository.js',
-  REGISTRATIONS_SERVICE_PATH: '../../../backend/src/modules/registrations/registrations.service.js',
-  CHECKPOINTS_REPO_PATH: '../../../backend/src/modules/checkpoints/checkpoints.repository.js',
-  EVENT_SERVICE_PATH: '../../../backend/src/modules/event/event.service.js',
-  ATTENDEES_REPO_PATH: '../../../backend/src/modules/attendees/attendees.repository.js',
-  USERS_SERVICE_PATH: '../../../backend/src/modules/users/users.service.js',
-  EMAILS_SERVICE_PATH: '../../../backend/src/modules/emails/emails.service.js',
-}));
-
-vi.mock(REPO_PATH, () => ({
+vi.mock('../../../backend/src/modules/certificates/certificates.repository.js', () => ({
   certificatesRepository: {
     findActiveByAttendeeAndType: vi.fn(),
     issue: vi.fn(),
     findByCertificateNumber: vi.fn(),
   },
 }));
-vi.mock(REGISTRATIONS_SERVICE_PATH, () => ({
+vi.mock('../../../backend/src/modules/registrations/registrations.service.js', () => ({
   registrationsService: { getByAttendeeId: vi.fn() },
 }));
-vi.mock(CHECKPOINTS_REPO_PATH, () => ({
+vi.mock('../../../backend/src/modules/checkpoints/checkpoints.repository.js', () => ({
   checkpointsRepository: { getAttendeeCompletions: vi.fn() },
 }));
-vi.mock(EVENT_SERVICE_PATH, () => ({
+vi.mock('../../../backend/src/modules/event/event.service.js', () => ({
   eventService: { getCurrent: vi.fn() },
 }));
-vi.mock(ATTENDEES_REPO_PATH, () => ({
+vi.mock('../../../backend/src/modules/attendees/attendees.repository.js', () => ({
   attendeesRepository: { findById: vi.fn() },
 }));
-vi.mock(USERS_SERVICE_PATH, () => ({
+vi.mock('../../../backend/src/modules/users/users.service.js', () => ({
   usersService: { getPublicUserById: vi.fn() },
 }));
-vi.mock(EMAILS_SERVICE_PATH, () => ({
+vi.mock('../../../backend/src/modules/emails/emails.service.js', () => ({
   emailsService: { enqueue: vi.fn() },
 }));
 
-const { certificatesRepository } = await import(REPO_PATH);
-const { registrationsService } = await import(REGISTRATIONS_SERVICE_PATH);
-const { checkpointsRepository } = await import(CHECKPOINTS_REPO_PATH);
-const { eventService } = await import(EVENT_SERVICE_PATH);
-const { attendeesRepository } = await import(ATTENDEES_REPO_PATH);
+const { certificatesRepository } =
+  await import('../../../backend/src/modules/certificates/certificates.repository.js');
+const { registrationsService } =
+  await import('../../../backend/src/modules/registrations/registrations.service.js');
+const { checkpointsRepository } =
+  await import('../../../backend/src/modules/checkpoints/checkpoints.repository.js');
+const { eventService } = await import('../../../backend/src/modules/event/event.service.js');
+const { attendeesRepository } =
+  await import('../../../backend/src/modules/attendees/attendees.repository.js');
 const { certificatesService } =
   await import('../../../backend/src/modules/certificates/certificates.service.js');
 
@@ -64,33 +54,41 @@ describe('certificatesService.isEligible', () => {
   });
 
   it('is ineligible when the registration is not CONFIRMED', async () => {
-    vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({ status: 'PENDING' });
+    vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({
+      status: 'PENDING',
+    } as Registration);
     const result = await certificatesService.isEligible('attendee-1');
     expect(result.eligible).toBe(false);
     expect(result.reason).toMatch(/not confirmed/i);
   });
 
   it('is ineligible when there is no active event', async () => {
-    vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({ status: 'CONFIRMED' });
+    vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({
+      status: 'CONFIRMED',
+    } as Registration);
     vi.mocked(eventService.getCurrent).mockRejectedValue(new Error('no event'));
     const result = await certificatesService.isEligible('attendee-1');
     expect(result).toEqual({ eligible: false, reason: 'No active event is configured.' });
   });
 
   it('is ineligible with a confirmed registration but zero checkpoint completions', async () => {
-    vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({ status: 'CONFIRMED' });
-    vi.mocked(eventService.getCurrent).mockResolvedValue({ id: 'event-1' });
+    vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({
+      status: 'CONFIRMED',
+    } as Registration);
+    vi.mocked(eventService.getCurrent).mockResolvedValue({ id: 'event-1' } as EventConfig);
     vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([]);
     const result = await certificatesService.isEligible('attendee-1');
     expect(result).toEqual({ eligible: false, reason: 'No recorded event attendance yet.' });
   });
 
   it('is eligible with a confirmed registration and at least one checkpoint completion', async () => {
-    vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({ status: 'CONFIRMED' });
-    vi.mocked(eventService.getCurrent).mockResolvedValue({ id: 'event-1' });
+    vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({
+      status: 'CONFIRMED',
+    } as Registration);
+    vi.mocked(eventService.getCurrent).mockResolvedValue({ id: 'event-1' } as EventConfig);
     vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([
       { checkpoint_id: 'cp-1' },
-    ]);
+    ] as CheckpointAttendanceRow[]);
     const result = await certificatesService.isEligible('attendee-1');
     expect(result).toEqual({ eligible: true });
   });
@@ -103,7 +101,7 @@ describe('certificatesService.issue', () => {
       id: 'attendee-1',
       user_id: 'user-1',
       full_name: 'Test Attendee',
-    });
+    } as AttendeeRow);
   });
 
   it('refuses to issue a certificate to an ineligible attendee', async () => {
@@ -117,7 +115,11 @@ describe('certificatesService.issue', () => {
   });
 
   it('is idempotent: returns the existing certificate instead of creating a second one', async () => {
-    const existing = { id: 'cert-1', status: 'ISSUED', certificate_type: 'PARTICIPATION' };
+    const existing = {
+      id: 'cert-1',
+      status: 'ISSUED',
+      certificate_type: 'PARTICIPATION',
+    } as CertificateRow;
     vi.mocked(certificatesRepository.findActiveByAttendeeAndType).mockResolvedValue(existing);
 
     const result = await certificatesService.issue({
@@ -131,19 +133,25 @@ describe('certificatesService.issue', () => {
 
   it('issues a certificate and enqueues the certificate-ready email when eligible', async () => {
     vi.mocked(certificatesRepository.findActiveByAttendeeAndType).mockResolvedValue(null);
-    vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({ status: 'CONFIRMED' });
-    vi.mocked(eventService.getCurrent).mockResolvedValue({ id: 'event-1' });
+    vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({
+      status: 'CONFIRMED',
+    } as Registration);
+    vi.mocked(eventService.getCurrent).mockResolvedValue({ id: 'event-1' } as EventConfig);
     vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([
       { checkpoint_id: 'cp-1' },
-    ]);
-    const issuedRow = { id: 'cert-2', status: 'ISSUED', certificate_type: 'PARTICIPATION' };
+    ] as CheckpointAttendanceRow[]);
+    const issuedRow = {
+      id: 'cert-2',
+      status: 'ISSUED',
+      certificate_type: 'PARTICIPATION',
+    } as CertificateRow;
     vi.mocked(certificatesRepository.issue).mockResolvedValue(issuedRow);
-    const { usersService } = await import(USERS_SERVICE_PATH);
-    const { emailsService } = await import(EMAILS_SERVICE_PATH);
+    const { usersService } = await import('../../../backend/src/modules/users/users.service.js');
+    const { emailsService } = await import('../../../backend/src/modules/emails/emails.service.js');
     vi.mocked(usersService.getPublicUserById).mockResolvedValue({
       id: 'user-1',
       email: 'a@example.test',
-    });
+    } as User);
 
     const result = await certificatesService.issue({
       attendeeId: 'attendee-1',
@@ -167,12 +175,14 @@ describe('certificatesService.issue', () => {
         id: 'cert-winner',
         status: 'ISSUED',
         certificate_type: 'PARTICIPATION',
-      });
-    vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({ status: 'CONFIRMED' });
-    vi.mocked(eventService.getCurrent).mockResolvedValue({ id: 'event-1' });
+      } as CertificateRow);
+    vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({
+      status: 'CONFIRMED',
+    } as Registration);
+    vi.mocked(eventService.getCurrent).mockResolvedValue({ id: 'event-1' } as EventConfig);
     vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([
       { checkpoint_id: 'cp-1' },
-    ]);
+    ] as CheckpointAttendanceRow[]);
     vi.mocked(certificatesRepository.issue).mockRejectedValue({ code: '23505' });
 
     const result = await certificatesService.issue({
