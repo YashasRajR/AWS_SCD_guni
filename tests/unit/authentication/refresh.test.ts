@@ -1,7 +1,9 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-const AUTH_REPO_PATH = '../../../backend/src/modules/auth/auth.repository.js';
-const USERS_REPO_PATH = '../../../backend/src/modules/users/users.repository.js';
+const { AUTH_REPO_PATH, USERS_REPO_PATH } = vi.hoisted(() => ({
+  AUTH_REPO_PATH: '../../../backend/src/modules/auth/auth.repository.js',
+  USERS_REPO_PATH: '../../../backend/src/modules/users/users.repository.js',
+}));
 
 vi.mock(AUTH_REPO_PATH, () => ({
   authRepository: {
@@ -92,7 +94,11 @@ describe('authService.refresh', () => {
       revoked_at: null,
       created_at: '2026-01-01T00:00:00.000Z',
     });
-    vi.mocked(usersRepository.findById).mockResolvedValue({ ...ACTIVE_USER, id: 'user-2', status: 'SUSPENDED' });
+    vi.mocked(usersRepository.findById).mockResolvedValue({
+      ...ACTIVE_USER,
+      id: 'user-2',
+      status: 'SUSPENDED',
+    });
 
     await expect(authService.refresh({ refreshToken: 'valid-token' })).rejects.toThrow(
       /session has expired/i,

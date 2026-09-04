@@ -1,7 +1,9 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-const CHECKPOINTS_REPO_PATH = '../../../backend/src/modules/checkpoints/checkpoints.repository.js';
-const ACHIEVEMENTS_REPO_PATH = '../../../backend/src/modules/achievements/achievements.repository.js';
+const { CHECKPOINTS_REPO_PATH, ACHIEVEMENTS_REPO_PATH } = vi.hoisted(() => ({
+  CHECKPOINTS_REPO_PATH: '../../../backend/src/modules/checkpoints/checkpoints.repository.js',
+  ACHIEVEMENTS_REPO_PATH: '../../../backend/src/modules/achievements/achievements.repository.js',
+}));
 
 vi.mock(CHECKPOINTS_REPO_PATH, () => ({
   checkpointsRepository: {
@@ -19,9 +21,8 @@ vi.mock(ACHIEVEMENTS_REPO_PATH, () => ({
 
 const { checkpointsRepository } = await import(CHECKPOINTS_REPO_PATH);
 const { achievementsRepository } = await import(ACHIEVEMENTS_REPO_PATH);
-const { achievementsService } = await import(
-  '../../../backend/src/modules/achievements/achievements.service.js'
-);
+const { achievementsService } =
+  await import('../../../backend/src/modules/achievements/achievements.service.js');
 
 describe('achievementsService.evaluateCondition', () => {
   beforeEach(() => {
@@ -41,7 +42,9 @@ describe('achievementsService.evaluateCondition', () => {
   });
 
   it('CHECKPOINT_COUNT: stays locked below the configured minimum', async () => {
-    vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([{ checkpoint_id: 'a' }]);
+    vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([
+      { checkpoint_id: 'a' },
+    ]);
     const eligible = await achievementsService.evaluateCondition('attendee-1', {
       condition_type: 'CHECKPOINT_COUNT',
       condition_config: { minCount: 2 },
@@ -71,7 +74,9 @@ describe('achievementsService.evaluateCondition', () => {
       { id: 'cp-1', is_required: true },
       { id: 'cp-2', is_required: true },
     ]);
-    vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([{ checkpoint_id: 'cp-1' }]);
+    vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([
+      { checkpoint_id: 'cp-1' },
+    ]);
     const eligible = await achievementsService.evaluateCondition('attendee-1', {
       condition_type: 'FULL_ATTENDANCE',
       condition_config: { eventId: 'event-1' },
@@ -134,7 +139,9 @@ describe('achievementsService.evaluateForAttendee', () => {
       },
     ]);
     vi.mocked(achievementsRepository.hasUnlocked).mockResolvedValue(false);
-    vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([{ checkpoint_id: 'a' }]);
+    vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([
+      { checkpoint_id: 'a' },
+    ]);
     vi.mocked(achievementsRepository.unlock).mockRejectedValue({ code: '23505' });
 
     const results = await achievementsService.evaluateForAttendee('attendee-1');

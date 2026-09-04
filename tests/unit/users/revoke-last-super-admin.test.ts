@@ -1,7 +1,9 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-const USERS_REPO_PATH = '../../../backend/src/modules/users/users.repository.js';
-const DATABASE_PATH = '../../../backend/src/config/database.js';
+const { USERS_REPO_PATH, DATABASE_PATH } = vi.hoisted(() => ({
+  USERS_REPO_PATH: '../../../backend/src/modules/users/users.repository.js',
+  DATABASE_PATH: '../../../backend/src/config/database.js',
+}));
 
 vi.mock(USERS_REPO_PATH, () => ({
   usersRepository: {

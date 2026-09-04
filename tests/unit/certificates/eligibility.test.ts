@@ -1,12 +1,22 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-const REPO_PATH = '../../../backend/src/modules/certificates/certificates.repository.js';
-const REGISTRATIONS_SERVICE_PATH = '../../../backend/src/modules/registrations/registrations.service.js';
-const CHECKPOINTS_REPO_PATH = '../../../backend/src/modules/checkpoints/checkpoints.repository.js';
-const EVENT_SERVICE_PATH = '../../../backend/src/modules/event/event.service.js';
-const ATTENDEES_REPO_PATH = '../../../backend/src/modules/attendees/attendees.repository.js';
-const USERS_SERVICE_PATH = '../../../backend/src/modules/users/users.service.js';
-const EMAILS_SERVICE_PATH = '../../../backend/src/modules/emails/emails.service.js';
+const {
+  REPO_PATH,
+  REGISTRATIONS_SERVICE_PATH,
+  CHECKPOINTS_REPO_PATH,
+  EVENT_SERVICE_PATH,
+  ATTENDEES_REPO_PATH,
+  USERS_SERVICE_PATH,
+  EMAILS_SERVICE_PATH,
+} = vi.hoisted(() => ({
+  REPO_PATH: '../../../backend/src/modules/certificates/certificates.repository.js',
+  REGISTRATIONS_SERVICE_PATH: '../../../backend/src/modules/registrations/registrations.service.js',
+  CHECKPOINTS_REPO_PATH: '../../../backend/src/modules/checkpoints/checkpoints.repository.js',
+  EVENT_SERVICE_PATH: '../../../backend/src/modules/event/event.service.js',
+  ATTENDEES_REPO_PATH: '../../../backend/src/modules/attendees/attendees.repository.js',
+  USERS_SERVICE_PATH: '../../../backend/src/modules/users/users.service.js',
+  EMAILS_SERVICE_PATH: '../../../backend/src/modules/emails/emails.service.js',
+}));
 
 vi.mock(REPO_PATH, () => ({
   certificatesRepository: {
@@ -39,9 +49,8 @@ const { registrationsService } = await import(REGISTRATIONS_SERVICE_PATH);
 const { checkpointsRepository } = await import(CHECKPOINTS_REPO_PATH);
 const { eventService } = await import(EVENT_SERVICE_PATH);
 const { attendeesRepository } = await import(ATTENDEES_REPO_PATH);
-const { certificatesService } = await import(
-  '../../../backend/src/modules/certificates/certificates.service.js'
-);
+const { certificatesService } =
+  await import('../../../backend/src/modules/certificates/certificates.service.js');
 
 describe('certificatesService.isEligible', () => {
   beforeEach(() => {
@@ -79,7 +88,9 @@ describe('certificatesService.isEligible', () => {
   it('is eligible with a confirmed registration and at least one checkpoint completion', async () => {
     vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({ status: 'CONFIRMED' });
     vi.mocked(eventService.getCurrent).mockResolvedValue({ id: 'event-1' });
-    vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([{ checkpoint_id: 'cp-1' }]);
+    vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([
+      { checkpoint_id: 'cp-1' },
+    ]);
     const result = await certificatesService.isEligible('attendee-1');
     expect(result).toEqual({ eligible: true });
   });
@@ -109,7 +120,10 @@ describe('certificatesService.issue', () => {
     const existing = { id: 'cert-1', status: 'ISSUED', certificate_type: 'PARTICIPATION' };
     vi.mocked(certificatesRepository.findActiveByAttendeeAndType).mockResolvedValue(existing);
 
-    const result = await certificatesService.issue({ attendeeId: 'attendee-1', title: 'Participation' });
+    const result = await certificatesService.issue({
+      attendeeId: 'attendee-1',
+      title: 'Participation',
+    });
 
     expect(certificatesRepository.issue).not.toHaveBeenCalled();
     expect(result.id).toBe('cert-1');
@@ -119,14 +133,22 @@ describe('certificatesService.issue', () => {
     vi.mocked(certificatesRepository.findActiveByAttendeeAndType).mockResolvedValue(null);
     vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({ status: 'CONFIRMED' });
     vi.mocked(eventService.getCurrent).mockResolvedValue({ id: 'event-1' });
-    vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([{ checkpoint_id: 'cp-1' }]);
+    vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([
+      { checkpoint_id: 'cp-1' },
+    ]);
     const issuedRow = { id: 'cert-2', status: 'ISSUED', certificate_type: 'PARTICIPATION' };
     vi.mocked(certificatesRepository.issue).mockResolvedValue(issuedRow);
     const { usersService } = await import(USERS_SERVICE_PATH);
     const { emailsService } = await import(EMAILS_SERVICE_PATH);
-    vi.mocked(usersService.getPublicUserById).mockResolvedValue({ id: 'user-1', email: 'a@example.test' });
+    vi.mocked(usersService.getPublicUserById).mockResolvedValue({
+      id: 'user-1',
+      email: 'a@example.test',
+    });
 
-    const result = await certificatesService.issue({ attendeeId: 'attendee-1', title: 'Participation' });
+    const result = await certificatesService.issue({
+      attendeeId: 'attendee-1',
+      title: 'Participation',
+    });
 
     expect(result.id).toBe('cert-2');
     expect(emailsService.enqueue).toHaveBeenCalledWith(
@@ -141,13 +163,22 @@ describe('certificatesService.issue', () => {
   it('recovers from a concurrent-issue race (23505) by returning the winner', async () => {
     vi.mocked(certificatesRepository.findActiveByAttendeeAndType)
       .mockResolvedValueOnce(null) // pre-check: nothing yet
-      .mockResolvedValueOnce({ id: 'cert-winner', status: 'ISSUED', certificate_type: 'PARTICIPATION' });
+      .mockResolvedValueOnce({
+        id: 'cert-winner',
+        status: 'ISSUED',
+        certificate_type: 'PARTICIPATION',
+      });
     vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({ status: 'CONFIRMED' });
     vi.mocked(eventService.getCurrent).mockResolvedValue({ id: 'event-1' });
-    vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([{ checkpoint_id: 'cp-1' }]);
+    vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([
+      { checkpoint_id: 'cp-1' },
+    ]);
     vi.mocked(certificatesRepository.issue).mockRejectedValue({ code: '23505' });
 
-    const result = await certificatesService.issue({ attendeeId: 'attendee-1', title: 'Participation' });
+    const result = await certificatesService.issue({
+      attendeeId: 'attendee-1',
+      title: 'Participation',
+    });
 
     expect(result.id).toBe('cert-winner');
   });

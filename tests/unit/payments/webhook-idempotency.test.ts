@@ -1,12 +1,22 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-const PAYMENTS_REPO_PATH = '../../../backend/src/modules/payments/payments.repository.js';
-const PAYMENT_PROVIDER_PATH = '../../../backend/src/integrations/payment/index.js';
-const REGISTRATIONS_SERVICE_PATH = '../../../backend/src/modules/registrations/registrations.service.js';
-const ATTENDEES_SERVICE_PATH = '../../../backend/src/modules/attendees/attendees.service.js';
-const USERS_SERVICE_PATH = '../../../backend/src/modules/users/users.service.js';
-const EMAILS_SERVICE_PATH = '../../../backend/src/modules/emails/emails.service.js';
-const EVENT_SERVICE_PATH = '../../../backend/src/modules/event/event.service.js';
+const {
+  PAYMENTS_REPO_PATH,
+  PAYMENT_PROVIDER_PATH,
+  REGISTRATIONS_SERVICE_PATH,
+  ATTENDEES_SERVICE_PATH,
+  USERS_SERVICE_PATH,
+  EMAILS_SERVICE_PATH,
+  EVENT_SERVICE_PATH,
+} = vi.hoisted(() => ({
+  PAYMENTS_REPO_PATH: '../../../backend/src/modules/payments/payments.repository.js',
+  PAYMENT_PROVIDER_PATH: '../../../backend/src/integrations/payment/index.js',
+  REGISTRATIONS_SERVICE_PATH: '../../../backend/src/modules/registrations/registrations.service.js',
+  ATTENDEES_SERVICE_PATH: '../../../backend/src/modules/attendees/attendees.service.js',
+  USERS_SERVICE_PATH: '../../../backend/src/modules/users/users.service.js',
+  EMAILS_SERVICE_PATH: '../../../backend/src/modules/emails/emails.service.js',
+  EVENT_SERVICE_PATH: '../../../backend/src/modules/event/event.service.js',
+}));
 
 vi.mock(PAYMENTS_REPO_PATH, () => ({
   paymentsRepository: {
@@ -41,7 +51,8 @@ vi.mock(EVENT_SERVICE_PATH, () => ({
 const { paymentsRepository } = await import(PAYMENTS_REPO_PATH);
 const { getPaymentProvider } = await import(PAYMENT_PROVIDER_PATH);
 const { registrationsService } = await import(REGISTRATIONS_SERVICE_PATH);
-const { paymentsService } = await import('../../../backend/src/modules/payments/payments.service.js');
+const { paymentsService } =
+  await import('../../../backend/src/modules/payments/payments.service.js');
 
 function mockProvider(verifies: boolean) {
   vi.mocked(getPaymentProvider).mockReturnValue({
@@ -60,7 +71,10 @@ describe('paymentsService.handleWebhook', () => {
 
   it('rejects a webhook with an invalid signature and never touches the payment', async () => {
     mockProvider(false);
-    const body = JSON.stringify({ event: 'payment.captured', payload: { payment: { entity: {} } } });
+    const body = JSON.stringify({
+      event: 'payment.captured',
+      payload: { payment: { entity: {} } },
+    });
 
     await expect(paymentsService.handleWebhook(body, 'bad-signature')).rejects.toThrow(
       /invalid webhook signature/i,
