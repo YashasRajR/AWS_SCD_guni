@@ -38,14 +38,6 @@ h4 {
   letter-spacing: 0.01em;
 }
 
-/* Extruded / drop-shadow "3D poster" treatment for the largest,
-   highest-impact headlines (hero + every page's top title) -- not
-   applied to small card titles like speaker names, which stay flat for
-   legibility at that size. Selectors added to their existing rules
-   further down this file (.hero h1, .page-section-header h1,
-   .page-hero h1) rather than a class, since every page already renders
-   its title through one of those three. */
-
 p {
   margin: 0;
 }
@@ -199,11 +191,7 @@ ol {
 .page-hero h1 {
   font-size: var(--text-h1);
   margin: 0 0 var(--space-3);
-  text-shadow:
-    1px 1px 0 var(--primary),
-    2px 2px 0 var(--primary),
-    3px 3px 0 var(--primary),
-    4px 4px 14px rgba(80, 55, 122, 0.35);
+  color: var(--primary);
 }
 
 .page-hero p {
@@ -704,23 +692,27 @@ ol {
 
 .hero {
   position: relative;
-  /* Clean two-stop poster-purple gradient -- no grid overlay, no
-     jagged shard graphic. Keep the hero band simple so it reads as
-     the poster's own background, not a separate decorative device. */
-  background: linear-gradient(160deg, var(--secondary) 0%, var(--primary) 100%);
-  color: var(--secondary-foreground);
+  /* Matches the poster exactly: white/near-white page background with
+     a faint lavender grid, not a purple band. Purple lives in the
+     typography and accents, not the page fill. */
+  background: var(--background);
+  background-image: repeating-linear-gradient(
+      0deg,
+      rgba(80, 55, 122, 0.06) 0,
+      rgba(80, 55, 122, 0.06) 1px,
+      transparent 1px,
+      transparent 48px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(80, 55, 122, 0.06) 0,
+      rgba(80, 55, 122, 0.06) 1px,
+      transparent 1px,
+      transparent 48px
+    );
+  color: var(--foreground);
   padding: var(--space-16) 0 var(--space-12);
   overflow: hidden;
-}
-
-.hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  /* Single soft orange glow -- the poster's script-accent color,
-     used sparingly rather than as a competing graphic. */
-  background-image: radial-gradient(circle at 80% 15%, rgba(242, 138, 69, 0.22), transparent 55%);
-  pointer-events: none;
 }
 
 .hero-inner {
@@ -769,15 +761,11 @@ ol {
   font-size: var(--text-display);
   max-width: 16ch;
   margin: var(--space-4) 0 0;
-  text-shadow:
-    2px 2px 0 var(--accent),
-    4px 4px 0 var(--accent),
-    6px 6px 0 var(--accent),
-    8px 8px 22px rgba(242, 138, 69, 0.5);
+  color: var(--primary);
 }
 
 .hero-lede {
-  color: rgba(244, 246, 248, 0.85);
+  color: var(--muted);
   font-size: 1.1rem;
   max-width: 58ch;
   margin: var(--space-4) 0 0;
@@ -795,7 +783,7 @@ ol {
   font-size: var(--text-caption);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: rgba(244, 246, 248, 0.6);
+  color: var(--muted);
 }
 
 .hero-facts dd {
@@ -826,8 +814,8 @@ ol {
 }
 
 .hero-stat {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: var(--space-4);
 }
@@ -840,7 +828,7 @@ ol {
 
 .hero-stat-label {
   font-size: var(--text-caption);
-  color: rgba(244, 246, 248, 0.75);
+  color: var(--muted);
   margin-top: 0.2rem;
 }
 
@@ -1697,11 +1685,7 @@ ol {
 .page-section-header h1 {
   margin: 0 0 var(--space-2);
   font-size: var(--text-h1);
-  text-shadow:
-    1px 1px 0 var(--primary),
-    2px 2px 0 var(--primary),
-    3px 3px 0 var(--primary),
-    4px 4px 14px rgba(80, 55, 122, 0.35);
+  color: var(--primary);
 }
 
 .page-section-lede {
