@@ -7,8 +7,8 @@
   --border: #e2e5ea;
   --text: #1a1d23;
   --text-muted: #666e7a;
-  --brand: #ff9900;
-  --brand-dark: #cc7a00;
+  --brand: #50377a;
+  --brand-dark: #3f2b61;
   --danger: #d64545;
   --danger-bg: #fbe8e8;
   --green-bg: #e5f6ec;
@@ -29,6 +29,10 @@
     --border: #2c3038;
     --text: #f0f1f3;
     --text-muted: #9aa1ac;
+    /* --brand-dark also does double duty as text-on-background color
+       (e.g. active nav-link text elsewhere); the light-mode dark-purple
+       value is unreadable on a near-black page, so lighten it here. */
+    --brand-dark: #b39dda;
     --danger-bg: #3a1f1f;
     --green-bg: #163625;
     --green-text: #7fe3a4;
@@ -43,6 +47,14 @@
 
 * {
   box-sizing: border-box;
+}
+
+/* Visible, high-contrast focus ring -- admin previously had none at all,
+   relying entirely on inconsistent browser defaults. */
+:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 body {
@@ -86,7 +98,7 @@ textarea {
 
 .sidebar-brand-mark {
   background: var(--brand);
-  color: #1a1d23;
+  color: #ffffff;
   border-radius: 6px;
   padding: 0.15rem 0.4rem;
   font-size: 0.8rem;
@@ -120,7 +132,7 @@ textarea {
 
 .nav-link-active {
   background: var(--brand);
-  color: #1a1d23;
+  color: #ffffff;
   font-weight: 600;
 }
 
@@ -336,6 +348,10 @@ textarea {
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
+  /* Admin is dense operational software (fine to be denser than the
+     public/volunteer apps) but primary actions still need a real tap
+     target -- phase 6 rule 40 targets ~44px for important controls. */
+  min-height: 44px;
 }
 
 .btn:disabled {
@@ -345,7 +361,7 @@ textarea {
 
 .btn-primary {
   background: var(--brand);
-  color: #1a1d23;
+  color: #ffffff;
 }
 .btn-primary:hover:not(:disabled) {
   background: var(--brand-dark);
@@ -390,6 +406,8 @@ textarea {
   cursor: pointer;
   color: var(--text-muted);
   padding: 0.1rem 0.4rem;
+  min-width: 36px;
+  min-height: 36px;
 }
 
 .row-actions {
@@ -608,4 +626,49 @@ textarea {
 
 .table-sort-header:hover {
   color: var(--text);
+}
+
+/* --- Responsive: below tablet width, the fixed 240px sidebar doesn't fit
+   -- collapse the shell to a column with a horizontally-scrollable nav bar
+   instead of a full off-canvas drawer (admin stays desktop-first per phase
+   6 content-density guidance, but must not be unusable on a tablet). ------ */
+@media (max-width: 900px) {
+  .app-shell {
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem;
+    overflow-x: auto;
+    overflow-y: visible;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .sidebar-brand {
+    padding: 0;
+    flex-shrink: 0;
+  }
+
+  nav {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .nav-section {
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+  }
+
+  .nav-section-title {
+    padding: 0;
+  }
 }

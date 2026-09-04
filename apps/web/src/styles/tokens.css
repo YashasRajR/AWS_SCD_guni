@@ -74,16 +74,20 @@
   --z-banner: 25;
 
   /* --- Color: semantic tokens (light) ------------------------------------- */
-  --background: #f6f7f9;
+  --background: #f8f6fc;
   --foreground: #14181f;
   --surface: #ffffff;
   --surface-muted: #eef1f5;
-  --primary: #ff9900;
-  --primary-hover: #cc7a00;
-  --primary-foreground: #14181f;
-  --secondary: #16222f;
+  --primary: #50377a;
+  --primary-hover: #3f2b61;
+  --primary-foreground: #ffffff;
+  --secondary: #332052;
   --secondary-foreground: #f4f6f8;
-  --accent: #1a56b0;
+  --accent: #f28a45;
+  /* Separate from --accent: --accent is orange, decorative-only (borders,
+     badges) because orange text fails AA contrast on light backgrounds
+     (phase 6 rule 46). --link is what body text/links actually use. */
+  --link: #50377a;
   --border: #e2e5ea;
   --muted: #656d79;
 
@@ -101,16 +105,20 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #12151b;
+    --background: #17101f;
     --foreground: #f2f3f5;
     --surface: #1b1f27;
     --surface-muted: #232833;
-    --primary: #ff9900;
-    --primary-hover: #ffb43d;
-    --primary-foreground: #14181f;
-    --secondary: #0d1520;
+    --primary: #50377a;
+    --primary-hover: #6b4f9e;
+    --primary-foreground: #ffffff;
+    --secondary: #241934;
     --secondary-foreground: #f4f6f8;
-    --accent: #8ab4f8;
+    --accent: #f28a45;
+    /* Lighter than --primary -- purple text on a near-black page background
+       needs more luminance than purple-as-button-fill does (button text is
+       white regardless of theme, so --primary itself stays constant). */
+    --link: #b39dda;
     --border: #2b313c;
     --muted: #a1a8b3;
 

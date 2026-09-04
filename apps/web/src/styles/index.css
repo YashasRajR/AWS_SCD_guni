@@ -41,7 +41,7 @@ img {
 }
 
 a {
-  color: var(--accent);
+  color: var(--link);
 }
 
 button,
@@ -454,7 +454,7 @@ ol {
 }
 
 .btn-link {
-  color: var(--accent);
+  color: var(--link);
   text-decoration: none;
   font-weight: var(--fw-semibold);
   font-size: var(--text-small);
@@ -1393,7 +1393,7 @@ ol {
    ============================================================ */
 
 .registration-cta {
-  background: linear-gradient(135deg, var(--primary) 0%, #ffb43d 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, #7857a8 100%);
   color: var(--primary-foreground);
   border-radius: var(--radius-lg);
   padding: var(--space-10) var(--space-6);
@@ -1420,7 +1420,7 @@ ol {
   color: var(--secondary-foreground);
 }
 .registration-cta .btn-primary:hover:not(:disabled) {
-  background: #0d1520;
+  background: #241934;
 }
 
 /* ============================================================

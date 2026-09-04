@@ -7,8 +7,8 @@
   --border: #e2e5ea;
   --text: #1a1d23;
   --text-muted: #666e7a;
-  --brand: #ff9900;
-  --brand-dark: #cc7a00;
+  --brand: #50377a;
+  --brand-dark: #3f2b61;
   --navy: #16222f;
   --navy-text: #f4f6f8;
   --danger: #d64545;
@@ -25,6 +25,9 @@
     --border: #2c3038;
     --text: #f0f1f3;
     --text-muted: #9aa1ac;
+    /* --brand-dark also doubles as text-on-background color (.btn-link,
+       .bottom-nav-link.active) -- lighten for readability on a near-black page. */
+    --brand-dark: #b39dda;
     --navy: #0d1520;
     --danger-bg: #3a1f1f;
     --green-bg: #163625;
@@ -34,6 +37,26 @@
 
 * {
   box-sizing: border-box;
+}
+
+/* Visible, high-contrast focus ring -- volunteer previously had none at
+   all, relying entirely on inconsistent browser defaults. */
+:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 body {
@@ -79,7 +102,7 @@ input {
 
 .topbar-mark {
   background: var(--brand);
-  color: #1a1d23;
+  color: #ffffff;
   border-radius: 6px;
   padding: 0.15rem 0.4rem;
   font-size: 0.8rem;
@@ -108,6 +131,8 @@ input {
   font-size: 1.2rem;
   cursor: pointer;
   padding: 0.3rem;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .app-main {
@@ -301,6 +326,9 @@ input {
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
+  /* volunteer is used standing up, on phones, mid-checkin -- real tap
+     targets matter here more than in any other app (phase 6 rule 40). */
+  min-height: 44px;
 }
 
 .btn:disabled {
@@ -310,7 +338,7 @@ input {
 
 .btn-primary {
   background: var(--brand);
-  color: #1a1d23;
+  color: #ffffff;
 }
 .btn-primary:hover:not(:disabled) {
   background: var(--brand-dark);

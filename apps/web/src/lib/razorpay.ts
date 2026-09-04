@@ -81,7 +81,7 @@ export async function openRazorpayCheckout(options: {
     description: 'Event registration',
     handler: () => options.onSuccess(),
     modal: { ondismiss: () => options.onDismiss() },
-    theme: { color: '#FF9900' },
+    theme: { color: '#50377A' },
   });
   instance.open();
 }

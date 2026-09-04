@@ -76,7 +76,11 @@ export function CheckInPage() {
         <h1>{checkpoint?.name ?? 'Check in'}</h1>
       </div>
 
+      <label htmlFor="attendee-search" className="visually-hidden">
+        Search attendees by name, email, or registration number
+      </label>
       <input
+        id="attendee-search"
         type="search"
         className="search-input"
         placeholder="Search by name, email, or registration number"
