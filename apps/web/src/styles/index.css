@@ -1650,12 +1650,29 @@ ol {
    AUTH PAGES
    ============================================================ */
 
+/* Same faint blueprint grid as the hero (spec section 48: "use the
+   robot and blueprint environment" -- no robot asset yet, but the grid
+   carries the identity on its own). */
 .auth-page {
   min-height: 70vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--space-8) var(--container-pad);
+  background-image: repeating-linear-gradient(
+      0deg,
+      rgba(80, 55, 122, 0.06) 0,
+      rgba(80, 55, 122, 0.06) 1px,
+      transparent 1px,
+      transparent 48px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(80, 55, 122, 0.06) 0,
+      rgba(80, 55, 122, 0.06) 1px,
+      transparent 1px,
+      transparent 48px
+    );
 }
 
 .auth-card {
@@ -1665,6 +1682,7 @@ ol {
   padding: var(--space-8);
   width: 100%;
   max-width: 420px;
+  box-shadow: var(--shadow-md);
 }
 
 .auth-card-wide {
@@ -1672,6 +1690,10 @@ ol {
 }
 
 .auth-card h1 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-tight);
+  color: var(--primary);
   margin: 0 0 0.4rem;
   font-size: var(--text-h3);
 }
@@ -1702,6 +1724,15 @@ ol {
   font-weight: var(--fw-semibold);
 }
 
+/* Technical-style field label (spec section 57): small, uppercase,
+   tracked -- the label text is always the field's first child. */
+.form-field > span:first-child {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: var(--text-caption);
+  color: var(--muted);
+}
+
 .form-field-span {
   grid-column: 1 / -1;
 }
@@ -1717,6 +1748,7 @@ ol {
   margin-top: 0.2rem;
   width: 18px;
   height: 18px;
+  accent-color: var(--primary);
 }
 
 .form-field input[type='text'],
