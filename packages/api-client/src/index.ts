@@ -14,6 +14,34 @@ export class ApiClientError extends Error {
   }
 }
 
+/**
+ * Maps a failed request to a status-appropriate, user-facing message.
+ * Every app's list/error UI should call this instead of always falling
+ * back to err.message, so a 403 doesn't read the same as a 500 (Phase 5
+ * requires distinct per-status-code UX). 409 keeps the server's own
+ * message since conflict errors are already written to be specific
+ * ("This registration has already been paid for.", etc).
+ */
+export function describeApiError(err: unknown): string {
+  if (err instanceof ApiClientError) {
+    switch (err.status) {
+      case 401:
+        return 'Your session has expired. Please sign in again.';
+      case 403:
+        return "You don't have permission to do this.";
+      case 404:
+        return 'Not found.';
+      case 409:
+        return err.message;
+      case 429:
+        return 'Too many requests — please wait a moment and try again.';
+      default:
+        return err.message;
+    }
+  }
+  return 'Something went wrong. Please try again.';
+}
+
 export interface ApiClientOptions {
   baseUrl: string;
   /** Returns the current auth token (if any) at call time — never stored here. */

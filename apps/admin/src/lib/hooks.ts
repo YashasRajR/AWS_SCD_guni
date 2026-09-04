@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { EventConfig, PaginatedData } from '@scd/types';
 import { apiClient } from './api.js';
-import { ApiClientError } from '@scd/api-client';
+import { describeApiError } from '@scd/api-client';
 
 interface UsePaginatedResourceResult<T> {
   items: T[];
@@ -52,7 +52,7 @@ export function usePaginatedResource<T>(
       })
       .catch((err) => {
         if (cancelled) return;
-        setError(err instanceof ApiClientError ? err.message : 'Failed to load.');
+        setError(describeApiError(err));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -85,7 +85,7 @@ export function useResource<T>(path: string, enabled = true): UsePaginatedResour
         if (!cancelled) setData(result);
       })
       .catch((err) => {
-        if (!cancelled) setError(err instanceof ApiClientError ? err.message : 'Failed to load.');
+        if (!cancelled) setError(describeApiError(err));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

@@ -29,12 +29,18 @@ export function statusTone(status: string): 'success' | 'warning' | 'neutral' | 
     case 'ISSUED':
       return 'success';
     case 'PENDING':
+    case 'PROCESSING':
       return 'warning';
     case 'WAITLISTED':
+      return 'info';
+    case 'PAID':
+      return 'success';
+    case 'REFUNDED':
       return 'info';
     case 'CANCELLED':
     case 'REJECTED':
     case 'REVOKED':
+    case 'FAILED':
       return 'error';
     default:
       return 'neutral';

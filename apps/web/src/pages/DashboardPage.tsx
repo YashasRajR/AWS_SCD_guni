@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { Attendee, Certificate, Checkpoint, PublicUser, Registration, Ticket } from '@scd/types';
+import type { Attendee, Certificate, Checkpoint, EventConfig, Payment, PublicUser, Registration, Ticket } from '@scd/types';
 import { ApiClientError } from '@scd/api-client';
 import { useResource } from '../lib/hooks.js';
 import { apiClient } from '../lib/api.js';
 import { formatDateTime, statusTone } from '../lib/format.js';
+import { openRazorpayCheckout } from '../lib/razorpay.js';
 import { Badge } from '../components/ui/Badge.js';
 import { useDocumentHead } from '../lib/seo.js';
 
@@ -63,9 +64,18 @@ export function DashboardPage() {
     error: achievementsError,
     reload: reloadAchievements,
   } = useResource<unknown>('/me/achievements');
+  const { data: event } = useResource<EventConfig>('/event');
+  const {
+    data: payment,
+    error: paymentError,
+    reload: reloadPayment,
+  } = useResource<Payment>('/me/payment', Boolean(registration));
 
   const [registering, setRegistering] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+  const [checkoutPending, setCheckoutPending] = useState(false);
 
   const handleRegister = async () => {
     setRegistering(true);
@@ -80,6 +90,34 @@ export function DashboardPage() {
     }
   };
 
+  const handlePay = async () => {
+    setPaying(true);
+    setPayError(null);
+    try {
+      const result = await apiClient.post<{ payment: Payment; providerOrderId: string; providerKey: string }>(
+        '/me/payment/initiate',
+        {},
+      );
+      await openRazorpayCheckout({
+        keyId: result.providerKey,
+        orderId: result.providerOrderId,
+        amount: result.payment.amount,
+        currency: result.payment.currency,
+        onSuccess: () => {
+          // The checkout UI reported success, but only the backend webhook
+          // confirms a payment — reload from the API rather than assume.
+          setCheckoutPending(true);
+          reloadPayment();
+        },
+        onDismiss: () => setPaying(false),
+      });
+    } catch (err) {
+      setPayError(err instanceof ApiClientError ? err.message : 'Could not start payment.');
+      setPaying(false);
+    }
+  };
+
+  const requiresPayment = event ? Number(event.registrationFee) > 0 : false;
   const completedCount = progress.filter((p) => p.completed).length;
 
   useDocumentHead({ title: 'My Dashboard' });
@@ -136,6 +174,42 @@ export function DashboardPage() {
             </>
           )}
         </section>
+
+        {requiresPayment && registration && registration.status === 'PENDING' && (
+          <section className="dashboard-card">
+            <h2>Payment</h2>
+            {paymentError ? (
+              <SectionError message={paymentError} onRetry={reloadPayment} />
+            ) : payment?.status === 'PAID' ? (
+              <>
+                <Badge tone="success">PAID</Badge>
+                <p className="status-line">
+                  Paid {payment.paidAt ? formatDateTime(payment.paidAt) : ''}. Your registration will be confirmed
+                  shortly.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="dashboard-card-row">
+                  <Badge tone={statusTone(payment?.status ?? 'PENDING')}>{payment?.status ?? 'PENDING'}</Badge>
+                  <span className="dashboard-card-meta">
+                    {event?.currency} {event?.registrationFee}
+                  </span>
+                </p>
+                {checkoutPending && (
+                  <p className="status-line">
+                    Payment submitted — confirming with the payment provider. This can take a minute; refresh to
+                    check.
+                  </p>
+                )}
+                {payError && <p className="form-error">{payError}</p>}
+                <button type="button" className="btn btn-primary" onClick={handlePay} disabled={paying}>
+                  {paying ? 'Opening checkout…' : 'Pay now'}
+                </button>
+              </>
+            )}
+          </section>
+        )}
 
         <section className="dashboard-card">
           <h2>Ticket</h2>

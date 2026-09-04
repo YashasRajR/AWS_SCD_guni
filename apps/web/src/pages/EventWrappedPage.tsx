@@ -1,11 +1,46 @@
+import { useState } from 'react';
 import type { EventWrapped } from '@scd/types';
 import { useResource } from '../lib/hooks.js';
 import { formatDateTime } from '../lib/format.js';
 import { useDocumentHead } from '../lib/seo.js';
 
+/**
+ * Uses the real Web Share API where available (mobile browsers, most
+ * desktop browsers as of 2024+), falling back to copying a share-ready
+ * summary to the clipboard. Never claims a post was made to a specific
+ * platform — this only ever hands the OS's real share sheet or the
+ * clipboard, both of which the user themselves controls the destination of.
+ */
+async function shareWrapped(wrapped: EventWrapped): Promise<'shared' | 'copied' | 'failed'> {
+  const text = `I completed ${wrapped.statistics.checkpointsCompleted}/${wrapped.statistics.totalCheckpoints} checkpoints and unlocked ${wrapped.statistics.achievementsUnlocked} achievements at AWS Student Community Day 2026!`;
+  const shareData = { title: 'My AWS Student Community Day 2026 Wrapped', text, url: window.location.href };
+  if (navigator.share) {
+    try {
+      await navigator.share(shareData);
+      return 'shared';
+    } catch {
+      // User cancelled the native share sheet — not an error.
+      return 'failed';
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(`${text} ${window.location.href}`);
+    return 'copied';
+  } catch {
+    return 'failed';
+  }
+}
+
 export function EventWrappedPage() {
   useDocumentHead({ title: 'Event Wrapped' });
   const { data: wrapped, loading, error } = useResource<EventWrapped>('/me/event-wrapped');
+  const [shareStatus, setShareStatus] = useState<'idle' | 'shared' | 'copied' | 'failed'>('idle');
+
+  const handleShare = async () => {
+    if (!wrapped) return;
+    const result = await shareWrapped(wrapped);
+    setShareStatus(result);
+  };
 
   return (
     <div className="page-section">
@@ -72,6 +107,12 @@ export function EventWrappedPage() {
             <p className="dashboard-card-meta">
               Generated {formatDateTime(wrapped.generatedAt)}
             </p>
+            <button type="button" className="btn btn-secondary" onClick={handleShare}>
+              Share my wrapped
+            </button>
+            {shareStatus === 'copied' && <p className="status-line">Copied to clipboard — paste it anywhere you like.</p>}
+            {shareStatus === 'shared' && <p className="status-line">Shared.</p>}
+            {shareStatus === 'failed' && <p className="status-line">Could not share — try copying the link manually.</p>}
           </section>
         </div>
       )}

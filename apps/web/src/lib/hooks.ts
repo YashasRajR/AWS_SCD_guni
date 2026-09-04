@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { apiClient } from './api.js';
-import { ApiClientError } from '@scd/api-client';
+import { ApiClientError, describeApiError } from '@scd/api-client';
 
 export interface UseResourceResult<T> {
   /** The raw fetch result — a single object for endpoints like /event or /me/ticket. */
@@ -48,7 +48,7 @@ export function useResource<T>(path: string, enabled = true): UseResourceResult<
           setNotFound(true);
           setData(null);
         } else {
-          setError(err instanceof ApiClientError ? err.message : 'Failed to load.');
+          setError(describeApiError(err));
         }
       })
       .finally(() => {
