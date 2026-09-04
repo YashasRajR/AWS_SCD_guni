@@ -3,24 +3,27 @@
    Every component styles from these variables; no component
    should hard-code a color, spacing value, radius, or duration.
 
-   Always-dark theme (not OS-preference-driven) — the site's visual
-   identity is a bold, high-energy dark aesthetic (inspired by event
-   sites like Mood Indigo) built on the brand's purple/orange palette,
-   not a neutral light theme with an optional dark mode.
+   Fixed light theme matching the official event poster (Ganpat
+   University AWS Students Community Day 2026): lavender/white
+   background, deep purple primary (#50377a), orange script accent
+   (#f28a45). Not OS-preference-driven -- the poster's palette is
+   the site's permanent identity. Mood Indigo is UI/UX + interaction
+   + layout inspiration only (nav behavior, card motion, scroll
+   reveals, bold display typography) -- never its dark/neon colors.
    ============================================================ */
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
   /* --- Typography -------------------------------------------------- */
   --font-sans:
     'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  /* Bold condensed display face for headings/hero — the "poster" voice.
-     Falls back gracefully to a narrow system sans if the Google Fonts
-     request is ever blocked. */
+  /* Bold condensed display face for headings/hero -- the poster's
+     voice. Falls back gracefully to a narrow system sans if the
+     Google Fonts request is ever blocked. */
   --font-display: 'Anton', 'Arial Narrow', 'Segoe UI', sans-serif;
 
-  /* Fluid type scale — readable at 320px, comfortable at 1920px+. */
+  /* Fluid type scale -- readable at 320px, comfortable at 1920px+. */
   --text-display: clamp(2.25rem, 1.4rem + 4vw, 4.25rem);
   --text-h1: clamp(1.8rem, 1.4rem + 1.8vw, 2.75rem);
   --text-h2: clamp(1.5rem, 1.25rem + 1.1vw, 2.1rem);
@@ -61,13 +64,10 @@
   --radius-lg: 16px;
   --radius-full: 999px;
 
-  /* --- Shadows (subtle depth) + glow (brand-colored, used sparingly on
-     hero/CTA elements for the neon-on-black energy) --------------------- */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
-  --glow-primary: 0 0 28px rgba(124, 79, 209, 0.45);
-  --glow-accent: 0 0 28px rgba(242, 138, 69, 0.4);
+  /* --- Shadows (subtle -- depth, not decoration) ------------------------ */
+  --shadow-sm: 0 1px 2px rgba(16, 20, 28, 0.06);
+  --shadow-md: 0 4px 16px rgba(16, 20, 28, 0.08);
+  --shadow-lg: 0 12px 32px rgba(16, 20, 28, 0.14);
 
   /* --- Containers -------------------------------------------------------- */
   --container-max: 1180px;
@@ -85,39 +85,35 @@
   --z-overlay: 40;
   --z-banner: 25;
 
-  /* --- Color: semantic tokens ------------------------------------------- */
-  --background: #0d0815;
-  --foreground: #f5f2fa;
-  --surface: #171022;
-  --surface-muted: #211a2e;
-  /* Brighter/more saturated than the brand's print-purple (#50377a) --
-     a flat brand-purple reads muddy against near-black, so the on-screen
-     primary is lifted for contrast and neon-on-black pop while staying
-     the same hue family. White text on this still clears AA (~5.4:1). */
-  --primary: #7c4fd1;
-  --primary-hover: #9b74e8;
+  /* --- Color: semantic tokens (poster palette) ---------------------------- */
+  --background: #f8f6fc;
+  --foreground: #14181f;
+  --surface: #ffffff;
+  --surface-muted: #eef1f5;
+  --primary: #50377a;
+  --primary-hover: #3f2b61;
   --primary-foreground: #ffffff;
-  --secondary: #2a1d40;
-  --secondary-foreground: #f4f0fa;
+  --secondary: #332052;
+  --secondary-foreground: #f4f6f8;
   --accent: #f28a45;
-  --accent-hover: #ff9f5e;
-  /* --accent stays orange and decorative-only (borders, badges, glows) --
-     orange text fails AA contrast (phase 6 rule 46). --link is what body
-     text/links actually use. */
-  --link: #b39dda;
-  --border: #34293f;
-  --muted: #a99bc0;
+  --accent-hover: #d9702f;
+  /* Separate from --accent: --accent is orange, decorative-only (borders,
+     badges) because orange text fails AA contrast on light backgrounds
+     (phase 6 rule 46). --link is what body text/links actually use. */
+  --link: #50377a;
+  --border: #e2e5ea;
+  --muted: #656d79;
 
-  --success: #7fe3a4;
-  --success-bg: #163625;
-  --warning: #f0c674;
-  --warning-bg: #3a2e12;
-  --error: #f28b82;
-  --error-bg: #3a1f1f;
-  --info: #8ab4f8;
-  --info-bg: #182a44;
-  --neutral: #b3b9c2;
-  --neutral-bg: #262a30;
+  --success: #1c7a41;
+  --success-bg: #e5f6ec;
+  --warning: #97650c;
+  --warning-bg: #fdf1dc;
+  --error: #b3261e;
+  --error-bg: #fbe8e8;
+  --info: #1a56b0;
+  --info-bg: #e6f0fd;
+  --neutral: #565d68;
+  --neutral-bg: #eceef1;
 }
 
 /* Respect the OS-level reduced-motion preference everywhere. */

@@ -203,7 +203,7 @@ ol {
     1px 1px 0 var(--primary),
     2px 2px 0 var(--primary),
     3px 3px 0 var(--primary),
-    4px 4px 14px rgba(124, 79, 209, 0.5);
+    4px 4px 14px rgba(80, 55, 122, 0.35);
 }
 
 .page-hero p {
@@ -705,20 +705,20 @@ ol {
 .hero {
   position: relative;
   background:
-    linear-gradient(155deg, var(--secondary) 0%, var(--background) 100%),
+    linear-gradient(155deg, var(--secondary) 0%, var(--primary) 100%),
     /* Faint blueprint/grid motif -- echoes the event's print branding
        without competing with the headline. */
     repeating-linear-gradient(
       0deg,
-      rgba(124, 79, 209, 0.07) 0,
-      rgba(124, 79, 209, 0.07) 1px,
+      rgba(255, 255, 255, 0.06) 0,
+      rgba(255, 255, 255, 0.06) 1px,
       transparent 1px,
       transparent 48px
     ),
     repeating-linear-gradient(
       90deg,
-      rgba(124, 79, 209, 0.07) 0,
-      rgba(124, 79, 209, 0.07) 1px,
+      rgba(255, 255, 255, 0.06) 0,
+      rgba(255, 255, 255, 0.06) 1px,
       transparent 1px,
       transparent 48px
     );
@@ -731,8 +731,8 @@ ol {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle at 15% 20%, rgba(242, 138, 69, 0.18), transparent 45%),
-    radial-gradient(circle at 85% 75%, rgba(124, 79, 209, 0.28), transparent 45%);
+  background-image: radial-gradient(circle at 15% 20%, rgba(242, 138, 69, 0.22), transparent 45%),
+    radial-gradient(circle at 85% 75%, rgba(255, 255, 255, 0.14), transparent 45%);
   pointer-events: none;
 }
 
@@ -800,10 +800,10 @@ ol {
   max-width: 16ch;
   margin: var(--space-4) 0 0;
   text-shadow:
-    2px 2px 0 var(--primary),
-    4px 4px 0 var(--primary),
-    6px 6px 0 var(--primary),
-    8px 8px 22px rgba(124, 79, 209, 0.55);
+    2px 2px 0 var(--accent),
+    4px 4px 0 var(--accent),
+    6px 6px 0 var(--accent),
+    8px 8px 22px rgba(242, 138, 69, 0.5);
 }
 
 .hero-lede {
@@ -1731,7 +1731,7 @@ ol {
     1px 1px 0 var(--primary),
     2px 2px 0 var(--primary),
     3px 3px 0 var(--primary),
-    4px 4px 14px rgba(124, 79, 209, 0.5);
+    4px 4px 14px rgba(80, 55, 122, 0.35);
 }
 
 .page-section-lede {
