@@ -29,6 +29,33 @@ export const auditLogsService = {
     }
   },
 
+  /**
+   * Same as log(), for mutations with no HTTP request context — a payment
+   * webhook delivery is the canonical case (the provider calls us, there
+   * is no req.identity). Still best-effort/never-throws, same as log().
+   */
+  async logSystem(
+    action: string,
+    entityType: string,
+    entityId?: string | null,
+    metadata?: Record<string, unknown>,
+  ): Promise<void> {
+    try {
+      await auditLogsRepository.record({
+        userId: null,
+        role: 'SYSTEM',
+        action,
+        entityType,
+        entityId,
+        metadata,
+        ipAddress: null,
+        userAgent: null,
+      });
+    } catch (err) {
+      logger.warn({ err, action, entityType }, 'Failed to write system audit log');
+    }
+  },
+
   async list(page: number, pageSize: number): Promise<PaginatedData<AuditLog>> {
     const { rows, total } = await auditLogsRepository.list(page, pageSize);
     return {

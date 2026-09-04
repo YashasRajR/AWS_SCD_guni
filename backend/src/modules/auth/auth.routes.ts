@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+  changePasswordSchema,
   forgotPasswordSchema,
   loginSchema,
   logoutSchema,
@@ -8,6 +9,7 @@ import {
   resetPasswordSchema,
   verifyEmailSchema,
 } from '@scd/validation';
+import { authenticate } from '../../middleware/authentication/index.js';
 import { validate } from '../../middleware/validation/index.js';
 import { createAuthRateLimiter } from '../../middleware/rate-limit/index.js';
 import { asyncHandler } from '../../utils/async-handler.js';
@@ -52,4 +54,13 @@ authRouter.post(
   authRateLimiter,
   validate(verifyEmailSchema),
   asyncHandler(authController.verifyEmail),
+);
+// Authenticated (not the unauthenticated token-based reset flow above) —
+// proves the CURRENT password rather than email ownership.
+authRouter.post(
+  '/change-password',
+  authRateLimiter,
+  authenticate,
+  validate(changePasswordSchema),
+  asyncHandler(authController.changePassword),
 );

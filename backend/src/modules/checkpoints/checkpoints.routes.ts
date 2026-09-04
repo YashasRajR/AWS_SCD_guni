@@ -3,6 +3,8 @@ import { PERMISSIONS } from '@scd/constants';
 import {
   createCheckpointSchema,
   updateCheckpointSchema,
+  reverseAttendanceSchema,
+  attendanceIdParamSchema,
   paginationQuerySchema,
   uuidParamSchema,
 } from '@scd/validation';
@@ -47,4 +49,16 @@ checkpointsRouter.delete(
   requirePermission(PERMISSIONS.MANAGE_CHECKPOINTS),
   validate(uuidParamSchema, 'params'),
   asyncHandler(checkpointsController.remove),
+);
+
+// Correction/reversal — a mis-recorded attendance. Deliberately requires
+// MANAGE_CHECKPOINTS (admin), not just COMPLETE_CHECKPOINT (volunteer) —
+// undoing a completion is a correction, not a normal recording action.
+checkpointsRouter.post(
+  '/attendance/:attendanceId/reverse',
+  authenticate,
+  requirePermission(PERMISSIONS.MANAGE_CHECKPOINTS),
+  validate(attendanceIdParamSchema, 'params'),
+  validate(reverseAttendanceSchema),
+  asyncHandler(checkpointsController.reverseAttendance),
 );

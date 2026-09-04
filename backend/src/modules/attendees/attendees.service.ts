@@ -29,8 +29,8 @@ export const attendeesService = {
     return rows.map(toAttendee);
   },
 
-  async list(page: number, pageSize: number): Promise<PaginatedData<Attendee>> {
-    const { rows, total } = await attendeesRepository.list(page, pageSize);
+  async list(page: number, pageSize: number, search?: string): Promise<PaginatedData<Attendee>> {
+    const { rows, total } = await attendeesRepository.list(page, pageSize, search);
     return {
       items: rows.map(toAttendee),
       pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },

@@ -9,6 +9,7 @@ import { registrationsService } from '../registrations/registrations.service.js'
 import { eventService } from '../event/event.service.js';
 import { emailsService } from '../emails/emails.service.js';
 import { logger } from '../../utils/logger.js';
+import { auditLogsService } from '../audit-logs/audit-logs.service.js';
 import { AppError } from '../../utils/errors.js';
 
 export interface InitiatePaymentResult {
@@ -182,6 +183,10 @@ export const paymentsService = {
       await registrationsService.updateStatus(updated.registration_id, { status: 'CONFIRMED' });
       await this.notifyPaymentResult(updated, true);
       await paymentsRepository.markWebhookEventProcessed(eventId, 'PROCESSED');
+      await auditLogsService.logSystem('PAYMENT_CONFIRMED', 'payment', updated.id, {
+        registrationId: updated.registration_id,
+        provider: provider.name,
+      });
     } else if (parsed.event === 'payment.failed') {
       if (payment.status === 'FAILED' || payment.status === 'PAID') {
         await paymentsRepository.markWebhookEventProcessed(eventId, 'IGNORED', `Payment already ${payment.status}`);
@@ -190,6 +195,10 @@ export const paymentsService = {
       const updated = await paymentsRepository.markFailed(payment.id);
       await this.notifyPaymentResult(updated, false);
       await paymentsRepository.markWebhookEventProcessed(eventId, 'PROCESSED');
+      await auditLogsService.logSystem('PAYMENT_FAILED', 'payment', updated.id, {
+        registrationId: updated.registration_id,
+        provider: provider.name,
+      });
     } else {
       logger.info({ event: parsed.event }, 'Ignoring unhandled payment webhook event type');
       await paymentsRepository.markWebhookEventProcessed(eventId, 'IGNORED', 'Unhandled event type');

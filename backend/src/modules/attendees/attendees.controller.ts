@@ -5,8 +5,8 @@ import { sendSuccess } from '../../utils/response.js';
 
 export const attendeesController = {
   async list(req: Request, res: Response): Promise<void> {
-    const { page, pageSize } = req.query as unknown as PaginationQuery;
-    const data = await attendeesService.list(page, pageSize);
+    const { page, pageSize, search } = req.query as unknown as PaginationQuery;
+    const data = await attendeesService.list(page, pageSize, search);
     sendSuccess(res, data);
   },
 };

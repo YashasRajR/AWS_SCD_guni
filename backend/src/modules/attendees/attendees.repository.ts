@@ -57,15 +57,39 @@ export const attendeesRepository = {
     return rows;
   },
 
-  async list(page: number, pageSize: number): Promise<{ rows: AttendeeRow[]; total: number }> {
+  /** Admin listing — optional search across name/email/registration number, same
+   * columns the volunteer-facing search() above already matches against. */
+  async list(
+    page: number,
+    pageSize: number,
+    search?: string,
+  ): Promise<{ rows: AttendeeRow[]; total: number }> {
     const offset = (page - 1) * pageSize;
-    const [{ rows }, countResult] = await Promise.all([
-      getPool().query<AttendeeRow>(
-        'SELECT * FROM attendees ORDER BY created_at DESC LIMIT $1 OFFSET $2',
-        [pageSize, offset],
-      ),
-      getPool().query<{ count: string }>('SELECT count(*) FROM attendees'),
-    ]);
-    return { rows, total: Number(countResult.rows[0]?.count ?? 0) };
+    const values: unknown[] = [];
+    let where = '';
+    if (search && search.trim()) {
+      values.push(`%${search.trim()}%`);
+      where = `WHERE a.full_name ILIKE $1 OR u.email ILIKE $1 OR r.registration_number ILIKE $1`;
+    }
+
+    const baseFrom = `FROM attendees a
+       JOIN users u ON u.id = a.user_id
+       LEFT JOIN registrations r ON r.attendee_id = a.id
+       ${where}`;
+
+    const countRes = await getPool().query<{ count: string }>(
+      `SELECT COUNT(DISTINCT a.id)::text AS count ${baseFrom}`,
+      values,
+    );
+
+    const limitIdx = values.length + 1;
+    const offsetIdx = values.length + 2;
+    const { rows } = await getPool().query<AttendeeRow>(
+      `SELECT DISTINCT a.* ${baseFrom}
+       ORDER BY a.created_at DESC
+       LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
+      [...values, pageSize, offset],
+    );
+    return { rows, total: Number(countRes.rows[0]?.count ?? 0) };
   },
 };

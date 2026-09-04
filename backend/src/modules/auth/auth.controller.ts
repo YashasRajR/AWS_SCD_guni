@@ -42,4 +42,9 @@ export const authController = {
     await authService.verifyEmail(req.body);
     sendSuccess(res, null, 'Email verified.');
   },
+
+  async changePassword(req: Request, res: Response): Promise<void> {
+    const result = await authService.changePassword(req.identity!.userId, req.body);
+    sendSuccess(res, result, 'Password changed.');
+  },
 };

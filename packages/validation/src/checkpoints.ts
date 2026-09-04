@@ -32,3 +32,14 @@ export type CreateCheckpointInput = z.infer<typeof createCheckpointSchema>;
 
 export const updateCheckpointSchema = createCheckpointSchema.partial();
 export type UpdateCheckpointInput = z.infer<typeof updateCheckpointSchema>;
+
+/** Body for the admin attendance-reversal correction endpoint. Reason is
+ * optional but recommended — it's stored in the audit log entry. */
+export const reverseAttendanceSchema = z.object({
+  reason: z.string().trim().max(500).optional(),
+});
+export type ReverseAttendanceInput = z.infer<typeof reverseAttendanceSchema>;
+
+export const attendanceIdParamSchema = z.object({
+  attendanceId: z.string().uuid(),
+});

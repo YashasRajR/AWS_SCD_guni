@@ -77,6 +77,32 @@ export const checkpointsRepository = {
     return rows;
   },
 
+  async findAttendanceById(id: string): Promise<CheckpointAttendanceRow | null> {
+    const { rows } = await getPool().query<CheckpointAttendanceRow>(
+      'SELECT * FROM checkpoint_attendance WHERE id = $1',
+      [id],
+    );
+    return rows[0] ?? null;
+  },
+
+  /**
+   * Correction path for a mis-recorded attendance: flips COMPLETED ->
+   * REVERSED rather than deleting the row, so the history stays auditable
+   * (see docs/architecture/domain-and-data-model.md §5 — attendance is
+   * never hard-deleted). The WHERE status = 'COMPLETED' guard makes this
+   * idempotent/safe against double-reversal and against reversing a row
+   * that was never completed in the first place.
+   */
+  async reverseAttendance(id: string): Promise<CheckpointAttendanceRow | null> {
+    const { rows } = await getPool().query<CheckpointAttendanceRow>(
+      `UPDATE checkpoint_attendance SET status = 'REVERSED'
+       WHERE id = $1 AND status = 'COMPLETED'
+       RETURNING *`,
+      [id],
+    );
+    return rows[0] ?? null;
+  },
+
   async create(input: CreateCheckpointInput): Promise<CheckpointRow> {
     const { rows } = await getPool().query<CheckpointRow>(
       `INSERT INTO checkpoints (event_id, name, description, location, start_time, end_time, display_order, is_required)

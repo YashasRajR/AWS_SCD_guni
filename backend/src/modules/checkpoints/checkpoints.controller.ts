@@ -36,4 +36,15 @@ export const checkpointsController = {
     await auditLogsService.log(req, 'CHECKPOINT_DELETED', 'checkpoint', req.params.id!);
     sendSuccess(res, null, 'Checkpoint deleted.');
   },
+
+  /** Admin correction — POST /api/v1/admin/checkpoints/attendance/:attendanceId/reverse */
+  async reverseAttendance(req: Request, res: Response): Promise<void> {
+    const attendance = await checkpointsService.reverseAttendance(req.params.attendanceId!);
+    await auditLogsService.log(req, 'CHECKPOINT_ATTENDANCE_REVERSED', 'checkpoint_attendance', attendance.id, {
+      reason: (req.body as { reason?: string }).reason,
+      attendeeId: attendance.attendeeId,
+      checkpointId: attendance.checkpointId,
+    });
+    sendSuccess(res, attendance, 'Attendance record reversed.');
+  },
 };

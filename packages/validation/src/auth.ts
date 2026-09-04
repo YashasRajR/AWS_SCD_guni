@@ -59,3 +59,12 @@ export const verifyEmailSchema = z.object({
   token: z.string().min(10),
 });
 export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
+
+/** Authenticated password change — requires proving the CURRENT password,
+ * unlike resetPasswordSchema's token-based flow (which proves email
+ * ownership instead). */
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: passwordSchema,
+});
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

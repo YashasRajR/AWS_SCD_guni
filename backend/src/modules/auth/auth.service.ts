@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import type {
+  ChangePasswordInput,
   ForgotPasswordInput,
   LoginInput,
   RefreshTokenInput,
@@ -15,6 +16,7 @@ import { usersRepository } from '../users/users.repository.js';
 import { toPublicUser } from '../users/users.types.js';
 import { attendeesRepository } from '../attendees/attendees.repository.js';
 import { emailsService } from '../emails/emails.service.js';
+import { auditLogsService } from '../audit-logs/audit-logs.service.js';
 import { authRepository } from './auth.repository.js';
 import { parseDurationMs } from './auth.ms.js';
 import type { AccessTokenPayload, AuthResult } from './auth.types.js';
@@ -170,6 +172,7 @@ export const authService = {
       link: resetLink,
       ttl: env.PASSWORD_RESET_TOKEN_TTL,
     });
+    await auditLogsService.logSystem('PASSWORD_RESET_REQUESTED', 'user', user.id);
   },
 
   async resetPassword(input: ResetPasswordInput): Promise<void> {
@@ -183,6 +186,7 @@ export const authService = {
     // existing session (every outstanding refresh token) is revoked so a
     // stale device/browser can't keep silently refreshing past it.
     await authRepository.revokeAllRefreshTokensForUser(tokenRow.user_id);
+    await auditLogsService.logSystem('PASSWORD_RESET_COMPLETED', 'user', tokenRow.user_id);
   },
 
   async verifyEmail(input: VerifyEmailInput): Promise<void> {
@@ -191,5 +195,31 @@ export const authService = {
 
     await usersRepository.setEmailVerified(tokenRow.user_id);
     await authRepository.consumeEmailVerificationToken(tokenRow.id);
+    await auditLogsService.logSystem('EMAIL_VERIFIED', 'user', tokenRow.user_id);
+  },
+
+  /**
+   * Authenticated password change — proves knowledge of the CURRENT
+   * password (unlike resetPassword's email-token flow). Same
+   * every-other-session-revoked behavior as a reset: a password change
+   * can mean the old one leaked, so every outstanding refresh token
+   * except this request's own flow is invalidated too — the caller's
+   * frontend re-authenticates via the fresh tokens issued here.
+   */
+  async changePassword(userId: string, input: ChangePasswordInput): Promise<AuthResult> {
+    const user = await usersRepository.findById(userId);
+    if (!user) throw AppError.notFound('User');
+
+    const currentMatches = await bcrypt.compare(input.currentPassword, user.password_hash);
+    if (!currentMatches) throw AppError.validation('Current password is incorrect.');
+
+    const passwordHash = await bcrypt.hash(input.newPassword, BCRYPT_ROUNDS);
+    await usersRepository.updatePasswordHash(userId, passwordHash);
+    await authRepository.revokeAllRefreshTokensForUser(userId);
+    await auditLogsService.logSystem('PASSWORD_CHANGED', 'user', userId);
+
+    const { roles, permissions } = await usersRepository.getIdentitySnapshot(userId);
+    const tokens = await issueSessionTokens(userId, user.email, roles, permissions);
+    return { user: toPublicUser(user), ...tokens };
   },
 };

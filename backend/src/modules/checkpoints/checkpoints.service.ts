@@ -106,4 +106,22 @@ export const checkpointsService = {
 
     return toCheckpointAttendance(row);
   },
+
+  /**
+   * Admin-only correction for a mis-recorded attendance (e.g. wrong
+   * attendee confirmed at a checkpoint). Sets the record to REVERSED
+   * rather than deleting it — the caller (controller) is responsible for
+   * writing the audit log entry, since it has the request/actor context
+   * this service layer doesn't.
+   */
+  async reverseAttendance(attendanceId: string): Promise<CheckpointAttendance> {
+    const existing = await checkpointsRepository.findAttendanceById(attendanceId);
+    if (!existing) throw AppError.notFound('Attendance record');
+    if (existing.status !== 'COMPLETED') {
+      throw AppError.validation('Only a COMPLETED attendance record can be reversed.');
+    }
+    const row = await checkpointsRepository.reverseAttendance(attendanceId);
+    if (!row) throw AppError.validation('Only a COMPLETED attendance record can be reversed.');
+    return toCheckpointAttendance(row);
+  },
 };
