@@ -29,7 +29,22 @@ h4 {
   line-height: var(--lh-tight);
   font-weight: var(--fw-bold);
   margin: 0;
+  /* The bold condensed all-caps "poster" voice used across the whole
+     site, not just the hero -- Anton has no italic/weight variants, so
+     font-weight above is a no-op for it but still applies to the
+     '--font-display' fallback fonts. */
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
 }
+
+/* Extruded / drop-shadow "3D poster" treatment for the largest,
+   highest-impact headlines (hero + every page's top title) -- not
+   applied to small card titles like speaker names, which stay flat for
+   legibility at that size. Selectors added to their existing rules
+   further down this file (.hero h1, .page-section-header h1,
+   .page-hero h1) rather than a class, since every page already renders
+   its title through one of those three. */
 
 p {
   margin: 0;
@@ -184,6 +199,11 @@ ol {
 .page-hero h1 {
   font-size: var(--text-h1);
   margin: 0 0 var(--space-3);
+  text-shadow:
+    1px 1px 0 var(--primary),
+    2px 2px 0 var(--primary),
+    3px 3px 0 var(--primary),
+    4px 4px 14px rgba(124, 79, 209, 0.5);
 }
 
 .page-hero p {
@@ -333,19 +353,16 @@ ol {
 
 .mobile-nav {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: min(320px, 86vw);
-  background: var(--secondary);
-  color: var(--secondary-foreground);
+  inset: 0;
+  width: 100%;
+  background: var(--background);
+  color: var(--foreground);
   z-index: calc(var(--z-overlay) + 1);
   display: flex;
   flex-direction: column;
   padding: var(--space-4);
   gap: var(--space-1);
   overflow-y: auto;
-  box-shadow: var(--shadow-lg);
 }
 
 .mobile-nav-head {
@@ -354,9 +371,19 @@ ol {
   margin-bottom: var(--space-2);
 }
 
+.mobile-nav nav {
+  flex: 1;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
 .mobile-nav .nav-link {
-  padding: 0.85rem 0.75rem;
-  font-size: 1rem;
+  padding: 0.9rem 0.75rem;
+  font-size: 1.4rem;
+  text-align: center;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .mobile-nav .nav-auth {
@@ -677,7 +704,24 @@ ol {
 
 .hero {
   position: relative;
-  background: linear-gradient(155deg, var(--secondary) 0%, #24344a 100%);
+  background:
+    linear-gradient(155deg, var(--secondary) 0%, var(--background) 100%),
+    /* Faint blueprint/grid motif -- echoes the event's print branding
+       without competing with the headline. */
+    repeating-linear-gradient(
+      0deg,
+      rgba(124, 79, 209, 0.07) 0,
+      rgba(124, 79, 209, 0.07) 1px,
+      transparent 1px,
+      transparent 48px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(124, 79, 209, 0.07) 0,
+      rgba(124, 79, 209, 0.07) 1px,
+      transparent 1px,
+      transparent 48px
+    );
   color: var(--secondary-foreground);
   padding: var(--space-16) 0 var(--space-12);
   overflow: hidden;
@@ -687,8 +731,25 @@ ol {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle at 15% 20%, rgba(255, 153, 0, 0.16), transparent 45%),
-    radial-gradient(circle at 85% 75%, rgba(90, 150, 255, 0.14), transparent 45%);
+  background-image: radial-gradient(circle at 15% 20%, rgba(242, 138, 69, 0.18), transparent 45%),
+    radial-gradient(circle at 85% 75%, rgba(124, 79, 209, 0.28), transparent 45%);
+  pointer-events: none;
+}
+
+/* Jagged accent shard, bottom-right -- a low-cost CSS echo of the sharp,
+   angular graphic accents used across the event's print branding.
+   Decorative only (aria-hidden via being a ::after with no content
+   role), and purely geometric so it never competes with real content. */
+.hero::after {
+  content: '';
+  position: absolute;
+  right: -40px;
+  bottom: -60px;
+  width: 220px;
+  height: 260px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+  clip-path: polygon(60% 0%, 100% 20%, 85% 100%, 40% 90%, 55% 45%, 20% 55%, 0% 30%);
+  opacity: 0.35;
   pointer-events: none;
 }
 
@@ -702,6 +763,22 @@ ol {
   gap: var(--space-8);
   align-items: center;
   text-align: center;
+  /* A short, one-time entrance -- not a "3D loading experience", just
+     enough motion to feel intentional on first paint. The global
+     prefers-reduced-motion rule (tokens.css) collapses this to
+     effectively instant for anyone who's asked for less motion. */
+  animation: hero-enter 500ms var(--ease-standard) both;
+}
+
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .hero-eyebrow {
@@ -722,6 +799,11 @@ ol {
   font-size: var(--text-display);
   max-width: 16ch;
   margin: var(--space-4) 0 0;
+  text-shadow:
+    2px 2px 0 var(--primary),
+    4px 4px 0 var(--primary),
+    6px 6px 0 var(--primary),
+    8px 8px 22px rgba(124, 79, 209, 0.55);
 }
 
 .hero-lede {
@@ -1645,6 +1727,11 @@ ol {
 .page-section-header h1 {
   margin: 0 0 var(--space-2);
   font-size: var(--text-h1);
+  text-shadow:
+    1px 1px 0 var(--primary),
+    2px 2px 0 var(--primary),
+    3px 3px 0 var(--primary),
+    4px 4px 14px rgba(124, 79, 209, 0.5);
 }
 
 .page-section-lede {

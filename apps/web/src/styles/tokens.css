@@ -2,20 +2,29 @@
    DESIGN TOKENS — single source of truth for the public site.
    Every component styles from these variables; no component
    should hard-code a color, spacing value, radius, or duration.
+
+   Always-dark theme (not OS-preference-driven) — the site's visual
+   identity is a bold, high-energy dark aesthetic (inspired by event
+   sites like Mood Indigo) built on the brand's purple/orange palette,
+   not a neutral light theme with an optional dark mode.
    ============================================================ */
 
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
 
   /* --- Typography -------------------------------------------------- */
   --font-sans:
     'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  /* Bold condensed display face for headings/hero — the "poster" voice.
+     Falls back gracefully to a narrow system sans if the Google Fonts
+     request is ever blocked. */
+  --font-display: 'Anton', 'Arial Narrow', 'Segoe UI', sans-serif;
 
   /* Fluid type scale — readable at 320px, comfortable at 1920px+. */
-  --text-display: clamp(2rem, 1.35rem + 3.2vw, 3.5rem);
-  --text-h1: clamp(1.65rem, 1.3rem + 1.6vw, 2.5rem);
-  --text-h2: clamp(1.4rem, 1.2rem + 1vw, 1.9rem);
-  --text-h3: clamp(1.15rem, 1.05rem + 0.4vw, 1.35rem);
+  --text-display: clamp(2.25rem, 1.4rem + 4vw, 4.25rem);
+  --text-h1: clamp(1.8rem, 1.4rem + 1.8vw, 2.75rem);
+  --text-h2: clamp(1.5rem, 1.25rem + 1.1vw, 2.1rem);
+  --text-h3: clamp(1.2rem, 1.1rem + 0.4vw, 1.4rem);
   --text-h4: 1.05rem;
   --text-body: 1rem;
   --text-small: 0.875rem;
@@ -52,10 +61,13 @@
   --radius-lg: 16px;
   --radius-full: 999px;
 
-  /* --- Shadows (subtle — depth, not decoration) ------------------------ */
-  --shadow-sm: 0 1px 2px rgba(16, 20, 28, 0.06);
-  --shadow-md: 0 4px 16px rgba(16, 20, 28, 0.08);
-  --shadow-lg: 0 12px 32px rgba(16, 20, 28, 0.14);
+  /* --- Shadows (subtle depth) + glow (brand-colored, used sparingly on
+     hero/CTA elements for the neon-on-black energy) --------------------- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --glow-primary: 0 0 28px rgba(124, 79, 209, 0.45);
+  --glow-accent: 0 0 28px rgba(242, 138, 69, 0.4);
 
   /* --- Containers -------------------------------------------------------- */
   --container-max: 1180px;
@@ -73,66 +85,39 @@
   --z-overlay: 40;
   --z-banner: 25;
 
-  /* --- Color: semantic tokens (light) ------------------------------------- */
-  --background: #f8f6fc;
-  --foreground: #14181f;
-  --surface: #ffffff;
-  --surface-muted: #eef1f5;
-  --primary: #50377a;
-  --primary-hover: #3f2b61;
+  /* --- Color: semantic tokens ------------------------------------------- */
+  --background: #0d0815;
+  --foreground: #f5f2fa;
+  --surface: #171022;
+  --surface-muted: #211a2e;
+  /* Brighter/more saturated than the brand's print-purple (#50377a) --
+     a flat brand-purple reads muddy against near-black, so the on-screen
+     primary is lifted for contrast and neon-on-black pop while staying
+     the same hue family. White text on this still clears AA (~5.4:1). */
+  --primary: #7c4fd1;
+  --primary-hover: #9b74e8;
   --primary-foreground: #ffffff;
-  --secondary: #332052;
-  --secondary-foreground: #f4f6f8;
+  --secondary: #2a1d40;
+  --secondary-foreground: #f4f0fa;
   --accent: #f28a45;
-  /* Separate from --accent: --accent is orange, decorative-only (borders,
-     badges) because orange text fails AA contrast on light backgrounds
-     (phase 6 rule 46). --link is what body text/links actually use. */
-  --link: #50377a;
-  --border: #e2e5ea;
-  --muted: #656d79;
+  --accent-hover: #ff9f5e;
+  /* --accent stays orange and decorative-only (borders, badges, glows) --
+     orange text fails AA contrast (phase 6 rule 46). --link is what body
+     text/links actually use. */
+  --link: #b39dda;
+  --border: #34293f;
+  --muted: #a99bc0;
 
-  --success: #1c7a41;
-  --success-bg: #e5f6ec;
-  --warning: #97650c;
-  --warning-bg: #fdf1dc;
-  --error: #b3261e;
-  --error-bg: #fbe8e8;
-  --info: #1a56b0;
-  --info-bg: #e6f0fd;
-  --neutral: #565d68;
-  --neutral-bg: #eceef1;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #17101f;
-    --foreground: #f2f3f5;
-    --surface: #1b1f27;
-    --surface-muted: #232833;
-    --primary: #50377a;
-    --primary-hover: #6b4f9e;
-    --primary-foreground: #ffffff;
-    --secondary: #241934;
-    --secondary-foreground: #f4f6f8;
-    --accent: #f28a45;
-    /* Lighter than --primary -- purple text on a near-black page background
-       needs more luminance than purple-as-button-fill does (button text is
-       white regardless of theme, so --primary itself stays constant). */
-    --link: #b39dda;
-    --border: #2b313c;
-    --muted: #a1a8b3;
-
-    --success: #7fe3a4;
-    --success-bg: #163625;
-    --warning: #f0c674;
-    --warning-bg: #3a2e12;
-    --error: #f28b82;
-    --error-bg: #3a1f1f;
-    --info: #8ab4f8;
-    --info-bg: #182a44;
-    --neutral: #b3b9c2;
-    --neutral-bg: #262a30;
-  }
+  --success: #7fe3a4;
+  --success-bg: #163625;
+  --warning: #f0c674;
+  --warning-bg: #3a2e12;
+  --error: #f28b82;
+  --error-bg: #3a1f1f;
+  --info: #8ab4f8;
+  --info-bg: #182a44;
+  --neutral: #b3b9c2;
+  --neutral-bg: #262a30;
 }
 
 /* Respect the OS-level reduced-motion preference everywhere. */
