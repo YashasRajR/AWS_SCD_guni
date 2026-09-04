@@ -1093,6 +1093,15 @@ ol {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-base) var(--ease-standard), box-shadow var(--duration-base),
+    border-color var(--duration-base);
+}
+
+.speaker-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
 }
 
 .speaker-photo {
@@ -1184,6 +1193,15 @@ ol {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-base) var(--ease-standard), box-shadow var(--duration-base),
+    border-color var(--duration-base);
+}
+
+.session-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
 }
 
 .session-card-head {
@@ -1254,13 +1272,32 @@ ol {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-base) var(--ease-standard), box-shadow var(--duration-base);
 }
 
+.agenda-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Date/time block (spec section 32): a solid deep-purple rectangle,
+   not inline muted text -- the same "editorial poster fragment" motif
+   as the hero/section eyebrows, applied to schedule entries. */
 .agenda-item-time {
-  color: var(--muted);
-  font-size: var(--text-small);
-  font-weight: var(--fw-semibold);
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.02em;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
   min-width: 9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   flex-shrink: 0;
 }
 
@@ -1373,6 +1410,15 @@ ol {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-base) var(--ease-standard), box-shadow var(--duration-base),
+    border-color var(--duration-base);
+}
+
+.venue-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
 }
 
 .venue-card h3 {
