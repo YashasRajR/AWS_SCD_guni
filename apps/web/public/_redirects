@@ -1,0 +1,5 @@
+# SPA fallback for Netlify / Cloudflare Pages: any path that isn't a real
+# static asset falls through to index.html so client-side routes (e.g.
+# /speakers, /dashboard, /ticket) survive a hard refresh or a direct link
+# instead of 404ing. Vite copies this file from public/ into dist/ verbatim.
+/*    /index.html   200

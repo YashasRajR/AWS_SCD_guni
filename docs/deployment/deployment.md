@@ -138,3 +138,119 @@ should be entered once through the admin portal instead.
 - No container/orchestration layer — deliberately, per the project's
   "avoid unnecessary infrastructure" rule. Revisit only if a single Node
   process genuinely can't handle event-day load, not preemptively.
+
+## 6. SPA hosting: client-side routing and caching
+
+Each app's `public/` directory now ships two host-config files that Vite
+copies into `dist/` verbatim:
+
+- `_redirects` (Netlify / Cloudflare Pages format) — `/* /index.html 200`,
+  so a hard refresh or direct link on a client-side route (`/speakers`,
+  `/dashboard`, `/ticket`, ...) is served `index.html` instead of 404ing.
+  Before this was added, none of the three apps had any SPA-fallback
+  config anywhere in the repo — deploying any of them as-is to a static
+  host with default settings would have 404'd every route except `/`.
+- `_headers` — long-lived immutable caching (`max-age=31536000,
+  immutable`) for the content-hashed files under `/assets/` (Vite names
+  them e.g. `index-C3010A5p.js`, so a new deploy is a new filename), and
+  `no-cache` on `index.html` itself so a deploy is actually picked up by
+  returning visitors instead of being served a stale cached shell.
+
+If serving via nginx on a VPS instead of Netlify/Cloudflare Pages, the
+equivalent config is:
+
+```nginx
+server {
+  listen 443 ssl http2;
+  server_name your-app.example.com;
+  root /var/www/apps/web/dist;   # or volunteer/admin's dist
+
+  location /assets/ {
+    add_header Cache-Control "public, max-age=31536000, immutable";
+  }
+
+  location / {
+    add_header Cache-Control "no-cache";
+    try_files $uri /index.html;   # SPA fallback
+  }
+}
+```
+
+None of this has been tested against a real deployed host yet — no host
+is chosen (see top of this document). It has been verified only by
+inspecting the built `dist/` output structure and confirming Vite's
+default hashing/asset-copy behavior.
+
+## 7. Backup and restore
+
+Whichever Postgres provider is chosen, backups are the provider's
+responsibility to run — this project does not (and should not) roll its
+own backup daemon. What this section documents is the *procedure*, not a
+claim that it has been exercised:
+
+- **Neon** (the free tier already used for local dev): point-in-time
+  restore is available on paid plans; the free tier keeps a much shorter
+  history — check Neon's current retention window for your plan before
+  relying on it, and treat "the free tier has backups" as insufficient on
+  its own for an event you can't re-run.
+- **Self-hosted Postgres**: schedule `pg_dump` (or `pg_basebackup` for
+  larger data) on a cron, ship the dump off-box (object storage, not the
+  same disk), and encrypt it at rest if the storage doesn't already.
+
+**Restore procedure (run this against a scratch database, not
+production, to verify it actually works before trusting it):**
+
+```bash
+# 1. Create a throwaway database from the backup.
+createdb scd_restore_test
+pg_restore -d scd_restore_test path/to/backup.dump   # or: psql -d scd_restore_test < backup.sql
+
+# 2. Point a local backend at it and sanity-check row counts / a few
+#    known records match what the backup was taken from.
+DATABASE_URL=postgres://.../scd_restore_test npm run db:migrate:status --workspace=root
+```
+
+**This restore procedure has not actually been run in this session** —
+doing so needs a real backup file from a chosen provider, which does not
+exist yet. Recording "backups are configured" without having restored one
+at least once is exactly the unverified claim Phase 8's spec asks not to
+make; treat backup/restore as **unverified** until someone runs the steps
+above against a real backup and confirms the restored data matches.
+
+Document, once a provider is chosen and this has actually been run:
+backup frequency, retention window, who is responsible for verifying a
+restore before the event, and the measured time the restore above took
+(a stand-in for recovery time objective).
+
+## 8. Rollback
+
+- **Frontend**: redeploying the previous build is the rollback — static
+  hosts (Netlify/Cloudflare Pages) keep prior deploys and can re-point
+  the live alias to one in a couple of clicks/one CLI command; on a VPS,
+  keep the previous `dist/` directory until the new one is confirmed
+  healthy and swap a symlink back.
+- **Backend**: keep the previous build artifact (or previous git tag)
+  deployable; redeploy it and restart the process under the same
+  supervisor. Because there is no CD pipeline yet (see "What's
+  deliberately not here yet" above), rollback today is "redeploy the
+  last known-good commit by hand," which is fine at this project's scale
+  but should be written down so it isn't improvised during an incident.
+- **Database migrations**: this is the part that can't be rolled back by
+  redeploying old code if a migration already ran and the old code isn't
+  compatible with the new schema. Follow the additive-first pattern
+  already used by every migration in `database/migrations` (add new
+  columns/tables before removing old ones; never drop a column the
+  previous app version still reads) so that rolling back the
+  *application* to the previous version never requires rolling back the
+  *schema* too. If a migration ever must be destructive, deploy it in two
+  releases: first add-and-backfill, verify, then remove-old-column in a
+  later release once nothing still depends on it.
+- Payment/ticket/attendance/certificate state must never be rolled back
+  by reverting the database — those are facts about what already
+  happened (a payment was received, a ticket was issued). A bad
+  deployment is fixed by rolling the *application code* forward or back;
+  it is not fixed by rewinding data that reflects real user actions.
+
+This rollback plan has been reasoned through against the actual schema
+and migration mechanism in this repo, but — like backup/restore above —
+has not been executed against a real deployment, because none exists yet.

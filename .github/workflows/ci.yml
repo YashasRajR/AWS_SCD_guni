@@ -39,6 +39,16 @@ jobs:
       - name: Build (all workspaces)
         run: npm run build
 
+      - name: Dependency audit (informational)
+        # Not a merge-blocking gate yet: known findings from an earlier
+        # audit haven't all been resolved, so failing the build on them
+        # now would just block unrelated PRs. Tighten to a hard gate
+        # (drop continue-on-error) once `npm audit fix` has been applied
+        # and verified. Still runs and reports on every push/PR so new
+        # vulnerabilities are visible instead of silent.
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
   # DB-free unit tests (mocked repositories) — no Postgres service needed,
   # so this stays fast and can run even if the integration job is skipped.
   unit-tests:
