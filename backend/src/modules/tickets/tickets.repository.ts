@@ -24,13 +24,24 @@ export const ticketsRepository = {
   },
 
   // DO NOT add QR/NFC fields here — tickets are identified by ticket_number only.
+  //
+  // Race-safe: two concurrent callers (e.g. a payment webhook retry racing
+  // an admin's manual confirm) can both reach this with no existing ticket
+  // yet. `tickets_registration_id_unique` is the real backstop -- ON
+  // CONFLICT DO NOTHING makes the loser a silent no-op instead of an
+  // unhandled 23505 error, then we re-select so both callers get the same
+  // (single) issued ticket back rather than one of them throwing.
   async issue(registrationId: string): Promise<TicketRow> {
     const { rows } = await getPool().query<TicketRow>(
       `INSERT INTO tickets (registration_id, ticket_number)
        VALUES ($1, $2)
+       ON CONFLICT (registration_id) DO NOTHING
        RETURNING *`,
       [registrationId, generateReferenceCode('TCK')],
     );
-    return rows[0]!;
+    if (rows[0]) return rows[0];
+    const existing = await ticketsRepository.findByRegistrationId(registrationId);
+    if (!existing) throw new Error(`Ticket insert conflicted for registration ${registrationId} but no row found`);
+    return existing;
   },
 };
