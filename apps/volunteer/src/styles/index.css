@@ -445,3 +445,85 @@ input {
   color: var(--text-muted);
   font-size: 0.85rem;
 }
+
+/* --- Check-in scanner ------------------------------------------------------- */
+
+.mode-toggle {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.mode-toggle-active {
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.scan-video-wrap {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #000;
+}
+
+.scan-video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+
+.scan-frame {
+  position: absolute;
+  inset: 12%;
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+.scan-starting {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.scan-banner {
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.scan-banner-success {
+  background: var(--green-bg);
+  color: var(--green-text);
+}
+
+.scan-banner-error {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.qr-fallback {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.qr-fallback-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.qr-fallback-form input {
+  flex: 1;
+}
