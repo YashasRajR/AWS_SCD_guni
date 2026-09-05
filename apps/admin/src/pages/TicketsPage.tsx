@@ -3,6 +3,7 @@ import type { QrToken, QrTokenType, Ticket } from '@scd/types';
 import { describeApiError } from '@scd/api-client';
 import { usePaginatedResource, useResource } from '../lib/hooks.js';
 import { apiClient } from '../lib/api.js';
+import { getStoredToken } from '../lib/auth-storage.js';
 import { formatDateTime } from '../lib/format.js';
 import { Table, type Column } from '../components/Table.js';
 import { Pagination } from '../components/Pagination.js';
@@ -17,6 +18,22 @@ const columns: Column<Ticket>[] = [
 ];
 
 const QR_TYPES: QrTokenType[] = ['REGISTRATION', 'GOODIE'];
+
+/** The PDF endpoint returns a raw application/pdf body (not the JSON
+ * envelope), so it needs its own authenticated fetch rather than apiClient. */
+async function downloadTicketPdf(ticketId: string, ticketNumber: string): Promise<void> {
+  const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api/v1';
+  const res = await fetch(`${baseUrl.replace(/\/$/, '')}/admin/tickets/${ticketId}/pdf`, {
+    headers: { Authorization: `Bearer ${getStoredToken() ?? ''}` },
+  });
+  if (!res.ok) throw new Error('Failed to download PDF.');
+  const url = URL.createObjectURL(await res.blob());
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `ticket-${ticketNumber}.pdf`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 function QrTokensModal({ ticket, onClose }: { ticket: Ticket; onClose: () => void }) {
   const { data: tokens, loading, error, reload } = useResource<QrToken[]>(`/admin/tickets/${ticket.id}/qr-tokens`);
@@ -102,21 +119,68 @@ function QrTokensModal({ ticket, onClose }: { ticket: Ticket; onClose: () => voi
 export function TicketsPage() {
   const [page, setPage] = useState(1);
   const [qrTicket, setQrTicket] = useState<Ticket | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const { items, totalItems, totalPages, loading, error } = usePaginatedResource<Ticket>(
     '/admin/tickets',
     page,
   );
+
+  const handleDownloadPdf = async (ticket: Ticket) => {
+    setBusyId(ticket.id);
+    setActionError(null);
+    try {
+      await downloadTicketPdf(ticket.id, ticket.ticketNumber);
+    } catch (err) {
+      setActionError(describeApiError(err));
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleReissuePdf = async (ticket: Ticket) => {
+    setBusyId(ticket.id);
+    setActionError(null);
+    try {
+      await apiClient.post(`/admin/tickets/${ticket.id}/reissue-pdf`);
+    } catch (err) {
+      setActionError(describeApiError(err));
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleResendEmail = async (ticket: Ticket) => {
+    setBusyId(ticket.id);
+    setActionError(null);
+    try {
+      await apiClient.post(`/admin/tickets/${ticket.id}/resend-email`);
+    } catch (err) {
+      setActionError(describeApiError(err));
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   const tableColumns: Column<Ticket>[] = [
     ...columns,
     {
       key: '__actions',
       label: '',
-      width: '160px',
+      width: '320px',
       render: (row) => (
         <div className="row-actions">
           <button type="button" className="btn-link" onClick={() => setQrTicket(row)}>
             Manage QR
+          </button>
+          <button type="button" className="btn-link" disabled={busyId === row.id} onClick={() => handleDownloadPdf(row)}>
+            Download PDF
+          </button>
+          <button type="button" className="btn-link" disabled={busyId === row.id} onClick={() => handleReissuePdf(row)}>
+            Reissue PDF
+          </button>
+          <button type="button" className="btn-link" disabled={busyId === row.id} onClick={() => handleResendEmail(row)}>
+            Resend email
           </button>
         </div>
       ),
@@ -131,6 +195,8 @@ export function TicketsPage() {
           <p className="page-description">Tickets are automatically issued when a registration is confirmed.</p>
         </div>
       </div>
+
+      {actionError && <p className="form-error">{actionError}</p>}
 
       <Table columns={tableColumns} rows={items} getRowId={(r) => r.id} loading={loading} error={error} />
       <Pagination page={page} totalPages={totalPages} totalItems={totalItems} onChange={setPage} />
