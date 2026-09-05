@@ -12,6 +12,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@scd/types': path.resolve(dirname, '../../packages/types/src/index.ts'),
+      '@scd/constants': path.resolve(dirname, '../../packages/constants/src/index.ts'),
       '@scd/validation': path.resolve(dirname, '../../packages/validation/src/index.ts'),
       '@scd/api-client': path.resolve(dirname, '../../packages/api-client/src/index.ts'),
       '@scd/auth': path.resolve(dirname, '../../packages/auth/src/index.ts'),
