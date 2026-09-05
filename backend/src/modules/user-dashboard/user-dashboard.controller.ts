@@ -54,6 +54,16 @@ export const userDashboardController = {
     sendSuccess(res, await ticketsService.getByRegistrationId(registration.id));
   },
 
+  async getTicketPdf(req: Request, res: Response): Promise<void> {
+    const attendee = await attendeesService.requireByUserId(req.identity!.userId);
+    const registration = await registrationsService.getByAttendeeId(attendee.id);
+    if (!registration) throw AppError.notFound('Ticket');
+    const ticket = await ticketsService.getByRegistrationId(registration.id);
+    if (!ticket) throw AppError.notFound('Ticket');
+    const pdf = await ticketsService.getPdfBuffer(ticket.id);
+    res.type('application/pdf').send(pdf);
+  },
+
   async getPayment(req: Request, res: Response): Promise<void> {
     const attendee = await attendeesService.requireByUserId(req.identity!.userId);
     const registration = await registrationsService.getByAttendeeId(attendee.id);

@@ -36,6 +36,19 @@ export const qrTokensService = {
     return { token: toQrToken(row), rawToken };
   },
 
+  /**
+   * Rotates both token types together — used when regenerating a ticket's
+   * PDF, since the PDF embeds both QR codes and a stale one would defeat
+   * the point of rotating either.
+   */
+  async rotateBoth(ticketId: string): Promise<{ registrationToken: string; goodieToken: string }> {
+    const [registration, goodie] = await Promise.all([
+      qrTokensRepository.issue(ticketId, 'REGISTRATION'),
+      qrTokensRepository.issue(ticketId, 'GOODIE'),
+    ]);
+    return { registrationToken: registration.rawToken, goodieToken: goodie.rawToken };
+  },
+
   async revoke(id: string): Promise<QrToken> {
     const row = await qrTokensRepository.revoke(id);
     if (!row) throw AppError.notFound('QR token');

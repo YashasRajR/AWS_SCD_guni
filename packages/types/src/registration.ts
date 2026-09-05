@@ -46,6 +46,8 @@ export interface Ticket {
   ticketNumber: string;
   status: TicketStatus;
   issuedAt: string;
+  pdfAvailable: boolean;
+  pdfGeneratedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
