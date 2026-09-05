@@ -14,3 +14,10 @@ reportsRouter.get(
   requirePermission(PERMISSIONS.VIEW_REPORTS),
   asyncHandler(reportsController.getDashboard),
 );
+
+reportsRouter.get(
+  '/trends',
+  authenticate,
+  requirePermission(PERMISSIONS.VIEW_REPORTS),
+  asyncHandler(reportsController.getTrends),
+);

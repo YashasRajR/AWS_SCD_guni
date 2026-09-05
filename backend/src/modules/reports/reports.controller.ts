@@ -6,4 +6,8 @@ export const reportsController = {
   async getDashboard(_req: Request, res: Response): Promise<void> {
     sendSuccess(res, await reportsService.getDashboardSummary());
   },
+
+  async getTrends(_req: Request, res: Response): Promise<void> {
+    sendSuccess(res, await reportsService.getTrends());
+  },
 };
