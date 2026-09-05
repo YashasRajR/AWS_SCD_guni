@@ -26,7 +26,10 @@ const BCRYPT_ROUNDS = 12;
 function issueAccessToken(userId: string, email: string, roles: string[], permissions: string[]): string {
   const env = getEnv();
   const payload: AccessTokenPayload = { sub: userId, email, roles: roles as never, permissions };
-  const options: jwt.SignOptions = { expiresIn: env.AUTH_TOKEN_TTL as jwt.SignOptions['expiresIn'] };
+  const options: jwt.SignOptions = {
+    expiresIn: env.AUTH_TOKEN_TTL as jwt.SignOptions['expiresIn'],
+    algorithm: 'HS256',
+  };
   return jwt.sign(payload, env.AUTH_SECRET, options);
 }
 

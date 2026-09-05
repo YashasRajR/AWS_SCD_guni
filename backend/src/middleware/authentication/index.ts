@@ -27,7 +27,7 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
 
     let payload: AccessTokenPayload;
     try {
-      payload = jwt.verify(token, getEnv().AUTH_SECRET) as AccessTokenPayload;
+      payload = jwt.verify(token, getEnv().AUTH_SECRET, { algorithms: ['HS256'] }) as AccessTokenPayload;
     } catch {
       throw AppError.authRequired('Your session has expired or is invalid. Please log in again.');
     }
@@ -59,7 +59,7 @@ export async function authenticateOptional(req: Request, _res: Response, next: N
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) return next();
   try {
-    const payload = jwt.verify(header.slice(7).trim(), getEnv().AUTH_SECRET) as AccessTokenPayload;
+    const payload = jwt.verify(header.slice(7).trim(), getEnv().AUTH_SECRET, { algorithms: ['HS256'] }) as AccessTokenPayload;
     const user = await usersRepository.findById(payload.sub);
     if (user && user.status === 'ACTIVE') {
       req.identity = {

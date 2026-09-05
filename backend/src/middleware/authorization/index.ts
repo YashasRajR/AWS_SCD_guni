@@ -20,21 +20,3 @@ export function requirePermission(...permissions: string[]) {
     next();
   };
 }
-
-/**
- * Ensures the authenticated identity's own attendee record is the one
- * being accessed, for /me-style ownership. Route handlers that resolve
- * "my" resources should derive the id from `req.identity.userId` directly
- * rather than trusting a client-supplied id — this guard is a defense in
- * depth for any route that also accepts an :id param.
- */
-export function requireOwnUserId(paramName = 'userId') {
-  return (req: Request, _res: Response, next: NextFunction): void => {
-    if (!req.identity) throw AppError.authRequired();
-    const paramValue = req.params[paramName];
-    if (paramValue && paramValue !== req.identity.userId) {
-      throw AppError.forbidden("You cannot access another user's data.");
-    }
-    next();
-  };
-}
