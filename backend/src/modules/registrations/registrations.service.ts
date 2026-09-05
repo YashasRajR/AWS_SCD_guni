@@ -1,6 +1,7 @@
 import type { PaginatedData, Registration } from '@scd/types';
 import type { UpdateRegistrationStatusInput } from '@scd/validation';
 import { registrationsRepository } from './registrations.repository.js';
+import { toCsv } from '../../utils/csv.js';
 import { toRegistration } from './registrations.types.js';
 import { eventService } from '../event/event.service.js';
 import { ticketsService } from '../tickets/tickets.service.js';
@@ -23,6 +24,42 @@ export const registrationsService = {
   async getById(id: string): Promise<Registration | null> {
     const row = await registrationsRepository.findById(id);
     return row ? toRegistration(row) : null;
+  },
+
+  async exportCsv(): Promise<string> {
+    const rows = await registrationsRepository.listForExport();
+    return toCsv(
+      [
+        'Registration #',
+        'Status',
+        'Full name',
+        'Email',
+        'Phone',
+        'University',
+        'Department',
+        'Year',
+        'Registered at',
+        'Confirmed at',
+        'Payment status',
+        'Payment amount',
+        'Payment currency',
+      ],
+      rows.map((r) => [
+        r.registration_number,
+        r.status,
+        r.full_name,
+        r.email,
+        r.phone,
+        r.university,
+        r.department,
+        r.year,
+        r.registered_at,
+        r.confirmed_at,
+        r.payment_status,
+        r.payment_amount,
+        r.payment_currency,
+      ]),
+    );
   },
 
   async list(page: number, pageSize: number): Promise<PaginatedData<Registration>> {

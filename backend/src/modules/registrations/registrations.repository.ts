@@ -1,6 +1,6 @@
 import { getPool } from '../../config/database.js';
 import { generateReferenceCode } from '@scd/utils';
-import type { RegistrationRow } from './registrations.types.js';
+import type { RegistrationExportRow, RegistrationRow } from './registrations.types.js';
 
 export const registrationsRepository = {
   /**
@@ -44,6 +44,37 @@ export const registrationsRepository = {
       getPool().query<{ count: string }>('SELECT count(*) FROM registrations'),
     ]);
     return { rows, total: Number(countResult.rows[0]?.count ?? 0) };
+  },
+
+  /**
+   * Full attendee + payment join for the admin CSV export. Unbounded by
+   * design — an admin exporting the list wants everything, not a page of
+   * it — but this is a single-event platform (see registrations.service
+   * create()), so row counts stay in the thousands at most.
+   */
+  async listForExport(): Promise<RegistrationExportRow[]> {
+    const { rows } = await getPool().query<RegistrationExportRow>(
+      `SELECT
+         r.registration_number,
+         r.status,
+         a.full_name,
+         u.email,
+         a.phone,
+         a.university,
+         a.department,
+         a.year,
+         r.registered_at,
+         r.confirmed_at,
+         p.status AS payment_status,
+         p.amount AS payment_amount,
+         p.currency AS payment_currency
+       FROM registrations r
+       JOIN attendees a ON a.id = r.attendee_id
+       JOIN users u ON u.id = a.user_id
+       LEFT JOIN payments p ON p.registration_id = r.id
+       ORDER BY r.created_at DESC`,
+    );
+    return rows;
   },
 
   async findById(id: string): Promise<RegistrationRow | null> {

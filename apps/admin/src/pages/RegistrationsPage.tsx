@@ -7,8 +7,23 @@ import { formatDateTime } from '../lib/format.js';
 import { Table, type Column } from '../components/Table.js';
 import { Pagination } from '../components/Pagination.js';
 import { StatusBadge } from '../components/StatusBadge.js';
+import { getStoredToken } from '../lib/auth-storage.js';
 
 const STATUSES = ['PENDING', 'CONFIRMED', 'WAITLISTED', 'CANCELLED', 'REJECTED'];
+
+async function downloadRegistrationsCsv(): Promise<void> {
+  const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api/v1';
+  const res = await fetch(`${baseUrl.replace(/\/$/, '')}/admin/registrations/export`, {
+    headers: { Authorization: `Bearer ${getStoredToken() ?? ''}` },
+  });
+  if (!res.ok) throw new Error('Failed to download export.');
+  const url = URL.createObjectURL(await res.blob());
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'registrations.csv';
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 export function RegistrationsPage() {
   const [page, setPage] = useState(1);
@@ -18,6 +33,19 @@ export function RegistrationsPage() {
   );
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [rowError, setRowError] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    setExporting(true);
+    setRowError(null);
+    try {
+      await downloadRegistrationsCsv();
+    } catch {
+      setRowError('Failed to download export.');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const updateStatus = async (registration: Registration, status: string) => {
     if (status === registration.status) return;
@@ -67,6 +95,9 @@ export function RegistrationsPage() {
           <h1>Registrations</h1>
           <p className="page-description">Change a registration's status directly from the dropdown.</p>
         </div>
+        <button type="button" onClick={handleExport} disabled={exporting}>
+          {exporting ? 'Exporting…' : 'Export CSV'}
+        </button>
       </div>
 
       {rowError && <p className="form-error">{rowError}</p>}

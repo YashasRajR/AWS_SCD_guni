@@ -12,6 +12,13 @@ import { registrationsController } from './registrations.controller.js';
 export const registrationsRouter = Router();
 
 registrationsRouter.get(
+  '/export',
+  authenticate,
+  requirePermission(PERMISSIONS.MANAGE_REGISTRATIONS),
+  asyncHandler(registrationsController.exportCsv),
+);
+
+registrationsRouter.get(
   '/',
   authenticate,
   requirePermission(PERMISSIONS.MANAGE_REGISTRATIONS),

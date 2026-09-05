@@ -5,6 +5,13 @@ import { auditLogsService } from '../audit-logs/audit-logs.service.js';
 import { sendSuccess } from '../../utils/response.js';
 
 export const registrationsController = {
+  async exportCsv(_req: Request, res: Response): Promise<void> {
+    const csv = await registrationsService.exportCsv();
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="registrations.csv"');
+    res.send(csv);
+  },
+
   async list(req: Request, res: Response): Promise<void> {
     const { page, pageSize } = req.query as unknown as PaginationQuery;
     const data = await registrationsService.list(page, pageSize);

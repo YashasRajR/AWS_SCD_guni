@@ -12,6 +12,22 @@ export interface RegistrationRow {
   updated_at: string;
 }
 
+export interface RegistrationExportRow {
+  registration_number: string;
+  status: RegistrationStatus;
+  full_name: string;
+  email: string;
+  phone: string | null;
+  university: string | null;
+  department: string | null;
+  year: string | null;
+  registered_at: string;
+  confirmed_at: string | null;
+  payment_status: string | null;
+  payment_amount: string | null;
+  payment_currency: string | null;
+}
+
 export function toRegistration(row: RegistrationRow): Registration {
   return {
     id: row.id,
