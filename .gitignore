@@ -14,3 +14,6 @@ coverage/
 .turbo/
 .eslintcache
 /database/*.sqlite
+test-results/
+playwright-report/
+blob-report/

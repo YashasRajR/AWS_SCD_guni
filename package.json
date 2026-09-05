@@ -26,6 +26,7 @@
     "test": "npm run test --workspaces --if-present",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "test:e2e": "playwright test",
     "db:migrate": "node database/scripts/migrate.mjs up",
     "db:migrate:down": "node database/scripts/migrate.mjs down",
     "db:migrate:status": "node database/scripts/migrate.mjs status",
@@ -39,6 +40,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
+    "@playwright/test": "^1.49.1",
     "eslint": "^9.15.0",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.3.3",
