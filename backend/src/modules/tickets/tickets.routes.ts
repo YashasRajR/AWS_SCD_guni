@@ -32,3 +32,11 @@ ticketsAdminRouter.post(
   validate(uuidParamSchema, 'params'),
   asyncHandler(ticketsController.reissuePdf),
 );
+
+ticketsAdminRouter.post(
+  '/:id/resend-email',
+  authenticate,
+  requirePermission(PERMISSIONS.MANAGE_REGISTRATIONS),
+  validate(uuidParamSchema, 'params'),
+  asyncHandler(ticketsController.resendEmail),
+);

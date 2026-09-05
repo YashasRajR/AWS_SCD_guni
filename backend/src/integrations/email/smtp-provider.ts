@@ -3,7 +3,7 @@ import type { EmailTemplate } from '@scd/types';
 import { getEnv } from '../../config/env.js';
 import { logger } from '../../utils/logger.js';
 import { renderEmailTemplate } from './templates.js';
-import type { EmailProvider } from './index.js';
+import type { EmailAttachment, EmailProvider } from './index.js';
 
 /**
  * Real delivery via SMTP — deliberately provider-agnostic at the
@@ -25,7 +25,9 @@ export class SmtpEmailProvider implements EmailProvider {
         host: env.EMAIL_SMTP_HOST,
         port: env.EMAIL_SMTP_PORT,
         secure: env.EMAIL_SMTP_SECURE,
-        auth: env.EMAIL_SMTP_USER ? { user: env.EMAIL_SMTP_USER, pass: env.EMAIL_SMTP_PASSWORD } : undefined,
+        auth: env.EMAIL_SMTP_USER
+          ? { user: env.EMAIL_SMTP_USER, pass: env.EMAIL_SMTP_PASSWORD }
+          : undefined,
       });
     }
     return this.transporter;
@@ -36,6 +38,7 @@ export class SmtpEmailProvider implements EmailProvider {
     template: EmailTemplate;
     subject: string;
     data: Record<string, unknown>;
+    attachments?: EmailAttachment[];
   }): Promise<{ providerMessageId: string }> {
     const env = getEnv();
     const { html, text } = renderEmailTemplate(input.template, input.data);
@@ -46,6 +49,7 @@ export class SmtpEmailProvider implements EmailProvider {
       subject: input.subject,
       html,
       text,
+      attachments: input.attachments,
     });
 
     logger.info(

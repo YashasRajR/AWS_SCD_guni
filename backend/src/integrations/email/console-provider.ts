@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { EmailTemplate } from '@scd/types';
 import { logger } from '../../utils/logger.js';
 import { renderEmailTemplate } from './templates.js';
-import type { EmailProvider } from './index.js';
+import type { EmailAttachment, EmailProvider } from './index.js';
 
 /**
  * Current default (and, until a real transport lands, only) provider. It
@@ -18,10 +18,17 @@ export class ConsoleEmailProvider implements EmailProvider {
     template: EmailTemplate;
     subject: string;
     data: Record<string, unknown>;
+    attachments?: EmailAttachment[];
   }): Promise<{ providerMessageId: string }> {
     const { text } = renderEmailTemplate(input.template, input.data);
     logger.warn(
-      { to: input.to, template: input.template, subject: input.subject, body: text },
+      {
+        to: input.to,
+        template: input.template,
+        subject: input.subject,
+        body: text,
+        attachments: input.attachments?.map((a) => a.filename),
+      },
       '[EMAIL NOT SENT — no real provider configured] This is a simulated delivery; the content above (including any link) was never emailed to the recipient.',
     );
     return { providerMessageId: `console-simulated-${randomUUID()}` };

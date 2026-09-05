@@ -31,4 +31,12 @@ export const ticketsController = {
     await auditLogsService.log(req, 'TICKET_PDF_REISSUED', 'ticket', ticketId, {});
     sendSuccess(res, { reissued: true }, 'Ticket PDF regenerated.');
   },
+
+  /** Re-emails the ticket PDF to the attendee's own address (via emailsService's queue). */
+  async resendEmail(req: Request, res: Response): Promise<void> {
+    const ticketId = req.params.id!;
+    await ticketsService.resendEmail(ticketId);
+    await auditLogsService.log(req, 'TICKET_EMAIL_RESENT', 'ticket', ticketId, {});
+    sendSuccess(res, { queued: true }, 'Ticket email queued for resend.');
+  },
 };

@@ -12,12 +12,18 @@ import { SmtpEmailProvider } from './smtp-provider.js';
  * ConsoleEmailProvider so verify/reset/ticket links are still logged
  * (never silently discarded) during local development.
  */
+export interface EmailAttachment {
+  filename: string;
+  content: Buffer;
+}
+
 export interface EmailProvider {
   send(input: {
     to: string;
     template: EmailTemplate;
     subject: string;
     data: Record<string, unknown>;
+    attachments?: EmailAttachment[];
   }): Promise<{ providerMessageId: string }>;
 }
 

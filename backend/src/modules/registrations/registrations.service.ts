@@ -88,7 +88,7 @@ export const registrationsService = {
 
     if (row.status === 'CONFIRMED' && before.status !== 'CONFIRMED') {
       const ticket = await ticketsService.issueIfNeeded(row.id);
-      await this.notifyConfirmed(row.attendee_id, row.registration_number, ticket.ticketNumber);
+      await this.notifyConfirmed(row.attendee_id, row.registration_number, ticket.id, ticket.ticketNumber);
     }
     return toRegistration(row);
   },
@@ -100,7 +100,12 @@ export const registrationsService = {
    * failing the status update itself — the registration/ticket are already
    * committed by this point, and emailsService.enqueue() never throws.
    */
-  async notifyConfirmed(attendeeId: string, registrationNumber: string, ticketNumber: string): Promise<void> {
+  async notifyConfirmed(
+    attendeeId: string,
+    registrationNumber: string,
+    ticketId: string,
+    ticketNumber: string,
+  ): Promise<void> {
     const attendee = await attendeesService.getById(attendeeId);
     if (!attendee) {
       logger.warn({ attendeeId }, 'Confirmed registration has no matching attendee — skipping email');
@@ -122,6 +127,7 @@ export const registrationsService = {
       fullName: attendee.fullName,
       registrationNumber,
       ticketNumber,
+      ticketId,
     });
   },
 };

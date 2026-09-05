@@ -1,5 +1,6 @@
 import { emailsRepository } from '../modules/emails/emails.repository.js';
-import { getEmailProvider } from '../integrations/email/index.js';
+import { getEmailProvider, type EmailAttachment } from '../integrations/email/index.js';
+import { ticketsService } from '../modules/tickets/tickets.service.js';
 import { logger } from '../utils/logger.js';
 
 const POLL_INTERVAL_MS = 10_000;
@@ -9,6 +10,36 @@ const MAX_ATTEMPTS = 5;
 /** attempt 1 -> 30s, 2 -> 1m, 3 -> 2m, 4 -> 4m, ... capped at 30m. */
 function backoffMs(attempts: number): number {
   return Math.min(30_000 * 2 ** (attempts - 1), 30 * 60_000);
+}
+
+/**
+ * A 'ticket'/'ticket-resend' record carries the ticketId it was enqueued
+ * for (see registrations.service.ts notifyConfirmed) — this fetches the
+ * already-generated PDF at send time rather than enqueue time, so the
+ * attachment is always whatever's currently stored (e.g. after an admin
+ * reissue), not a stale copy. A missing/not-yet-generated PDF logs a
+ * warning and sends the email without it rather than blocking delivery
+ * of the rest of the ticket email or retrying forever over a PDF that
+ * may never exist for this record.
+ */
+async function loadAttachments(
+  template: string,
+  data: Record<string, unknown>,
+): Promise<EmailAttachment[] | undefined> {
+  if (template !== 'ticket' && template !== 'ticket-resend') return undefined;
+  const ticketId = typeof data.ticketId === 'string' ? data.ticketId : null;
+  const ticketNumber = typeof data.ticketNumber === 'string' ? data.ticketNumber : 'ticket';
+  if (!ticketId) return undefined;
+  try {
+    const pdf = await ticketsService.getPdfBuffer(ticketId);
+    return [{ filename: `AWS-SCD-2026-${ticketNumber}.pdf`, content: pdf }];
+  } catch (err) {
+    logger.warn(
+      { err, ticketId },
+      'Ticket PDF not available for email attachment — sending without it',
+    );
+    return undefined;
+  }
 }
 
 /**
@@ -23,11 +54,13 @@ async function processBatch(): Promise<void> {
   const due = await emailsRepository.listDue(BATCH_SIZE);
   for (const record of due) {
     try {
+      const attachments = await loadAttachments(record.template, record.data);
       const { providerMessageId } = await getEmailProvider().send({
         to: record.recipient,
         template: record.template,
         subject: record.subject,
         data: record.data,
+        attachments,
       });
       await emailsRepository.markSent(record.id, providerMessageId);
     } catch (err) {

@@ -6,6 +6,8 @@ import { buildTicketPdf } from './ticket-pdf.js';
 import { registrationsRepository } from '../registrations/registrations.repository.js';
 import { attendeesRepository } from '../attendees/attendees.repository.js';
 import { eventService } from '../event/event.service.js';
+import { emailsService } from '../emails/emails.service.js';
+import { usersService } from '../users/users.service.js';
 import { AppError } from '../../utils/errors.js';
 import { logger } from '../../utils/logger.js';
 
@@ -55,6 +57,31 @@ export const ticketsService = {
     if (!ticket) throw AppError.notFound('Ticket');
     const { registrationToken, goodieToken } = await qrTokensService.rotateBoth(ticketId);
     await renderAndStorePdf(ticket, registrationToken, goodieToken);
+  },
+
+  /** Admin action: re-emails the (already-generated) ticket PDF to the attendee's own address. */
+  async resendEmail(ticketId: string): Promise<void> {
+    const ticket = await ticketsRepository.findById(ticketId);
+    if (!ticket) throw AppError.notFound('Ticket');
+    const registration = await registrationsRepository.findById(ticket.registration_id);
+    if (!registration) throw AppError.notFound('Registration');
+    const attendee = await attendeesRepository.findById(registration.attendee_id);
+    if (!attendee) throw AppError.notFound('Attendee');
+    const user = await usersService.getPublicUserById(attendee.user_id);
+    if (!user) throw AppError.notFound('User');
+
+    await emailsService.enqueue(
+      user.id,
+      user.email,
+      'ticket-resend',
+      'Your AWS Student Community Day ticket',
+      {
+        fullName: attendee.full_name,
+        registrationNumber: registration.registration_number,
+        ticketNumber: ticket.ticket_number,
+        ticketId: ticket.id,
+      },
+    );
   },
 
   /**
