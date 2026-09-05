@@ -6,6 +6,13 @@ import { sendSuccess } from '../../utils/response.js';
 import { AppError } from '../../utils/errors.js';
 
 export const paymentsController = {
+  async exportCsv(_req: Request, res: Response): Promise<void> {
+    const csv = await paymentsService.exportCsv();
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="payments.csv"');
+    res.send(csv);
+  },
+
   async list(req: Request, res: Response): Promise<void> {
     const { page, pageSize } = req.query as unknown as PaginationQuery;
     sendSuccess(res, await paymentsService.list(page, pageSize));

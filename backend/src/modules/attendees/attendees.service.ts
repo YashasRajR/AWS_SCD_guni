@@ -1,5 +1,6 @@
 import type { Attendee, PaginatedData } from '@scd/types';
 import { attendeesRepository } from './attendees.repository.js';
+import { toCsv } from '../../utils/csv.js';
 import { toAttendee, type CreateAttendeeInput } from './attendees.types.js';
 import { AppError } from '../../utils/errors.js';
 
@@ -27,6 +28,36 @@ export const attendeesService = {
   async search(query: string): Promise<Attendee[]> {
     const rows = await attendeesRepository.search(query);
     return rows.map(toAttendee);
+  },
+
+  async exportCsv(): Promise<string> {
+    const rows = await attendeesRepository.listForExport();
+    return toCsv(
+      [
+        'Full name',
+        'Email',
+        'Phone',
+        'University',
+        'Department',
+        'Year',
+        'Registration type',
+        'Registration #',
+        'Registration status',
+        'Created at',
+      ],
+      rows.map((r) => [
+        r.full_name,
+        r.email,
+        r.phone,
+        r.university,
+        r.department,
+        r.year,
+        r.registration_type,
+        r.registration_number,
+        r.registration_status,
+        r.created_at,
+      ]),
+    );
   },
 
   async list(page: number, pageSize: number, search?: string): Promise<PaginatedData<Attendee>> {

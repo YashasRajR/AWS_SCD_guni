@@ -12,6 +12,13 @@ import { attendeesController } from './attendees.controller.js';
 export const attendeesRouter = Router();
 
 attendeesRouter.get(
+  '/export',
+  authenticate,
+  requirePermission(PERMISSIONS.VIEW_ATTENDEE),
+  asyncHandler(attendeesController.exportCsv),
+);
+
+attendeesRouter.get(
   '/',
   authenticate,
   requirePermission(PERMISSIONS.VIEW_ATTENDEE),

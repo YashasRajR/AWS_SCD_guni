@@ -1,6 +1,7 @@
 import type { Checkpoint, CheckpointAttendance } from '@scd/types';
 import type { CreateCheckpointInput, UpdateCheckpointInput } from '@scd/validation';
 import { checkpointsRepository } from './checkpoints.repository.js';
+import { toCsv } from '../../utils/csv.js';
 import { toCheckpoint, toCheckpointAttendance, type CheckpointProgressItem } from './checkpoints.types.js';
 import { attendeesRepository } from '../attendees/attendees.repository.js';
 import { achievementsService } from '../achievements/achievements.service.js';
@@ -12,6 +13,14 @@ interface PgError {
 }
 
 export const checkpointsService = {
+  async exportAttendanceCsv(): Promise<string> {
+    const rows = await checkpointsRepository.listAttendanceForExport();
+    return toCsv(
+      ['Checkpoint', 'Attendee name', 'Attendee email', 'Volunteer', 'Status', 'Completed at'],
+      rows.map((r) => [r.checkpoint_name, r.attendee_name, r.attendee_email, r.volunteer_name, r.status, r.completed_at]),
+    );
+  },
+
   async create(input: CreateCheckpointInput): Promise<Checkpoint> {
     try {
       return toCheckpoint(await checkpointsRepository.create(input));

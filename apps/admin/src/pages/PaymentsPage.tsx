@@ -5,6 +5,7 @@ import { formatDateTime } from '../lib/format.js';
 import { Table, type Column } from '../components/Table.js';
 import { Pagination } from '../components/Pagination.js';
 import { StatusBadge } from '../components/StatusBadge.js';
+import { downloadFile } from '../lib/download.js';
 
 const columns: Column<Payment>[] = [
   { key: 'registrationId', label: 'Registration ID', render: (r) => r.registrationId.slice(0, 8) + '…' },
@@ -21,6 +22,20 @@ export function PaymentsPage() {
     '/admin/payments',
     page,
   );
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+
+  const handleExport = async () => {
+    setExporting(true);
+    setExportError(null);
+    try {
+      await downloadFile('/admin/payments/export', 'payments.csv');
+    } catch {
+      setExportError('Failed to download export.');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <div className="page">
@@ -29,7 +44,12 @@ export function PaymentsPage() {
           <h1>Payments</h1>
           <p className="page-description">Payment status is set by the payment provider — admin cannot manually mark a payment as paid.</p>
         </div>
+        <button type="button" onClick={handleExport} disabled={exporting}>
+          {exporting ? 'Exporting…' : 'Export CSV'}
+        </button>
       </div>
+
+      {exportError && <p className="form-error">{exportError}</p>}
 
       <Table columns={columns} rows={items} getRowId={(r) => r.id} loading={loading} error={error} />
       <Pagination page={page} totalPages={totalPages} totalItems={totalItems} onChange={setPage} />

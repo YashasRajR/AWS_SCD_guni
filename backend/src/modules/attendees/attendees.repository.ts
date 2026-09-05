@@ -1,6 +1,6 @@
 import type { Pool, PoolClient } from 'pg';
 import { getPool } from '../../config/database.js';
-import type { AttendeeRow, CreateAttendeeInput } from './attendees.types.js';
+import type { AttendeeExportRow, AttendeeRow, CreateAttendeeInput } from './attendees.types.js';
 
 /** Accepts either the shared pool or a transaction client — see
  * users.repository.ts's Queryable for why. */
@@ -53,6 +53,29 @@ export const attendeesRepository = {
        ORDER BY a.full_name
        LIMIT $2`,
       [`%${query}%`, limit],
+    );
+    return rows;
+  },
+
+  /** Full attendee + registration join for the admin CSV export — see
+   * registrations.repository.ts's listForExport() for the same pattern. */
+  async listForExport(): Promise<AttendeeExportRow[]> {
+    const { rows } = await getPool().query<AttendeeExportRow>(
+      `SELECT
+         a.full_name,
+         u.email,
+         a.phone,
+         a.university,
+         a.department,
+         a.year,
+         a.registration_type,
+         r.registration_number,
+         r.status AS registration_status,
+         a.created_at
+       FROM attendees a
+       JOIN users u ON u.id = a.user_id
+       LEFT JOIN registrations r ON r.attendee_id = a.id
+       ORDER BY a.created_at DESC`,
     );
     return rows;
   },

@@ -1,5 +1,5 @@
 import { getPool } from '../../config/database.js';
-import type { PaymentRow } from './payments.types.js';
+import type { PaymentExportRow, PaymentRow } from './payments.types.js';
 
 export interface PaymentEventInsert {
   provider: string;
@@ -104,6 +104,29 @@ export const paymentsRepository = {
       [id],
     );
     return rows[0]!;
+  },
+
+  /** Full attendee + registration join for the admin CSV export — same
+   * pattern as registrations.repository.ts's listForExport(). */
+  async listForExport(): Promise<PaymentExportRow[]> {
+    const { rows } = await getPool().query<PaymentExportRow>(
+      `SELECT
+         r.registration_number,
+         a.full_name,
+         u.email,
+         p.provider,
+         p.amount,
+         p.currency,
+         p.status,
+         p.paid_at,
+         p.created_at
+       FROM payments p
+       JOIN registrations r ON r.id = p.registration_id
+       JOIN attendees a ON a.id = r.attendee_id
+       JOIN users u ON u.id = a.user_id
+       ORDER BY p.created_at DESC`,
+    );
+    return rows;
   },
 
   /** Admin listing, newest first. */

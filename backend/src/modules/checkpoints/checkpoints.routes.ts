@@ -34,6 +34,15 @@ checkpointsRouter.post(
   asyncHandler(checkpointsController.create),
 );
 
+// Registered before the /:id routes below — 'attendance' would otherwise
+// be captured as a checkpoint id.
+checkpointsRouter.get(
+  '/attendance/export',
+  authenticate,
+  requirePermission(PERMISSIONS.MANAGE_CHECKPOINTS),
+  asyncHandler(checkpointsController.exportAttendanceCsv),
+);
+
 checkpointsRouter.patch(
   '/:id',
   authenticate,

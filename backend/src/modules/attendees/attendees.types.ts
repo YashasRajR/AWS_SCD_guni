@@ -24,6 +24,19 @@ export interface CreateAttendeeInput {
   registrationType?: string;
 }
 
+export interface AttendeeExportRow {
+  full_name: string;
+  email: string;
+  phone: string | null;
+  university: string | null;
+  department: string | null;
+  year: string | null;
+  registration_type: string | null;
+  registration_number: string | null;
+  registration_status: string | null;
+  created_at: string;
+}
+
 export function toAttendee(row: AttendeeRow): Attendee {
   return {
     id: row.id,

@@ -1,4 +1,6 @@
 import type { Checkpoint } from '@scd/types';
+import { useState } from 'react';
+import { downloadFile } from '../lib/download.js';
 import { ContentCrudPage } from '../components/ContentCrudPage.js';
 import { StatusBadge } from '../components/StatusBadge.js';
 import { useCurrentEventId } from '../lib/hooks.js';
@@ -24,6 +26,18 @@ const fields: FieldDef[] = [
 
 export function CheckpointsPage() {
   const eventId = useCurrentEventId();
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      await downloadFile('/admin/checkpoints/attendance/export', 'checkpoint-attendance.csv');
+    } catch {
+      // Toolbar button has no error slot — a failed download is silently retryable.
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <ContentCrudPage<Checkpoint>
@@ -34,6 +48,11 @@ export function CheckpointsPage() {
       fields={fields}
       rowToFormValues={(row) => ({ ...row })}
       createExtraValues={eventId ? { eventId } : undefined}
+      extraToolbar={
+        <button type="button" onClick={handleExport} disabled={exporting}>
+          {exporting ? 'Exporting…' : 'Export attendance CSV'}
+        </button>
+      }
     />
   );
 }

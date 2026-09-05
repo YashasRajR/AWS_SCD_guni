@@ -1,5 +1,6 @@
 import type { PaginatedData, Payment } from '@scd/types';
 import { paymentsRepository } from './payments.repository.js';
+import { toCsv } from '../../utils/csv.js';
 import { toPayment, type PaymentRow } from './payments.types.js';
 import { getEnv } from '../../config/env.js';
 import { getPaymentProvider, PaymentProviderNotConfiguredError } from '../../integrations/payment/index.js';
@@ -54,6 +55,24 @@ export const paymentsService = {
   async getByRegistrationId(registrationId: string): Promise<Payment | null> {
     const row = await paymentsRepository.findByRegistrationId(registrationId);
     return row ? toPayment(row) : null;
+  },
+
+  async exportCsv(): Promise<string> {
+    const rows = await paymentsRepository.listForExport();
+    return toCsv(
+      ['Registration #', 'Full name', 'Email', 'Provider', 'Amount', 'Currency', 'Status', 'Paid at', 'Created at'],
+      rows.map((r) => [
+        r.registration_number,
+        r.full_name,
+        r.email,
+        r.provider,
+        r.amount,
+        r.currency,
+        r.status,
+        r.paid_at,
+        r.created_at,
+      ]),
+    );
   },
 
   async list(page: number, pageSize: number): Promise<PaginatedData<Payment>> {

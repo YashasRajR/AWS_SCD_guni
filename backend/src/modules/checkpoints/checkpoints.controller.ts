@@ -7,6 +7,14 @@ import { sendCreated, sendSuccess } from '../../utils/response.js';
 import type { PaginationQuery, CreateCheckpointInput, UpdateCheckpointInput } from '@scd/validation';
 
 export const checkpointsController = {
+  /** Admin export — GET /api/v1/admin/checkpoints/attendance/export */
+  async exportAttendanceCsv(_req: Request, res: Response): Promise<void> {
+    const csv = await checkpointsService.exportAttendanceCsv();
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="checkpoint-attendance.csv"');
+    res.send(csv);
+  },
+
   /** Admin listing — GET /api/v1/admin/checkpoints */
   async list(req: Request, res: Response): Promise<void> {
     const { page, pageSize } = req.query as unknown as PaginationQuery;

@@ -14,6 +14,18 @@ export interface PaymentRow {
   updated_at: string;
 }
 
+export interface PaymentExportRow {
+  registration_number: string;
+  full_name: string;
+  email: string;
+  provider: string | null;
+  amount: string;
+  currency: string;
+  status: PaymentStatus;
+  paid_at: string | null;
+  created_at: string;
+}
+
 export function toPayment(row: PaymentRow): Payment {
   return {
     id: row.id,

@@ -1,6 +1,6 @@
 import { getPool } from '../../config/database.js';
 import { buildUpdateSet } from '../../utils/sql.js';
-import type { CheckpointAttendanceRow, CheckpointRow } from './checkpoints.types.js';
+import type { CheckpointAttendanceExportRow, CheckpointAttendanceRow, CheckpointRow } from './checkpoints.types.js';
 import type { CreateCheckpointInput, UpdateCheckpointInput } from '@scd/validation';
 
 export const checkpointsRepository = {
@@ -22,6 +22,27 @@ export const checkpointsRepository = {
       getPool().query<{ count: string }>('SELECT count(*) FROM checkpoints'),
     ]);
     return { rows, total: Number(countResult.rows[0]?.count ?? 0) };
+  },
+
+  /** Full attendee + checkpoint + volunteer join for the admin CSV export —
+   * same pattern as registrations.repository.ts's listForExport(). */
+  async listAttendanceForExport(): Promise<CheckpointAttendanceExportRow[]> {
+    const { rows } = await getPool().query<CheckpointAttendanceExportRow>(
+      `SELECT
+         c.name AS checkpoint_name,
+         a.full_name AS attendee_name,
+         u.email AS attendee_email,
+         v.name AS volunteer_name,
+         ca.status,
+         ca.completed_at
+       FROM checkpoint_attendance ca
+       JOIN checkpoints c ON c.id = ca.checkpoint_id
+       JOIN attendees a ON a.id = ca.attendee_id
+       JOIN users u ON u.id = a.user_id
+       LEFT JOIN volunteers v ON v.id = ca.volunteer_id
+       ORDER BY ca.completed_at DESC`,
+    );
+    return rows;
   },
 
   async findById(id: string): Promise<CheckpointRow | null> {

@@ -15,6 +15,13 @@ paymentsPublicRouter.post('/initiate', authenticate, asyncHandler(paymentsContro
 /** Mounted at /api/v1/admin/payments. The attendee-owned "my payment" surface lives at /payments/initiate + user-dashboard. */
 export const paymentsAdminRouter = Router();
 paymentsAdminRouter.get(
+  '/export',
+  authenticate,
+  requirePermission(PERMISSIONS.MANAGE_PAYMENTS),
+  asyncHandler(paymentsController.exportCsv),
+);
+
+paymentsAdminRouter.get(
   '/',
   authenticate,
   requirePermission(PERMISSIONS.MANAGE_PAYMENTS),

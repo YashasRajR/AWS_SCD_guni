@@ -26,6 +26,15 @@ export interface CheckpointAttendanceRow {
   updated_at: string;
 }
 
+export interface CheckpointAttendanceExportRow {
+  checkpoint_name: string;
+  attendee_name: string;
+  attendee_email: string;
+  volunteer_name: string | null;
+  status: CheckpointAttendanceStatus;
+  completed_at: string;
+}
+
 export interface CheckpointProgressItem {
   checkpoint: Checkpoint;
   completed: boolean;
