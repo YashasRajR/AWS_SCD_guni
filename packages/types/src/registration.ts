@@ -1,4 +1,4 @@
-import type { PaymentStatus, RegistrationStatus, TicketStatus } from './enums.js';
+import type { PaymentStatus, QrScanResult, QrTokenStatus, QrTokenType, RegistrationStatus, TicketStatus } from './enums.js';
 
 export interface Attendee {
   id: string;
@@ -48,4 +48,26 @@ export interface Ticket {
   issuedAt: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface QrToken {
+  id: string;
+  ticketId: string;
+  type: QrTokenType;
+  status: QrTokenStatus;
+  issuedAt: string;
+  revokedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface QrScanLog {
+  id: string;
+  qrTokenId: string | null;
+  type: QrTokenType;
+  volunteerId: string | null;
+  checkpointId: string | null;
+  attendeeId: string | null;
+  result: QrScanResult;
+  createdAt: string;
 }

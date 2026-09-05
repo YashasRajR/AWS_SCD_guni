@@ -11,6 +11,11 @@ export const ticketsRepository = {
     return rows[0] ?? null;
   },
 
+  async findById(id: string): Promise<TicketRow | null> {
+    const { rows } = await getPool().query<TicketRow>('SELECT * FROM tickets WHERE id = $1', [id]);
+    return rows[0] ?? null;
+  },
+
   async list(page: number, pageSize: number): Promise<{ rows: TicketRow[]; total: number }> {
     const offset = (page - 1) * pageSize;
     const [{ rows }, countResult] = await Promise.all([
@@ -23,7 +28,11 @@ export const ticketsRepository = {
     return { rows, total: Number(countResult.rows[0]?.count ?? 0) };
   },
 
-  // DO NOT add QR/NFC fields here — tickets are identified by ticket_number only.
+  // QR check-in tokens live in the separate qr_tokens table (module
+  // qr-tokens), not as columns on this row — a ticket can be identified by
+  // ticket_number alone, and rotating/revoking a QR token must never touch
+  // this table. (Earlier phases forbade QR/NFC outright; superseded — see
+  // qr-tokens module.)
   //
   // Race-safe: two concurrent callers (e.g. a payment webhook retry racing
   // an admin's manual confirm) can both reach this with no existing ticket

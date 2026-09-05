@@ -50,6 +50,14 @@ export class AppError extends Error {
     return new AppError(ERROR_CODES.CHECKPOINT_NOT_ASSIGNED, message);
   }
 
+  static qrTokenInvalid(message = 'This QR code is not valid.'): AppError {
+    return new AppError(ERROR_CODES.QR_TOKEN_INVALID, message);
+  }
+
+  static qrTokenRevoked(message = 'This QR code has been revoked. Ask the attendee for a reissued ticket.'): AppError {
+    return new AppError(ERROR_CODES.QR_TOKEN_REVOKED, message);
+  }
+
   static internal(message = 'Something went wrong. Please try again.'): AppError {
     return new AppError(ERROR_CODES.INTERNAL_ERROR, message);
   }

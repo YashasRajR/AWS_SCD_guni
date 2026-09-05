@@ -4,13 +4,19 @@ export const uuidParamSchema = z.object({
   id: z.string().uuid(),
 });
 
-export const completeCheckpointSchema = z.object({
-  checkpointId: z.string().uuid(),
-  attendeeId: z.string().uuid().optional(),
-  registrationNumber: z.string().trim().min(1).optional(),
-}).refine((v) => Boolean(v.attendeeId || v.registrationNumber), {
-  message: 'Either attendeeId or registrationNumber is required',
-});
+export const completeCheckpointSchema = z
+  .object({
+    checkpointId: z.string().uuid(),
+    attendeeId: z.string().uuid().optional(),
+    registrationNumber: z.string().trim().min(1).optional(),
+    // Raw QR token scanned by the volunteer app — REGISTRATION type only
+    // (GOODIE tokens go through a separate goodie-claim flow, not a
+    // checkpoint completion). Resolves to attendeeId server-side.
+    qrToken: z.string().trim().min(1).optional(),
+  })
+  .refine((v) => Boolean(v.attendeeId || v.registrationNumber || v.qrToken), {
+    message: 'One of attendeeId, registrationNumber, or qrToken is required',
+  });
 export type CompleteCheckpointInput = z.infer<typeof completeCheckpointSchema>;
 
 export const attendeeSearchQuerySchema = z.object({

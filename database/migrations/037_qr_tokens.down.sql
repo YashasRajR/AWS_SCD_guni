@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS qr_scan_logs;
+DROP TABLE IF EXISTS qr_tokens;

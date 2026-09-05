@@ -7,7 +7,10 @@ import { agendaRouter, agendaAdminRouter } from '../modules/agenda/agenda.routes
 import { timelineRouter, timelineAdminRouter } from '../modules/timeline/timeline.routes.js';
 import { venuesRouter, venuesAdminRouter } from '../modules/venues/venues.routes.js';
 import { faqRouter, faqAdminRouter } from '../modules/faq/faq.routes.js';
-import { announcementsRouter, announcementsAdminRouter } from '../modules/announcements/announcements.routes.js';
+import {
+  announcementsRouter,
+  announcementsAdminRouter,
+} from '../modules/announcements/announcements.routes.js';
 
 import { authRouter } from '../modules/auth/auth.routes.js';
 import { userDashboardRouter } from '../modules/user-dashboard/user-dashboard.routes.js';
@@ -19,10 +22,17 @@ import { attendeesRouter } from '../modules/attendees/attendees.routes.js';
 import { checkpointsRouter } from '../modules/checkpoints/checkpoints.routes.js';
 import { auditLogsRouter } from '../modules/audit-logs/audit-logs.routes.js';
 import { paymentsPublicRouter, paymentsAdminRouter } from '../modules/payments/payments.routes.js';
-import { certificatesAdminRouter, certificatesPublicRouter } from '../modules/certificates/certificates.routes.js';
+import {
+  certificatesAdminRouter,
+  certificatesPublicRouter,
+} from '../modules/certificates/certificates.routes.js';
 import { achievementsAdminRouter } from '../modules/achievements/achievements.routes.js';
 import { emailsAdminRouter } from '../modules/emails/emails.routes.js';
 import { ticketsAdminRouter } from '../modules/tickets/tickets.routes.js';
+import {
+  qrTokensByTicketRouter,
+  qrTokensAdminRouter,
+} from '../modules/qr-tokens/qr-tokens.routes.js';
 import { usersAdminRouter } from '../modules/users/users.routes.js';
 
 /**
@@ -70,6 +80,8 @@ apiRouter.use('/admin/certificates', certificatesAdminRouter);
 apiRouter.use('/admin/achievements', achievementsAdminRouter);
 apiRouter.use('/admin/emails', emailsAdminRouter);
 apiRouter.use('/admin/tickets', ticketsAdminRouter);
+apiRouter.use('/admin/tickets/:ticketId/qr-tokens', qrTokensByTicketRouter);
+apiRouter.use('/admin/qr-tokens', qrTokensAdminRouter);
 apiRouter.use('/admin/users', usersAdminRouter);
 
 // --- ADMIN content management (every status, not just PUBLISHED) -----------

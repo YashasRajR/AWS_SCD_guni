@@ -11,6 +11,7 @@ import { volunteersService } from './volunteers.service.js';
 import { attendeesService } from '../attendees/attendees.service.js';
 import { checkpointsService } from '../checkpoints/checkpoints.service.js';
 import { auditLogsService } from '../audit-logs/audit-logs.service.js';
+import { qrTokensService } from '../qr-tokens/qr-tokens.service.js';
 import { AppError } from '../../utils/errors.js';
 import { sendCreated, sendSuccess } from '../../utils/response.js';
 
@@ -47,16 +48,30 @@ export const volunteersController = {
 
   async completeCheckpoint(req: Request, res: Response): Promise<void> {
     const volunteer = await volunteersService.requireByUserId(req.identity!.userId);
-    const { checkpointId, attendeeId, registrationNumber } = req.body as CompleteCheckpointInput;
+    const { checkpointId, attendeeId, registrationNumber, qrToken } =
+      req.body as CompleteCheckpointInput;
 
-    const resolvedAttendeeId = attendeeId;
+    let resolvedAttendeeId = attendeeId;
+    let qrTokenId: string | null = null;
+    if (!resolvedAttendeeId && qrToken) {
+      // Throws (and logs INVALID/REVOKED itself) for a bad token — nothing
+      // further to do here in that case.
+      const resolved = await qrTokensService.resolve(qrToken, 'REGISTRATION', {
+        volunteerId: volunteer.id,
+        checkpointId,
+      });
+      resolvedAttendeeId = resolved.attendeeId;
+      qrTokenId = resolved.qrTokenId;
+    }
     if (!resolvedAttendeeId && registrationNumber) {
       // Looking up by registration number is out of scope for this
-      // endpoint's minimal contract in this phase; attendeeId is the
-      // primary path (from a prior attendee-search call).
-      throw AppError.validation('attendeeId is required to complete a checkpoint in this phase.');
+      // endpoint's minimal contract in this phase; attendeeId/qrToken are
+      // the primary paths.
+      throw AppError.validation(
+        'attendeeId or qrToken is required to complete a checkpoint in this phase.',
+      );
     }
-    if (!resolvedAttendeeId) throw AppError.validation('attendeeId is required.');
+    if (!resolvedAttendeeId) throw AppError.validation('attendeeId or qrToken is required.');
 
     try {
       const attendance = await checkpointsService.completeCheckpoint(
@@ -64,16 +79,58 @@ export const volunteersController = {
         checkpointId,
         resolvedAttendeeId,
       );
-      await auditLogsService.log(req, 'CHECKPOINT_COMPLETED', 'checkpoint_attendance', attendance.id, {
-        checkpointId,
-        attendeeId: resolvedAttendeeId,
-      });
+      await auditLogsService.log(
+        req,
+        'CHECKPOINT_COMPLETED',
+        'checkpoint_attendance',
+        attendance.id,
+        {
+          checkpointId,
+          attendeeId: resolvedAttendeeId,
+        },
+      );
+      if (qrTokenId) {
+        await qrTokensService.logScan({
+          qrTokenId,
+          type: 'REGISTRATION',
+          volunteerId: volunteer.id,
+          checkpointId,
+          attendeeId: resolvedAttendeeId,
+          result: 'SUCCESS',
+        });
+      }
       sendCreated(res, attendance, 'Checkpoint completed.');
     } catch (err) {
+      if (err instanceof AppError && qrTokenId) {
+        const result =
+          err.code === 'CHECKPOINT_ALREADY_COMPLETED'
+            ? 'ALREADY_USED'
+            : err.code === 'CHECKPOINT_INACTIVE'
+              ? 'CHECKPOINT_INACTIVE'
+              : err.code === 'CHECKPOINT_NOT_ASSIGNED'
+                ? 'NOT_ASSIGNED'
+                : null;
+        if (result) {
+          await qrTokensService.logScan({
+            qrTokenId,
+            type: 'REGISTRATION',
+            volunteerId: volunteer.id,
+            checkpointId,
+            attendeeId: resolvedAttendeeId,
+            result,
+          });
+        }
+      }
       if (err instanceof AppError && err.code === 'CHECKPOINT_ALREADY_COMPLETED') {
-        await auditLogsService.log(req, 'CHECKPOINT_DUPLICATE_ATTEMPT', 'checkpoint', checkpointId, {
-          attendeeId: resolvedAttendeeId,
-        });
+        await auditLogsService.log(
+          req,
+          'CHECKPOINT_DUPLICATE_ATTEMPT',
+          'checkpoint',
+          checkpointId,
+          {
+            attendeeId: resolvedAttendeeId,
+          },
+        );
       }
       throw err;
     }
@@ -103,7 +160,10 @@ export const volunteersController = {
   },
 
   async update(req: Request, res: Response): Promise<void> {
-    const volunteer = await volunteersService.update(req.params.id!, req.body as UpdateVolunteerInput);
+    const volunteer = await volunteersService.update(
+      req.params.id!,
+      req.body as UpdateVolunteerInput,
+    );
     await auditLogsService.log(req, 'VOLUNTEER_UPDATED', 'volunteer', volunteer.id);
     sendSuccess(res, volunteer, 'Volunteer updated.');
   },

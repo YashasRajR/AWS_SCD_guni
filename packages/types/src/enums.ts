@@ -31,6 +31,22 @@ export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 export const TICKET_STATUSES = ['ISSUED', 'REVOKED'] as const;
 export type TicketStatus = (typeof TICKET_STATUSES)[number];
 
+export const QR_TOKEN_TYPES = ['REGISTRATION', 'GOODIE'] as const;
+export type QrTokenType = (typeof QR_TOKEN_TYPES)[number];
+
+export const QR_TOKEN_STATUSES = ['ACTIVE', 'REVOKED'] as const;
+export type QrTokenStatus = (typeof QR_TOKEN_STATUSES)[number];
+
+export const QR_SCAN_RESULTS = [
+  'SUCCESS',
+  'ALREADY_USED',
+  'INVALID',
+  'REVOKED',
+  'CHECKPOINT_INACTIVE',
+  'NOT_ASSIGNED',
+] as const;
+export type QrScanResult = (typeof QR_SCAN_RESULTS)[number];
+
 export const EVENT_STATUSES = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
 export type EventStatus = (typeof EVENT_STATUSES)[number];
 
