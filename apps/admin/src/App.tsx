@@ -32,6 +32,7 @@ import { AchievementsPage } from './pages/AchievementsPage.js';
 import { EmailsPage } from './pages/EmailsPage.js';
 import { UsersPage } from './pages/UsersPage.js';
 import { SystemStatusPage } from './pages/SystemStatusPage.js';
+import { SchedulePdfPage } from './pages/SchedulePdfPage.js';
 import { SheetsSyncPage } from './pages/SheetsSyncPage.js';
 
 function RequireAdmin({ children }: { children: ReactElement }) {
@@ -91,6 +92,7 @@ function AppRoutes() {
         <Route path="achievements" element={<AchievementsPage />} />
         <Route path="emails" element={<EmailsPage />} />
         <Route path="users" element={<UsersPage />} />
+        <Route path="content/schedule-pdf" element={<SchedulePdfPage />} />
         <Route path="system-status" element={<SystemStatusPage />} />
         <Route path="sheets-sync" element={<SheetsSyncPage />} />
       </Route>

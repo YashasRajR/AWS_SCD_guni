@@ -1,4 +1,5 @@
 import { EventTimeline } from '../components/timeline/EventTimeline.js';
+import { DownloadSchedulePdf } from '../components/event/DownloadSchedulePdf.js';
 import { PageContainer } from '../components/layout/PageContainer.js';
 import { useDocumentHead } from '../lib/seo.js';
 
@@ -18,6 +19,7 @@ export function TimelinePage() {
       </div>
       <div className="section">
         <PageContainer>
+          <DownloadSchedulePdf />
           <EventTimeline />
         </PageContainer>
       </div>

@@ -165,6 +165,15 @@ export interface Announcement {
   updatedAt: string;
 }
 
+/** Downloadable event schedule PDF status (spec #12) -- a singleton. */
+export interface SchedulePdfStatus {
+  pdfAvailable: boolean;
+  isManual: boolean;
+  published: boolean;
+  generatedAt: string | null;
+  updatedAt: string | null;
+}
+
 /** About/AWS Section CMS block (spec #6). */
 export interface AboutSection {
   id: string;
