@@ -27,6 +27,8 @@ This is a snapshot, not a criticism — the codebase already covers the hardest,
 | Security fundamentals | 56 | Parameterized SQL throughout, Zod `safeParse` (no mass assignment), bcrypt rounds=12, helmet+CORS allowlist, rate limiting — reviewed in an earlier session pass, no criticals found |
 | CI (lint/typecheck/build/unit/integration) + new E2E job | 69 | `.github/workflows/ci.yml`; Playwright suite added this session |
 | Certificates, achievements, event-wrapped | 49 | Fully built — exceeds the spec's "future-ready, don't need to implement" ask for certificates |
+| About/AWS section CMS | 6 | commit `76d49b6` — `about_sections` module (title/body/image/link, orderable, DRAFT/PUBLISHED/ARCHIVED), same shape as gallery/announcements; public `AboutEvent.tsx` renders it when published, falls back to static copy otherwise. |
+| Event Highlights KPI cards (date/time/venue/registration window/ticket prices/speaker+session counts/capacity) | 7 | commit `1903ef4` — extends the existing data-driven `EventInfo` section with per-ticket-plan price cards, speaker/session counts, and summed venue capacity, all from existing public endpoints (no hardcoded numbers). |
 
 ---
 
