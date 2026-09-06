@@ -6,6 +6,8 @@
 
 This is a snapshot, not a criticism — the codebase already covers the hardest, highest-risk 60% of the spec (auth, RBAC, payments, QR/check-in, PDFs, audit, CI, security). What's missing is concentrated in a predictable place: **CMS breadth** (the spec's "if it exists, Admin can manage it" principle isn't fully realized) and a handful of **named-but-unbuilt features** (coupons, invoices, ticket plans, Sheets sync).
 
+**Update (2026-09-06, later same session):** sections 15 (ticket plans) and 16 (coupon/discount engine) below are now ✅ Done — see commits `04617d0` (ticket plans) and `89ca147` (coupons). The rest of this report is unchanged from the original pass; items 1-2 in the "Named features" table and the priority list still reflect the pre-fix state for traceability, with a note added at each closed item.
+
 ---
 
 ## 1. What's solid (✅)
@@ -34,8 +36,8 @@ This is a snapshot, not a criticism — the codebase already covers the hardest,
 
 | # | Feature | Status | Detail |
 |---|---|---|---|
-| 16 | Coupon/discount engine | ❌ Missing | Zero references to "coupon" anywhere in the repo. No `Coupon`/`CouponUsage` tables, no validation, no checkout integration. This is a full module to build: schema, server-side validation (expiry/usage-limit/eligibility), and wiring into the payment amount calculation. |
-| 15 | Ticket plans (Student ₹200 / Professional ₹350 as distinct, admin-configurable plans) | 🟡 Partial → mostly missing | `events.registration_fee` is a single flat numeric column (migration `031_events_registration_fee`). `attendees.registration_type` is a free-text column with no enum and no price mapping. There is no `TicketPlan` entity with per-plan price/eligibility/capacity/availability window/display order. Today every attendee is charged the same fee regardless of student/professional status. |
+| 16 | Coupon/discount engine | ✅ **Done** (was ❌ Missing) — see commit `89ca147` | Zero references to "coupon" anywhere in the repo. No `Coupon`/`CouponUsage` tables, no validation, no checkout integration. This is a full module to build: schema, server-side validation (expiry/usage-limit/eligibility), and wiring into the payment amount calculation. |
+| 15 | Ticket plans (Student ₹200 / Professional ₹350 as distinct, admin-configurable plans) | ✅ **Done** (was 🟡 Partial) — see commit `04617d0` | `events.registration_fee` is a single flat numeric column (migration `031_events_registration_fee`). `attendees.registration_type` is a free-text column with no enum and no price mapping. There is no `TicketPlan` entity with per-plan price/eligibility/capacity/availability window/display order. Today every attendee is charged the same fee regardless of student/professional status. |
 | 25 | Invoice / fee-receipt PDF | ❌ Missing | Zero references to "invoice" anywhere. Only the ticket PDF exists; there's no separate financial receipt document, so section 25's whole requirement (invoice number, billing info, tax/GST line, reissue history) is unbuilt. |
 | 28 | Social post/bio generator ("Create My SCD Post") | 🟡 Stub only | `backend/src/modules/social-sharing/social-sharing.service.ts` explicitly says *"Model + service boundary only in this phase. No LinkedIn/Instagram API integration and no image generation"* — it only lists an attendee's past shares. The actual generator (bio input, interest selection, AI copy generation with no invented claims, branded image, LinkedIn/Instagram-formatted output) doesn't exist. |
 | 41 | Google Sheets sync | ❌ Missing | Zero references to Sheets/spreadsheet sync anywhere in the repo. No sync queue, no admin sync-status page, no reconciliation UI. |
@@ -73,8 +75,8 @@ This is a snapshot, not a criticism — the codebase already covers the hardest,
 
 If the goal is to close the gap between "very solid backend platform" and "the spec's full vision," the natural order — cheapest/highest-leverage first — is:
 
-1. **Ticket plans + attendee type enum** (section 15/17) — this blocks correct pricing and is a prerequisite for the coupon engine, since coupons need a real price to discount against.
-2. **Coupon/discount engine** (section 16) — the spec calls this out as a "proper engine," and it's a self-contained module (schema + validation + checkout wiring) once ticket plans exist.
+1. ~~**Ticket plans + attendee type enum** (section 15/17)~~ — done, commit `04617d0`.
+2. ~~**Coupon/discount engine** (section 16)~~ — done, commit `89ca147`.
 3. **Invoice/receipt PDF** (section 25) — same PDF-generation pattern as the existing ticket PDF; low technical risk, closes a named spec requirement, and unblocks the "resend documents" admin flow properly.
 4. **Real image upload** (section 8) — currently the single biggest violation of the spec's core principle ("admin can manage it without touching code") since every image field is a URL-paste today.
 5. **Hero/header/footer/nav CMS** (sections 4, 5, 38) — turns the remaining hard-coded frontend chrome into admin-editable content, finishing the CMS breadth the spec insists on.
