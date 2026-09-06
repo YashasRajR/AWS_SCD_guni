@@ -22,6 +22,11 @@ interface TableProps<T> {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   onSortChange?: (key: string) => void;
+  /** Renders a leading checkbox column for bulk actions — pass all three
+   * together, or omit all three for a plain (non-selectable) table. */
+  selectedIds?: Set<string>;
+  onToggleRow?: (id: string) => void;
+  onToggleAll?: (checked: boolean) => void;
 }
 
 export function Table<T>({
@@ -34,12 +39,27 @@ export function Table<T>({
   sortBy,
   sortOrder,
   onSortChange,
+  selectedIds,
+  onToggleRow,
+  onToggleAll,
 }: TableProps<T>) {
+  const selectable = Boolean(selectedIds && onToggleRow && onToggleAll);
+  const colSpan = columns.length + (selectable ? 1 : 0);
   return (
     <div className="table-wrap">
       <table className="table">
         <thead>
           <tr>
+            {selectable && (
+              <th style={{ width: '2.5rem' }}>
+                <input
+                  type="checkbox"
+                  aria-label="Select all rows"
+                  checked={rows.length > 0 && rows.every((r) => selectedIds!.has(getRowId(r)))}
+                  onChange={(e) => onToggleAll!(e.target.checked)}
+                />
+              </th>
+            )}
             {columns.map((col) =>
               col.sortable && onSortChange ? (
                 <th key={col.key} style={col.width ? { width: col.width } : undefined}>
@@ -64,25 +84,35 @@ export function Table<T>({
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={columns.length} className="table-status">
+              <td colSpan={colSpan} className="table-status">
                 Loading…
               </td>
             </tr>
           ) : error ? (
             <tr>
-              <td colSpan={columns.length} className="table-status table-status-error">
+              <td colSpan={colSpan} className="table-status table-status-error">
                 {error}
               </td>
             </tr>
           ) : rows.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="table-status">
+              <td colSpan={colSpan} className="table-status">
                 {emptyMessage ?? 'Nothing here yet.'}
               </td>
             </tr>
           ) : (
             rows.map((row) => (
               <tr key={getRowId(row)}>
+                {selectable && (
+                  <td>
+                    <input
+                      type="checkbox"
+                      aria-label="Select row"
+                      checked={selectedIds!.has(getRowId(row))}
+                      onChange={() => onToggleRow!(getRowId(row))}
+                    />
+                  </td>
+                )}
                 {columns.map((col) => (
                   <td key={col.key}>{col.render(row)}</td>
                 ))}

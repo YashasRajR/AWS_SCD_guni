@@ -39,6 +39,9 @@ export function RegistrationsPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [rowError, setRowError] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkStatus, setBulkStatus] = useState(STATUSES[0]!);
+  const [bulkApplying, setBulkApplying] = useState(false);
 
   const handleExport = async () => {
     setExporting(true);
@@ -64,6 +67,37 @@ export function RegistrationsPage() {
     } finally {
       setUpdatingId(null);
     }
+  };
+
+  const toggleRow = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = (checked: boolean) => {
+    setSelected(checked ? new Set(items.map((r) => r.id)) : new Set());
+  };
+
+  /** Fires the same per-row status PATCH used above, once per selected id —
+   * this is a single-event platform with row counts in the thousands at
+   * most (see registrations.repository.ts), so a dedicated bulk endpoint
+   * isn't worth the extra surface yet. */
+  const applyBulkStatus = async () => {
+    setBulkApplying(true);
+    setRowError(null);
+    const ids = [...selected];
+    const results = await Promise.allSettled(
+      ids.map((id) => apiClient.patch(`/admin/registrations/${id}/status`, { status: bulkStatus })),
+    );
+    const failed = results.filter((r) => r.status === 'rejected').length;
+    if (failed > 0) setRowError(`${failed} of ${ids.length} updates failed.`);
+    setSelected(new Set());
+    setBulkApplying(false);
+    reload();
   };
 
   const columns: Column<Registration>[] = [
@@ -108,6 +142,25 @@ export function RegistrationsPage() {
 
       {rowError && <p className="form-error">{rowError}</p>}
 
+      {selected.size > 0 && (
+        <div className="bulk-action-bar">
+          <span>{selected.size} selected</span>
+          <select value={bulkStatus} onChange={(e) => setBulkStatus(e.target.value)}>
+            {STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+          <button type="button" onClick={applyBulkStatus} disabled={bulkApplying}>
+            {bulkApplying ? 'Applying…' : 'Set status'}
+          </button>
+          <button type="button" className="btn-link" onClick={() => setSelected(new Set())}>
+            Clear selection
+          </button>
+        </div>
+      )}
+
       <div className="page-toolbar">
         <input
           type="search"
@@ -118,7 +171,16 @@ export function RegistrationsPage() {
         />
       </div>
 
-      <Table columns={columns} rows={items} getRowId={(r) => r.id} loading={loading} error={error} />
+      <Table
+        columns={columns}
+        rows={items}
+        getRowId={(r) => r.id}
+        loading={loading}
+        error={error}
+        selectedIds={selected}
+        onToggleRow={toggleRow}
+        onToggleAll={toggleAll}
+      />
       <Pagination page={page} totalPages={totalPages} totalItems={totalItems} onChange={setPage} />
     </div>
   );

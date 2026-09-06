@@ -862,3 +862,17 @@ textarea {
   color: var(--text-muted);
   font-size: 0.8rem;
 }
+
+/* --- Bulk action bar (multi-row admin actions) --------------------------- */
+
+.bulk-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+  background: var(--blue-bg);
+  color: var(--blue-text);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
