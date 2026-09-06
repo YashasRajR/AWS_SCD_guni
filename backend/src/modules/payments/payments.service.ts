@@ -1,4 +1,5 @@
-import type { PaginatedData, Payment } from '@scd/types';
+import { randomUUID } from 'node:crypto';
+import type { PaginatedData, Payment, PaymentDetail, PaymentStatus } from '@scd/types';
 import { paymentsRepository } from './payments.repository.js';
 import { toCsv } from '../../utils/csv.js';
 import { toPayment, type PaymentRow } from './payments.types.js';
@@ -76,8 +77,13 @@ export const paymentsService = {
     );
   },
 
-  async list(page: number, pageSize: number, search?: string): Promise<PaginatedData<Payment>> {
-    const { rows, total } = await paymentsRepository.list(page, pageSize, search);
+  async list(
+    page: number,
+    pageSize: number,
+    search?: string,
+    status?: PaymentStatus,
+  ): Promise<PaginatedData<Payment>> {
+    const { rows, total } = await paymentsRepository.list(page, pageSize, search, status);
     return {
       items: rows.map(toPayment),
       pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
@@ -206,36 +212,148 @@ export const paymentsService = {
         await paymentsRepository.markWebhookEventProcessed(eventId, 'IGNORED', 'Payment already PAID');
         return;
       }
-      const updated = await paymentsRepository.markPaid(payment.id, providerPaymentId ?? orderId);
-      await registrationsService.updateStatus(updated.registration_id, { status: 'CONFIRMED' });
-      // Best-effort by design: a failure here must never undo or block the
-      // payment confirmation that just happened (spec: "PDF generation
-      // fails: retry without creating duplicate registration/payment").
-      await invoicesService.issueForPayment(updated).catch((err) => {
-        logger.error({ err, paymentId: updated.id }, 'Invoice issuance failed');
-      });
-      await this.notifyPaymentResult(updated, true);
+      await this.confirmPaid(payment, providerPaymentId ?? orderId, provider.name);
       await paymentsRepository.markWebhookEventProcessed(eventId, 'PROCESSED');
-      await auditLogsService.logSystem('PAYMENT_CONFIRMED', 'payment', updated.id, {
-        registrationId: updated.registration_id,
-        provider: provider.name,
-      });
     } else if (parsed.event === 'payment.failed') {
       if (payment.status === 'FAILED' || payment.status === 'PAID') {
         await paymentsRepository.markWebhookEventProcessed(eventId, 'IGNORED', `Payment already ${payment.status}`);
         return;
       }
-      const updated = await paymentsRepository.markFailed(payment.id);
-      await this.notifyPaymentResult(updated, false);
+      await this.confirmFailed(payment, provider.name);
       await paymentsRepository.markWebhookEventProcessed(eventId, 'PROCESSED');
-      await auditLogsService.logSystem('PAYMENT_FAILED', 'payment', updated.id, {
-        registrationId: updated.registration_id,
-        provider: provider.name,
-      });
     } else {
       logger.info({ event: parsed.event }, 'Ignoring unhandled payment webhook event type');
       await paymentsRepository.markWebhookEventProcessed(eventId, 'IGNORED', 'Unhandled event type');
     }
+  },
+
+  /**
+   * Shared by the webhook handler and the admin "retry verification" /
+   * "record manual reconciliation" actions (spec #36) -- whatever
+   * triggered it, a captured payment always confirms the registration,
+   * issues the invoice, and notifies the attendee the same way.
+   */
+  async confirmPaid(payment: PaymentRow, providerPaymentId: string, provider: string): Promise<PaymentRow> {
+    const updated = await paymentsRepository.markPaid(payment.id, providerPaymentId);
+    await registrationsService.updateStatus(updated.registration_id, { status: 'CONFIRMED' });
+    // Best-effort by design: a failure here must never undo or block the
+    // payment confirmation that just happened (spec: "PDF generation
+    // fails: retry without creating duplicate registration/payment").
+    await invoicesService.issueForPayment(updated).catch((err) => {
+      logger.error({ err, paymentId: updated.id }, 'Invoice issuance failed');
+    });
+    await this.notifyPaymentResult(updated, true);
+    await auditLogsService.logSystem('PAYMENT_CONFIRMED', 'payment', updated.id, {
+      registrationId: updated.registration_id,
+      provider,
+    });
+    return updated;
+  },
+
+  /** Shared by the webhook handler and the admin actions below -- see confirmPaid(). */
+  async confirmFailed(payment: PaymentRow, provider: string): Promise<PaymentRow> {
+    const updated = await paymentsRepository.markFailed(payment.id);
+    await this.notifyPaymentResult(updated, false);
+    await auditLogsService.logSystem('PAYMENT_FAILED', 'payment', updated.id, {
+      registrationId: updated.registration_id,
+      provider,
+    });
+    return updated;
+  },
+
+  async requireById(id: string): Promise<PaymentRow> {
+    const row = await paymentsRepository.findById(id);
+    if (!row) throw AppError.notFound('Payment');
+    return row;
+  },
+
+  /** Admin payment-detail aggregate (spec #36 "view transaction details"/"view coupon"). */
+  async getDetail(id: string): Promise<PaymentDetail> {
+    const row = await this.requireById(id);
+    const registration = await registrationsService.getById(row.registration_id);
+    const attendee = registration ? await attendeesService.getById(registration.attendeeId) : null;
+    const user = attendee ? await usersService.getPublicUserById(attendee.userId) : null;
+    return {
+      payment: toPayment(row),
+      registrationNumber: registration?.registrationNumber ?? null,
+      attendeeName: attendee?.fullName ?? null,
+      attendeeEmail: user?.email ?? null,
+      couponCode: registration?.coupon?.code ?? null,
+    };
+  },
+
+  /** Live gateway status (spec #36 "view gateway status") -- read-only, never mutates our row. */
+  async fetchGatewayStatus(id: string): Promise<{ providerPaymentId: string | null; status: string | null }> {
+    const row = await this.requireById(id);
+    if (!row.provider_order_id) {
+      throw AppError.validation('This payment never reached the gateway — nothing to look up.');
+    }
+    const provider = getPaymentProvider();
+    return provider.fetchOrderStatus(row.provider_order_id);
+  },
+
+  /**
+   * "Retry verification" (spec #36): re-checks the gateway for a
+   * PENDING/PROCESSING payment in case its webhook was lost, and
+   * reconciles our row to match. A no-op for a payment already in a
+   * terminal state, or one the gateway still shows as unresolved.
+   */
+  async retryVerification(id: string): Promise<Payment> {
+    const row = await this.requireById(id);
+    if (row.status !== 'PENDING' && row.status !== 'PROCESSING') {
+      return toPayment(row);
+    }
+    if (!row.provider_order_id) {
+      throw AppError.validation('This payment never reached the gateway — nothing to verify.');
+    }
+    const provider = getPaymentProvider();
+    const gatewayStatus = await provider.fetchOrderStatus(row.provider_order_id);
+    if (gatewayStatus.status === 'captured' && gatewayStatus.providerPaymentId) {
+      return toPayment(await this.confirmPaid(row, gatewayStatus.providerPaymentId, provider.name));
+    }
+    if (gatewayStatus.status === 'failed') {
+      return toPayment(await this.confirmFailed(row, provider.name));
+    }
+    return toPayment(row);
+  },
+
+  /** Admin-initiated refund at the gateway (spec #36 "initiate refund if gateway supports it"). */
+  async refund(id: string, amount?: string): Promise<Payment> {
+    const row = await this.requireById(id);
+    if (row.status !== 'PAID') {
+      throw AppError.validation('Only a PAID payment can be refunded.');
+    }
+    if (!row.provider_payment_id) {
+      throw AppError.validation('This payment has no gateway payment id to refund.');
+    }
+    const provider = getPaymentProvider();
+    const refundAmount = amount ?? row.amount;
+    const { providerRefundId } = await provider.refundPayment(row.provider_payment_id, refundAmount);
+    return toPayment(await paymentsRepository.markRefunded(id, refundAmount, providerRefundId));
+  },
+
+  /**
+   * "Record manual reconciliation" (spec #36) -- for payments that never
+   * went through (or can't be confirmed by) the gateway flow: a bank
+   * transfer, a refund issued outside Razorpay, or a correction. The
+   * mandatory reason/admin-identity/timestamp/audit-record requirement is
+   * satisfied by the controller's auditLogsService.log() call, which
+   * always fires alongside this regardless of outcome.
+   */
+  async reconcile(id: string, status: Extract<PaymentStatus, 'PAID' | 'FAILED' | 'REFUNDED'>): Promise<Payment> {
+    const row = await this.requireById(id);
+    if (row.status === status) {
+      throw AppError.validation(`Payment is already ${status}.`);
+    }
+    if (status === 'PAID') {
+      return toPayment(await this.confirmPaid(row, row.provider_payment_id ?? `MANUAL-${randomUUID()}`, row.provider ?? 'manual'));
+    }
+    if (status === 'FAILED') {
+      return toPayment(await this.confirmFailed(row, row.provider ?? 'manual'));
+    }
+    // REFUNDED -- recorded without a gateway call (e.g. refunded by bank
+    // transfer); providerRefundId stays null, same as an untraceable manual refund.
+    return toPayment(await paymentsRepository.markRefunded(id, row.amount, null));
   },
 
   /** Best-effort — looked up via each module's own service, same pattern as registrations.service.ts's notifyConfirmed. */

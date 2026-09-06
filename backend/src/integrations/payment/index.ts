@@ -21,6 +21,17 @@ export interface PaymentProvider {
   }): Promise<{ providerOrderId: string }>;
   /** True only if `signature` is a valid signature of `rawBody` under our webhook secret. */
   verifyWebhookSignature(rawBody: string, signature: string): boolean;
+  /**
+   * Live gateway status for an order (spec #36 "view gateway status" /
+   * "retry verification") -- used when our own row may be stale (a lost
+   * webhook), not as a replacement for the webhook flow.
+   */
+  fetchOrderStatus(providerOrderId: string): Promise<{
+    providerPaymentId: string | null;
+    status: 'created' | 'authorized' | 'captured' | 'failed' | 'refunded' | null;
+  }>;
+  /** Initiates a refund at the gateway for an already-captured payment. */
+  refundPayment(providerPaymentId: string, amount: string): Promise<{ providerRefundId: string }>;
 }
 
 /**

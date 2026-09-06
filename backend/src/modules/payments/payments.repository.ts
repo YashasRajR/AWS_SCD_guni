@@ -1,4 +1,5 @@
 import { getPool } from '../../config/database.js';
+import type { PaymentStatus } from '@scd/types';
 import type { PaymentExportRow, PaymentRow } from './payments.types.js';
 
 export interface PaymentEventInsert {
@@ -98,6 +99,19 @@ export const paymentsRepository = {
     return rows[0]!;
   },
 
+  /** Gateway-initiated or manual refund (spec #36) -- providerRefundId is
+   * null for a manual (non-gateway) refund. */
+  async markRefunded(id: string, refundAmount: string, providerRefundId: string | null): Promise<PaymentRow> {
+    const { rows } = await getPool().query<PaymentRow>(
+      `UPDATE payments
+       SET status = 'REFUNDED', refunded_at = now(), refund_amount = $2, refund_provider_id = $3
+       WHERE id = $1
+       RETURNING *`,
+      [id, refundAmount, providerRefundId],
+    );
+    return rows[0]!;
+  },
+
   async markFailed(id: string): Promise<PaymentRow> {
     const { rows } = await getPool().query<PaymentRow>(
       `UPDATE payments SET status = 'FAILED' WHERE id = $1 RETURNING *`,
@@ -135,13 +149,20 @@ export const paymentsRepository = {
     page: number,
     pageSize: number,
     search?: string,
+    status?: PaymentStatus,
   ): Promise<{ rows: PaymentRow[]; total: number }> {
     const offset = (page - 1) * pageSize;
     const hasSearch = Boolean(search && search.trim());
-    const values = hasSearch ? [`%${search!.trim()}%`] : [];
-    const where = hasSearch
-      ? `WHERE p.provider_payment_id ILIKE $1 OR p.provider_order_id ILIKE $1 OR r.registration_number ILIKE $1`
-      : '';
+    const values: unknown[] = hasSearch ? [`%${search!.trim()}%`] : [];
+    const conditions: string[] = [];
+    if (hasSearch) {
+      conditions.push('(p.provider_payment_id ILIKE $1 OR p.provider_order_id ILIKE $1 OR r.registration_number ILIKE $1)');
+    }
+    if (status) {
+      values.push(status);
+      conditions.push(`p.status = $${values.length}`);
+    }
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
     const join = hasSearch ? 'JOIN registrations r ON r.id = p.registration_id' : '';
     const limitIdx = values.length + 1;
     const offsetIdx = values.length + 2;

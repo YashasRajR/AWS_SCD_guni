@@ -25,4 +25,15 @@ export class UnconfiguredPaymentProvider implements PaymentProvider {
   verifyWebhookSignature(_rawBody: string, _signature: string): boolean {
     return false;
   }
+
+  async fetchOrderStatus(_providerOrderId: string): Promise<{
+    providerPaymentId: string | null;
+    status: 'created' | 'authorized' | 'captured' | 'failed' | 'refunded' | null;
+  }> {
+    throw new PaymentProviderNotConfiguredError('Online payment is not configured on this server yet.');
+  }
+
+  async refundPayment(_providerPaymentId: string, _amount: string): Promise<{ providerRefundId: string }> {
+    throw new PaymentProviderNotConfiguredError('Online payment is not configured on this server yet.');
+  }
 }

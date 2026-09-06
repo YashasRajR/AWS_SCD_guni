@@ -1,7 +1,8 @@
 import type { Request, Response } from 'express';
-import type { PaginationQuery } from '@scd/validation';
+import type { PaymentsListQuery, RefundPaymentInput, ReconcilePaymentInput } from '@scd/validation';
 import { paymentsService } from './payments.service.js';
 import { attendeesService } from '../attendees/attendees.service.js';
+import { auditLogsService } from '../audit-logs/audit-logs.service.js';
 import { sendSuccess } from '../../utils/response.js';
 import { AppError } from '../../utils/errors.js';
 
@@ -14,8 +15,44 @@ export const paymentsController = {
   },
 
   async list(req: Request, res: Response): Promise<void> {
-    const { page, pageSize, search } = req.query as unknown as PaginationQuery;
-    sendSuccess(res, await paymentsService.list(page, pageSize, search));
+    const { page, pageSize, search, status } = req.query as unknown as PaymentsListQuery;
+    sendSuccess(res, await paymentsService.list(page, pageSize, search, status));
+  },
+
+  async getDetail(req: Request, res: Response): Promise<void> {
+    sendSuccess(res, await paymentsService.getDetail(req.params.id as string));
+  },
+
+  /** Live gateway status -- not itself a mutation, so no audit entry. */
+  async gatewayStatus(req: Request, res: Response): Promise<void> {
+    sendSuccess(res, await paymentsService.fetchGatewayStatus(req.params.id as string));
+  },
+
+  async retryVerification(req: Request, res: Response): Promise<void> {
+    const id = req.params.id as string;
+    const before = await paymentsService.getDetail(id);
+    const payment = await paymentsService.retryVerification(id);
+    await auditLogsService.log(req, 'PAYMENT_VERIFICATION_RETRIED', 'payment', id, {
+      fromStatus: before.payment.status,
+      toStatus: payment.status,
+    });
+    sendSuccess(res, payment);
+  },
+
+  async refund(req: Request, res: Response): Promise<void> {
+    const id = req.params.id as string;
+    const { reason, amount } = req.body as RefundPaymentInput;
+    const payment = await paymentsService.refund(id, amount !== undefined ? String(amount) : undefined);
+    await auditLogsService.log(req, 'PAYMENT_REFUNDED', 'payment', id, { reason, amount: payment.refundAmount });
+    sendSuccess(res, payment);
+  },
+
+  async reconcile(req: Request, res: Response): Promise<void> {
+    const id = req.params.id as string;
+    const { status, reason } = req.body as ReconcilePaymentInput;
+    const payment = await paymentsService.reconcile(id, status);
+    await auditLogsService.log(req, 'PAYMENT_RECONCILED', 'payment', id, { toStatus: status, reason });
+    sendSuccess(res, payment);
   },
 
   /** Attendee-owned: starts a checkout for the caller's own registration. */

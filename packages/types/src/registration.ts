@@ -72,8 +72,24 @@ export interface Payment {
   currency: string;
   status: PaymentStatus;
   paidAt: string | null;
+  /** Set once a refund (gateway-initiated or manually reconciled) is recorded (spec #36). */
+  refundedAt: string | null;
+  refundAmount: string | null;
+  /** Null for a manual (non-gateway) refund -- the audit_logs entry the
+   * action requires is the record for that case instead. */
+  refundProviderId: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/** Everything the admin payment-detail page (spec #36) needs, assembled
+ * from the existing registrations/attendees data rather than duplicating it. */
+export interface PaymentDetail {
+  payment: Payment;
+  registrationNumber: string | null;
+  attendeeName: string | null;
+  attendeeEmail: string | null;
+  couponCode: string | null;
 }
 
 export interface Ticket {

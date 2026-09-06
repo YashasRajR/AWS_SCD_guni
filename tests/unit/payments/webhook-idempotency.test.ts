@@ -44,6 +44,8 @@ function mockProvider(verifies: boolean) {
     name: 'razorpay',
     verifyWebhookSignature: vi.fn().mockReturnValue(verifies),
     createOrder: vi.fn(),
+    fetchOrderStatus: vi.fn(),
+    refundPayment: vi.fn(),
   });
 }
 

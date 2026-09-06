@@ -76,4 +76,54 @@ export class RazorpayPaymentProvider implements PaymentProvider {
       return false;
     }
   }
+
+  private authHeader(): string {
+    const env = getEnv();
+    return `Basic ${Buffer.from(`${env.PAYMENT_PROVIDER_KEY}:${env.PAYMENT_PROVIDER_SECRET}`).toString('base64')}`;
+  }
+
+  /**
+   * Lists the payment attempts against an order and returns the most
+   * recent one's status -- used when our own row may be stale (a lost
+   * webhook) rather than trusted as the primary confirmation path.
+   */
+  async fetchOrderStatus(providerOrderId: string): Promise<{
+    providerPaymentId: string | null;
+    status: 'created' | 'authorized' | 'captured' | 'failed' | 'refunded' | null;
+  }> {
+    const res = await fetch(`${RAZORPAY_API_BASE}/orders/${providerOrderId}/payments`, {
+      headers: { Authorization: this.authHeader() },
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      logger.error({ status: res.status, body, providerOrderId }, 'Razorpay order-status lookup failed');
+      throw new Error(`Payment provider rejected the status request (HTTP ${res.status}).`);
+    }
+    const data = (await res.json()) as { items: { id: string; status: string }[] };
+    // Attempts are returned oldest-first; the most recent one reflects the
+    // order's current state (a retried checkout can have an earlier
+    // failed attempt followed by a later captured one).
+    const latest = data.items[data.items.length - 1];
+    if (!latest) return { providerPaymentId: null, status: null };
+    return { providerPaymentId: latest.id, status: latest.status as 'created' | 'authorized' | 'captured' | 'failed' | 'refunded' };
+  }
+
+  async refundPayment(providerPaymentId: string, amount: string): Promise<{ providerRefundId: string }> {
+    const amountMinorUnits = Math.round(Number(amount) * 100);
+    if (!Number.isFinite(amountMinorUnits) || amountMinorUnits <= 0) {
+      throw new Error(`Invalid refund amount: ${amount}`);
+    }
+    const res = await fetch(`${RAZORPAY_API_BASE}/payments/${providerPaymentId}/refund`, {
+      method: 'POST',
+      headers: { Authorization: this.authHeader(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: amountMinorUnits }),
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      logger.error({ status: res.status, body, providerPaymentId }, 'Razorpay refund failed');
+      throw new Error(`Payment provider rejected the refund request (HTTP ${res.status}).`);
+    }
+    const data = (await res.json()) as { id: string };
+    return { providerRefundId: data.id };
+  }
 }

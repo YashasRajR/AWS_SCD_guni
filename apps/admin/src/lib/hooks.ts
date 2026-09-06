@@ -19,6 +19,8 @@ export interface ListQuery {
   /** Only consulted by endpoints that accept it (attendees, so far) --
    * ignored otherwise like the rest of ListQuery. */
   archived?: boolean;
+  /** Only consulted by endpoints that accept it (payments, so far). */
+  status?: string;
 }
 
 /** Fetches a PaginatedData<T> admin list endpoint, refetching whenever
@@ -39,14 +41,14 @@ export function usePaginatedResource<T>(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
-  const { search, sortBy, sortOrder, archived } = query;
+  const { search, sortBy, sortOrder, archived, status } = query;
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
     apiClient
-      .get<PaginatedData<T>>(path, { query: { page, pageSize, search, sortBy, sortOrder, archived } })
+      .get<PaginatedData<T>>(path, { query: { page, pageSize, search, sortBy, sortOrder, archived, status } })
       .then((data) => {
         if (cancelled) return;
         setItems(data.items);
@@ -63,7 +65,7 @@ export function usePaginatedResource<T>(
     return () => {
       cancelled = true;
     };
-  }, [path, page, pageSize, search, sortBy, sortOrder, archived, reloadToken]);
+  }, [path, page, pageSize, search, sortBy, sortOrder, archived, status, reloadToken]);
 
   const reload = useCallback(() => setReloadToken((n) => n + 1), []);
 

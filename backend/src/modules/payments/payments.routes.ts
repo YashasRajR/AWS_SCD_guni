@@ -1,6 +1,11 @@
 import { Router } from 'express';
 import { PERMISSIONS } from '@scd/constants';
-import { paginationQuerySchema } from '@scd/validation';
+import {
+  paymentsListQuerySchema,
+  refundPaymentSchema,
+  reconcilePaymentSchema,
+  uuidParamSchema,
+} from '@scd/validation';
 import { authenticate } from '../../middleware/authentication/index.js';
 import { requirePermission } from '../../middleware/authorization/index.js';
 import { validate } from '../../middleware/validation/index.js';
@@ -25,6 +30,48 @@ paymentsAdminRouter.get(
   '/',
   authenticate,
   requirePermission(PERMISSIONS.MANAGE_PAYMENTS),
-  validate(paginationQuerySchema, 'query'),
+  validate(paymentsListQuerySchema, 'query'),
   asyncHandler(paymentsController.list),
+);
+
+paymentsAdminRouter.get(
+  '/:id',
+  authenticate,
+  requirePermission(PERMISSIONS.MANAGE_PAYMENTS),
+  validate(uuidParamSchema, 'params'),
+  asyncHandler(paymentsController.getDetail),
+);
+
+paymentsAdminRouter.get(
+  '/:id/gateway-status',
+  authenticate,
+  requirePermission(PERMISSIONS.MANAGE_PAYMENTS),
+  validate(uuidParamSchema, 'params'),
+  asyncHandler(paymentsController.gatewayStatus),
+);
+
+paymentsAdminRouter.post(
+  '/:id/retry-verification',
+  authenticate,
+  requirePermission(PERMISSIONS.MANAGE_PAYMENTS),
+  validate(uuidParamSchema, 'params'),
+  asyncHandler(paymentsController.retryVerification),
+);
+
+paymentsAdminRouter.post(
+  '/:id/refund',
+  authenticate,
+  requirePermission(PERMISSIONS.MANAGE_PAYMENTS),
+  validate(uuidParamSchema, 'params'),
+  validate(refundPaymentSchema),
+  asyncHandler(paymentsController.refund),
+);
+
+paymentsAdminRouter.post(
+  '/:id/reconcile',
+  authenticate,
+  requirePermission(PERMISSIONS.MANAGE_PAYMENTS),
+  validate(uuidParamSchema, 'params'),
+  validate(reconcilePaymentSchema),
+  asyncHandler(paymentsController.reconcile),
 );
