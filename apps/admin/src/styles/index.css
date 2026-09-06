@@ -876,3 +876,64 @@ textarea {
   border-radius: 6px;
   font-size: 0.85rem;
 }
+
+/* --- System status page -------------------------------------------------- */
+
+.status-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.status-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  background: var(--surface);
+}
+
+.status-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.status-card-title {
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+
+.status-card-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.status-card-detail {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.status-card-extra {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.status-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot-ok {
+  background: var(--green-text);
+}
+
+.status-dot-error {
+  background: var(--amber-text);
+}

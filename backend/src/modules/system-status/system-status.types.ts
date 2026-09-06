@@ -1,0 +1,13 @@
+export interface IntegrationStatus {
+  name: string;
+  configured: boolean;
+  status: 'ok' | 'error';
+  detail: string;
+}
+
+export interface SystemStatus {
+  database: IntegrationStatus;
+  paymentGateway: IntegrationStatus;
+  email: IntegrationStatus & { queueDepth: number };
+  storage: IntegrationStatus;
+}

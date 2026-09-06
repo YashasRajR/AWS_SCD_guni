@@ -54,6 +54,7 @@ const NAV_SECTIONS: {
       { to: '/emails', label: 'Emails', permission: PERMISSIONS.VIEW_REPORTS },
       { to: '/audit-logs', label: 'Audit logs', permission: PERMISSIONS.VIEW_AUDIT_LOGS },
       { to: '/users', label: 'Users & roles', permission: PERMISSIONS.MANAGE_ROLES },
+      { to: '/system-status', label: 'System status', permission: PERMISSIONS.VIEW_REPORTS },
     ],
   },
 ];
