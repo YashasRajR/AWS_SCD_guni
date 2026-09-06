@@ -1,16 +1,24 @@
-import { useEvent } from '../../lib/queries.js';
+import { useEvent, useTicketPlans, useSpeakers, useSessions, useVenues } from '../../lib/queries.js';
 import { formatDate, formatTime } from '../../lib/format.js';
 import { Section, SectionHeader, SectionEyebrow, SectionTitle } from '../layout/Section.js';
 import { SkeletonCard } from '../ui/Skeleton.js';
 import { ErrorState } from '../ui/ErrorState.js';
-import { CalendarIcon, ClockIcon, MapPinIcon, TicketIcon } from '../ui/Icon.js';
+import { CalendarIcon, ClockIcon, MapPinIcon, TicketIcon, UsersIcon, CodeIcon } from '../ui/Icon.js';
 
 /**
- * Event Information — every value here comes straight from GET /api/v1/event
- * and only from here; no other component re-derives or duplicates it.
+ * Event Information + Highlights KPI cards (spec #7). Every value comes
+ * from an API resource — event/ticket-plans/speakers/sessions/venues —
+ * none of it is hardcoded here. Ticket plans render by their own
+ * admin-given name/price (e.g. "Student", "Professional") rather than
+ * two fixed "student"/"professional" labels, since plans are themselves
+ * admin-configurable, not a fixed pair.
  */
 export function EventInfo() {
   const { data: event, loading, error, notFound, reload } = useEvent();
+  const { items: ticketPlans } = useTicketPlans();
+  const { items: speakers } = useSpeakers();
+  const { items: sessions } = useSessions();
+  const { items: venues } = useVenues();
 
   if (loading) {
     return (
@@ -34,6 +42,8 @@ export function EventInfo() {
 
   if (notFound || !event) return null;
 
+  const totalCapacity = venues.reduce((sum, v) => sum + (v.capacity ?? 0), 0);
+
   const cards = [
     { icon: <CalendarIcon />, label: 'Date', value: formatDate(event.eventDate) },
     {
@@ -50,6 +60,16 @@ export function EventInfo() {
           ? `${formatDate(event.registrationOpen)} – ${formatDate(event.registrationClose)}`
           : 'Opens soon',
     },
+    ...ticketPlans
+      .filter((plan) => plan.isActive)
+      .map((plan) => ({
+        icon: <TicketIcon />,
+        label: plan.name,
+        value: Number(plan.price) > 0 ? `${plan.currency} ${plan.price}` : 'Free',
+      })),
+    ...(speakers.length > 0 ? [{ icon: <UsersIcon />, label: 'Speakers', value: String(speakers.length) }] : []),
+    ...(sessions.length > 0 ? [{ icon: <CodeIcon />, label: 'Sessions', value: String(sessions.length) }] : []),
+    ...(totalCapacity > 0 ? [{ icon: <UsersIcon />, label: 'Capacity', value: totalCapacity.toLocaleString() }] : []),
   ];
 
   return (
@@ -59,8 +79,8 @@ export function EventInfo() {
         <SectionTitle>Everything you need to know</SectionTitle>
       </SectionHeader>
       <div className="info-grid">
-        {cards.map((c) => (
-          <div key={c.label} className="info-card">
+        {cards.map((c, i) => (
+          <div key={`${c.label}-${i}`} className="info-card">
             <span className="info-card-icon">{c.icon}</span>
             <div>
               <p className="info-card-label">{c.label}</p>

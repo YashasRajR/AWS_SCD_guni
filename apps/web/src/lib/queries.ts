@@ -9,6 +9,7 @@ import type {
   Session,
   SiteLink,
   Speaker,
+  TicketPlan,
   TimelineItem,
   Venue,
 } from '@scd/types';
@@ -71,4 +72,8 @@ export function useGallery() {
 
 export function usePastEvents() {
   return useResource<PastEvent>('/past-events');
+}
+
+export function useTicketPlans() {
+  return useResource<TicketPlan>('/ticket-plans');
 }
