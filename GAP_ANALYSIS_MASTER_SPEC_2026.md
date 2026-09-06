@@ -46,7 +46,7 @@ This is a snapshot, not a criticism — the codebase already covers the hardest,
 | 14 | Past Events | ❌ Missing | Zero references to past-event cards/archive. |
 | 40 | Popup / announcement-banner system | 🟡 Partial | `announcements` module has `publishAt`/`expiresAt`/`priority`/`status` — closer to a scheduled content list than a popup engine. Missing: display-frequency (once / every visit / until dismissed), dismissal tracking, target-audience targeting, and an image+button+URL popup layout. |
 | 50 | Sponsor management | ❌ Missing | Zero references to "sponsor" anywhere (spec marks this "future ready" — acceptable to leave for V2). |
-| 4, 5 | Header/nav/logo/CTA CMS, Hero CMS | ❌ Missing as distinct entities | The only editable "hero-like" content is on the single `events` row (name, date, venue, `registration_fee`) — there's no header/nav-item CRUD (add/remove/reorder nav links, internal-vs-external, open-in-new-tab), no separate hero CTA config, no footer/social-links/contact-info CMS. Everything in the public nav (`apps/web/src/App.tsx` routes) is currently hard-coded in the frontend, not admin-editable. |
+| 4, 5 | Header/nav/logo/CTA CMS, Hero CMS | ✅ Done | commit `327bc74` — hero subtitle/background image/CTAs and logo/header-CTA/footer-text/contact fields added to the `events` row; a new `site_links` table (kind=NAV/SOCIAL) backs admin-editable nav items and social links, each with add/remove/reorder (display order) and internal-vs-external/open-in-new-tab. Public header/footer/hero fall back to the original hard-coded content when nothing's configured yet. |
 | 44 | Global admin search (by name/email/reg ID/ticket ID/payment ID/...) | ❌ Missing | No global-search component or endpoint found in `apps/admin`. Each list page has its own local filter/search, but there's no cross-entity search bar. |
 | 52 | System health monitor (payment gateway/email/storage/QR/queue status dashboard) | ❌ Missing | Only a basic liveness route (`/health`) exists — no per-integration status page or endpoint (payment gateway reachability, email provider status, storage status, queue depth). |
 | 48 | Waitlist workflow | 🟡 Partial | `WAITLISTED` exists as a registration-status enum value, but there is no admin approve/reject/promote-to-registration endpoint — the repository has a comment noting the full registration state-machine (confirm/waitlist/cancel/reject) is deferred to "a later phase." |
@@ -79,7 +79,7 @@ If the goal is to close the gap between "very solid backend platform" and "the s
 2. ~~**Coupon/discount engine** (section 16)~~ — done, commit `89ca147`.
 3. ~~**Invoice/receipt PDF** (section 25)~~ — done, commit `5f2999c`.
 4. ~~**Real image upload** (section 8)~~ — done, commit `d1cd8d2`.
-5. **Hero/header/footer/nav CMS** (sections 4, 5, 38) — turns the remaining hard-coded frontend chrome into admin-editable content, finishing the CMS breadth the spec insists on.
+5. ~~**Hero/header/footer/nav CMS** (sections 4, 5, 38)~~ — done, commit `327bc74`.
 6. **Gallery, Past Events, Popups** (sections 9, 14, 40) — smaller CMS modules, same pattern as the ones already built (content module + admin CRUD page).
 7. **RBAC role split + global admin search + bulk operations + system health monitor** (sections 43, 44, 59, 52) — polish items that make the admin portal feel complete but don't block core event operations.
 8. **Google Sheets sync, social post generator, soft-delete migration** (sections 41, 28, 55) — larger or more speculative pieces; worth sequencing last since the event can run without them.
