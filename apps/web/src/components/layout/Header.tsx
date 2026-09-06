@@ -20,6 +20,8 @@ const NAV_LINKS: NavLinkDef[] = [
   { to: '/agenda', label: 'Agenda' },
   { to: '/timeline', label: 'Timeline' },
   { to: '/venue', label: 'Venue' },
+  { to: '/gallery', label: 'Gallery' },
+  { to: '/past-events', label: 'Past Events' },
   { to: '/faq', label: 'FAQ' },
 ];
 

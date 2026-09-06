@@ -3,6 +3,8 @@ import type {
   Announcement,
   EventConfig,
   Faq,
+  GalleryItem,
+  PastEvent,
   Session,
   SiteLink,
   Speaker,
@@ -56,4 +58,12 @@ export function useNavLinks() {
 
 export function useSocialLinks() {
   return useResource<SiteLink>('/social-links');
+}
+
+export function useGallery() {
+  return useResource<GalleryItem>('/gallery');
+}
+
+export function usePastEvents() {
+  return useResource<PastEvent>('/past-events');
 }

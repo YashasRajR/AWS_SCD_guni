@@ -10,6 +10,8 @@ import { AgendaPage } from './pages/AgendaPage.js';
 import { TimelinePage } from './pages/TimelinePage.js';
 import { VenuePage } from './pages/VenuePage.js';
 import { FaqPage } from './pages/FaqPage.js';
+import { GalleryPage } from './pages/GalleryPage.js';
+import { PastEventsPage } from './pages/PastEventsPage.js';
 import { LoginPage } from './pages/LoginPage.js';
 import { RegisterPage } from './pages/RegisterPage.js';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage.js';
@@ -51,6 +53,8 @@ function AppRoutes() {
         <Route path="venue" element={<VenuePage />} />
         <Route path="venues" element={<Navigate to="/venue" replace />} />
         <Route path="faq" element={<FaqPage />} />
+        <Route path="gallery" element={<GalleryPage />} />
+        <Route path="past-events" element={<PastEventsPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="forgot-password" element={<ForgotPasswordPage />} />

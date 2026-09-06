@@ -41,6 +41,32 @@ const fields: FieldDef[] = [
       { value: 'ARCHIVED', label: 'Archived' },
     ],
   },
+  { name: 'imageUrl', label: 'Popup image', type: 'image' },
+  { name: 'buttonLabel', label: 'Button label', type: 'text' },
+  { name: 'buttonUrl', label: 'Button destination', type: 'text' },
+  { name: 'showAsPopup', label: 'Show as a popup (not just the top banner)', type: 'checkbox' },
+  {
+    name: 'displayFrequency',
+    label: 'Display frequency',
+    type: 'select',
+    required: true,
+    options: [
+      { value: 'ONCE', label: 'Show once' },
+      { value: 'EVERY_VISIT', label: 'Show every visit' },
+      { value: 'UNTIL_DISMISSED', label: 'Show until dismissed' },
+    ],
+  },
+  {
+    name: 'targetAudience',
+    label: 'Target audience',
+    type: 'select',
+    required: true,
+    options: [
+      { value: 'ALL', label: 'Everyone' },
+      { value: 'ATTENDEE', label: 'Signed-in attendees only' },
+      { value: 'GUEST', label: 'Guests (not signed in) only' },
+    ],
+  },
 ];
 
 export function AnnouncementsPage() {

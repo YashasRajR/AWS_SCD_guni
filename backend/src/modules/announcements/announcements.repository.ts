@@ -37,8 +37,10 @@ export const announcementsRepository = {
 
   async create(input: CreateAnnouncementInput): Promise<AnnouncementRow> {
     const { rows } = await getPool().query<AnnouncementRow>(
-      `INSERT INTO announcements (title, message, priority, publish_at, expires_at, status)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO announcements
+         (title, message, priority, publish_at, expires_at, status,
+          image_url, button_label, button_url, show_as_popup, display_frequency, target_audience)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
       [
         input.title,
@@ -47,6 +49,12 @@ export const announcementsRepository = {
         input.publishAt ?? null,
         input.expiresAt ?? null,
         input.status ?? 'DRAFT',
+        input.imageUrl ?? null,
+        input.buttonLabel ?? null,
+        input.buttonUrl ?? null,
+        input.showAsPopup ?? false,
+        input.displayFrequency ?? 'EVERY_VISIT',
+        input.targetAudience ?? 'ALL',
       ],
     );
     return rows[0]!;
@@ -60,6 +68,12 @@ export const announcementsRepository = {
       publish_at: patch.publishAt,
       expires_at: patch.expiresAt,
       status: patch.status,
+      image_url: patch.imageUrl,
+      button_label: patch.buttonLabel,
+      button_url: patch.buttonUrl,
+      show_as_popup: patch.showAsPopup,
+      display_frequency: patch.displayFrequency,
+      target_audience: patch.targetAudience,
     });
     if (values.length === 0) return this.findById(id);
     values.push(id);

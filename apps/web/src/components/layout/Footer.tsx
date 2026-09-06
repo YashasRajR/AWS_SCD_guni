@@ -9,6 +9,8 @@ const FOOTER_LINKS: { to: string; label: string }[] = [
   { to: '/agenda', label: 'Agenda' },
   { to: '/timeline', label: 'Timeline' },
   { to: '/venue', label: 'Venue' },
+  { to: '/gallery', label: 'Gallery' },
+  { to: '/past-events', label: 'Past Events' },
   { to: '/faq', label: 'FAQ' },
 ];
 
@@ -59,7 +61,7 @@ export function Footer() {
         <div>
           <h3 className="footer-heading">Explore</h3>
           <ul className="footer-links">
-            {FOOTER_LINKS.slice(0, 4).map((link) => (
+            {FOOTER_LINKS.slice(0, 5).map((link) => (
               <li key={link.to}>
                 <Link to={link.to}>{link.label}</Link>
               </li>
@@ -70,7 +72,7 @@ export function Footer() {
         <div>
           <h3 className="footer-heading">Event</h3>
           <ul className="footer-links">
-            {FOOTER_LINKS.slice(4).map((link) => (
+            {FOOTER_LINKS.slice(5).map((link) => (
               <li key={link.to}>
                 <Link to={link.to}>{link.label}</Link>
               </li>

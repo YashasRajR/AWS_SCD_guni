@@ -37,6 +37,12 @@ export type DiscountType = (typeof DISCOUNT_TYPES)[number];
 export const SITE_LINK_KINDS = ['NAV', 'SOCIAL'] as const;
 export type SiteLinkKind = (typeof SITE_LINK_KINDS)[number];
 
+export const DISPLAY_FREQUENCIES = ['ONCE', 'EVERY_VISIT', 'UNTIL_DISMISSED'] as const;
+export type DisplayFrequency = (typeof DISPLAY_FREQUENCIES)[number];
+
+export const ANNOUNCEMENT_AUDIENCES = ['ALL', 'ATTENDEE', 'GUEST'] as const;
+export type AnnouncementAudience = (typeof ANNOUNCEMENT_AUDIENCES)[number];
+
 export const QR_TOKEN_TYPES = ['REGISTRATION', 'GOODIE'] as const;
 export type QrTokenType = (typeof QR_TOKEN_TYPES)[number];
 

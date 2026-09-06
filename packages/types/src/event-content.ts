@@ -1,4 +1,13 @@
-import type { AnnouncementPriority, ContentStatus, EventStatus, SessionType, SiteLinkKind, TimelineItemType } from './enums.js';
+import type {
+  AnnouncementAudience,
+  AnnouncementPriority,
+  ContentStatus,
+  DisplayFrequency,
+  EventStatus,
+  SessionType,
+  SiteLinkKind,
+  TimelineItemType,
+} from './enums.js';
 
 export interface EventConfig {
   id: string;
@@ -142,6 +151,45 @@ export interface Announcement {
   priority: AnnouncementPriority;
   publishAt: string | null;
   expiresAt: string | null;
+  status: ContentStatus;
+  // Popup fields (spec section 40) -- an announcement with showAsPopup
+  // renders as a dismissible modal instead of (or in addition to) the
+  // top-strip banner; see apps/web's AnnouncementPopup.
+  imageUrl: string | null;
+  buttonLabel: string | null;
+  buttonUrl: string | null;
+  showAsPopup: boolean;
+  displayFrequency: DisplayFrequency;
+  targetAudience: AnnouncementAudience;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GalleryItem {
+  id: string;
+  imageUrl: string;
+  caption: string | null;
+  altText: string | null;
+  category: string | null;
+  eventYear: number | null;
+  sessionId: string | null;
+  displayOrder: number;
+  status: ContentStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PastEvent {
+  id: string;
+  eventName: string;
+  year: number;
+  sessionName: string | null;
+  sessionImage: string | null;
+  shortDescription: string | null;
+  eventDate: string | null;
+  location: string | null;
+  archiveUrl: string | null;
+  displayOrder: number;
   status: ContentStatus;
   createdAt: string;
   updatedAt: string;

@@ -13,6 +13,8 @@ import { VenuesPage } from './pages/content/VenuesPage.js';
 import { AgendaPage } from './pages/content/AgendaPage.js';
 import { TimelinePage } from './pages/content/TimelinePage.js';
 import { FaqsPage } from './pages/content/FaqsPage.js';
+import { GalleryPage } from './pages/content/GalleryPage.js';
+import { PastEventsPage } from './pages/content/PastEventsPage.js';
 import { NavLinksPage } from './pages/content/NavLinksPage.js';
 import { SocialLinksPage } from './pages/content/SocialLinksPage.js';
 import { AnnouncementsPage } from './pages/content/AnnouncementsPage.js';
@@ -68,6 +70,8 @@ function AppRoutes() {
         <Route path="content/agenda" element={<AgendaPage />} />
         <Route path="content/timeline" element={<TimelinePage />} />
         <Route path="content/faqs" element={<FaqsPage />} />
+        <Route path="content/gallery" element={<GalleryPage />} />
+        <Route path="content/past-events" element={<PastEventsPage />} />
         <Route path="content/nav-links" element={<NavLinksPage />} />
         <Route path="content/social-links" element={<SocialLinksPage />} />
         <Route path="content/announcements" element={<AnnouncementsPage />} />

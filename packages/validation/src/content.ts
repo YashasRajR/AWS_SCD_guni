@@ -5,6 +5,8 @@ import {
   SESSION_TYPES,
   TIMELINE_ITEM_TYPES,
   ANNOUNCEMENT_PRIORITIES,
+  ANNOUNCEMENT_AUDIENCES,
+  DISPLAY_FREQUENCIES,
   DISCOUNT_TYPES,
 } from '@scd/types';
 
@@ -241,7 +243,46 @@ export const createAnnouncementSchema = z.object({
   publishAt: z.string().datetime().optional(),
   expiresAt: z.string().datetime().optional(),
   status: contentStatusSchema.default('DRAFT'),
+  // Popup fields (spec section 40).
+  imageUrl: z.string().trim().url().optional(),
+  buttonLabel: z.string().trim().max(60).optional(),
+  buttonUrl: z.string().trim().max(500).optional(),
+  showAsPopup: z.boolean().default(false),
+  displayFrequency: z.enum(DISPLAY_FREQUENCIES).default('EVERY_VISIT'),
+  targetAudience: z.enum(ANNOUNCEMENT_AUDIENCES).default('ALL'),
 });
 export type CreateAnnouncementInput = z.infer<typeof createAnnouncementSchema>;
 export const updateAnnouncementSchema = createAnnouncementSchema.partial();
 export type UpdateAnnouncementInput = z.infer<typeof updateAnnouncementSchema>;
+
+// --- Gallery ---------------------------------------------------------------
+export const createGalleryItemSchema = z.object({
+  imageUrl: z.string().trim().min(1).max(500),
+  caption: z.string().trim().max(300).optional(),
+  altText: z.string().trim().max(300).optional(),
+  category: z.string().trim().max(120).optional(),
+  eventYear: z.coerce.number().int().min(2000).max(2100).optional(),
+  sessionId: z.string().uuid().optional(),
+  displayOrder: z.number().int().min(0).default(0),
+  status: contentStatusSchema.default('DRAFT'),
+});
+export type CreateGalleryItemInput = z.infer<typeof createGalleryItemSchema>;
+export const updateGalleryItemSchema = createGalleryItemSchema.partial();
+export type UpdateGalleryItemInput = z.infer<typeof updateGalleryItemSchema>;
+
+// --- Past events -------------------------------------------------------------
+export const createPastEventSchema = z.object({
+  eventName: z.string().trim().min(2).max(200),
+  year: z.coerce.number().int().min(2000).max(2100),
+  sessionName: z.string().trim().max(300).optional(),
+  sessionImage: z.string().trim().max(500).optional(),
+  shortDescription: z.string().trim().max(1000).optional(),
+  eventDate: dateOnlySchema.optional(),
+  location: z.string().trim().max(300).optional(),
+  archiveUrl: z.string().trim().url().optional(),
+  displayOrder: z.number().int().min(0).default(0),
+  status: contentStatusSchema.default('DRAFT'),
+});
+export type CreatePastEventInput = z.infer<typeof createPastEventSchema>;
+export const updatePastEventSchema = createPastEventSchema.partial();
+export type UpdatePastEventInput = z.infer<typeof updatePastEventSchema>;

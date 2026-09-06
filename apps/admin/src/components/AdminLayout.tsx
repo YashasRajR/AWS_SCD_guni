@@ -23,6 +23,8 @@ const NAV_SECTIONS: {
       { to: '/content/agenda', label: 'Agenda', permission: PERMISSIONS.MANAGE_AGENDA },
       { to: '/content/timeline', label: 'Timeline', permission: PERMISSIONS.MANAGE_TIMELINE },
       { to: '/content/faqs', label: 'FAQs', permission: PERMISSIONS.MANAGE_FAQ },
+      { to: '/content/gallery', label: 'Gallery', permission: PERMISSIONS.MANAGE_SETTINGS },
+      { to: '/content/past-events', label: 'Past events', permission: PERMISSIONS.MANAGE_SETTINGS },
       { to: '/content/nav-links', label: 'Nav links', permission: PERMISSIONS.MANAGE_SETTINGS },
       { to: '/content/social-links', label: 'Social links', permission: PERMISSIONS.MANAGE_SETTINGS },
       {
