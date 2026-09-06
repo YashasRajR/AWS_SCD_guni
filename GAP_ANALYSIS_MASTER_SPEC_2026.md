@@ -41,7 +41,7 @@ This is a snapshot, not a criticism — the codebase already covers the hardest,
 | 25 | Invoice / fee-receipt PDF | ✅ Done | commit `5f2999c` — auto-generated on payment capture, admin list/download/resend-email, attendee self-service download. Tax/GST line is a schema placeholder only (no tax logic yet). |
 | 28 | Social post/bio generator ("Create My SCD Post") | 🟡 Stub only | `backend/src/modules/social-sharing/social-sharing.service.ts` explicitly says *"Model + service boundary only in this phase. No LinkedIn/Instagram API integration and no image generation"* — it only lists an attendee's past shares. The actual generator (bio input, interest selection, AI copy generation with no invented claims, branded image, LinkedIn/Instagram-formatted output) doesn't exist. |
 | 41 | Google Sheets sync | ❌ Missing | Zero references to Sheets/spreadsheet sync anywhere in the repo. No sync queue, no admin sync-status page, no reconciliation UI. |
-| 8, 9, 10 | Real image upload (drag-drop → storage → preview) | ❌ Missing (URL fields only) | `backend/src/integrations/storage/index.ts` is an explicit unimplemented stub (`STORAGE_BUCKET` is read from env but unused). No multipart upload handling in the backend, no upload/dropzone component in `apps/admin`. Speaker/gallery/event images are plain URL-paste text fields today, which is exactly what spec section 8 says not to do. |
+| 8, 9, 10 | Real image upload (drag-drop → storage → preview) | ✅ Done | commit `d1cd8d2` — `POST /admin/uploads` (multer + local-disk `StorageProvider`), a reusable `image` field type in `ResourceForm` (file picker + preview), wired into speakers' profile-image field. Gallery/event hero images still don't exist as content fields yet (sections 9/4/5 CMS gaps below), but the upload plumbing they'll need is built. |
 | 9 | Gallery (CRUD, lightbox, categorization) | ❌ Missing | Zero references to "gallery" anywhere. |
 | 14 | Past Events | ❌ Missing | Zero references to past-event cards/archive. |
 | 40 | Popup / announcement-banner system | 🟡 Partial | `announcements` module has `publishAt`/`expiresAt`/`priority`/`status` — closer to a scheduled content list than a popup engine. Missing: display-frequency (once / every visit / until dismissed), dismissal tracking, target-audience targeting, and an image+button+URL popup layout. |
@@ -78,7 +78,7 @@ If the goal is to close the gap between "very solid backend platform" and "the s
 1. ~~**Ticket plans + attendee type enum** (section 15/17)~~ — done, commit `04617d0`.
 2. ~~**Coupon/discount engine** (section 16)~~ — done, commit `89ca147`.
 3. ~~**Invoice/receipt PDF** (section 25)~~ — done, commit `5f2999c`.
-4. **Real image upload** (section 8) — currently the single biggest violation of the spec's core principle ("admin can manage it without touching code") since every image field is a URL-paste today.
+4. ~~**Real image upload** (section 8)~~ — done, commit `d1cd8d2`.
 5. **Hero/header/footer/nav CMS** (sections 4, 5, 38) — turns the remaining hard-coded frontend chrome into admin-editable content, finishing the CMS breadth the spec insists on.
 6. **Gallery, Past Events, Popups** (sections 9, 14, 40) — smaller CMS modules, same pattern as the ones already built (content module + admin CRUD page).
 7. **RBAC role split + global admin search + bulk operations + system health monitor** (sections 43, 44, 59, 52) — polish items that make the admin portal feel complete but don't block core event operations.
