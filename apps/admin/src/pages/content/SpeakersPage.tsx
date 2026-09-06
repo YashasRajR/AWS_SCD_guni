@@ -3,6 +3,8 @@ import { ContentCrudPage } from '../../components/ContentCrudPage.js';
 import { StatusBadge } from '../../components/StatusBadge.js';
 import type { Column } from '../../components/Table.js';
 import type { FieldDef } from '../../components/ResourceForm.js';
+import { CopyButton } from '../../components/CopyButton.js';
+import { generateSpeakerPost } from '../../lib/social-post.js';
 
 const columns: Column<Speaker>[] = [
   { key: 'name', sortable: true, label: 'Name', render: (r) => r.name },
@@ -43,6 +45,7 @@ export function SpeakersPage() {
       fields={fields}
       rowToFormValues={(row) => ({ ...row })}
       searchPlaceholder="Search speakers by name or organization…"
+      extraRowActions={(row) => <CopyButton text={generateSpeakerPost(row)} label="Copy social post" />}
     />
   );
 }

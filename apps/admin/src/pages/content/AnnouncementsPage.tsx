@@ -4,6 +4,8 @@ import { StatusBadge } from '../../components/StatusBadge.js';
 import { formatDateTime } from '../../lib/format.js';
 import type { Column } from '../../components/Table.js';
 import type { FieldDef } from '../../components/ResourceForm.js';
+import { CopyButton } from '../../components/CopyButton.js';
+import { generateAnnouncementPost } from '../../lib/social-post.js';
 
 const columns: Column<Announcement>[] = [
   { key: 'title', sortable: true, label: 'Title', render: (r) => r.title },
@@ -79,6 +81,7 @@ export function AnnouncementsPage() {
       fields={fields}
       rowToFormValues={(row) => ({ ...row })}
       searchPlaceholder="Search announcements by title or message…"
+      extraRowActions={(row) => <CopyButton text={generateAnnouncementPost(row)} label="Copy social post" />}
     />
   );
 }

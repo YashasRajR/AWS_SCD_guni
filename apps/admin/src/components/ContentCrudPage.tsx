@@ -26,6 +26,9 @@ interface ContentCrudPageProps<T extends { id: string }> {
   /** Placeholder for the search box. Omit to hide search entirely (e.g. for
    * a list with too few rows to bother searching). */
   searchPlaceholder?: string;
+  /** Extra per-row buttons rendered before the built-in Edit/Delete —
+   * e.g. the social-post "Copy" button on Speakers/Sessions/Announcements. */
+  extraRowActions?: (row: T) => ReactNode;
 }
 
 export function ContentCrudPage<T extends { id: string }>({
@@ -39,6 +42,7 @@ export function ContentCrudPage<T extends { id: string }>({
   newButtonLabel,
   extraToolbar,
   searchPlaceholder,
+  extraRowActions,
 }: ContentCrudPageProps<T>) {
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState('');
@@ -111,6 +115,7 @@ export function ContentCrudPage<T extends { id: string }>({
       width: '140px',
       render: (row) => (
         <div className="row-actions">
+          {extraRowActions?.(row)}
           <button type="button" className="btn-link" onClick={() => setModal({ mode: 'edit', row })}>
             Edit
           </button>

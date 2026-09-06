@@ -4,6 +4,8 @@ import { StatusBadge } from '../../components/StatusBadge.js';
 import { usePaginatedResource } from '../../lib/hooks.js';
 import type { Column } from '../../components/Table.js';
 import type { FieldDef } from '../../components/ResourceForm.js';
+import { CopyButton } from '../../components/CopyButton.js';
+import { generateSessionPost } from '../../lib/social-post.js';
 
 interface SpeakerOption {
   id: string;
@@ -73,6 +75,7 @@ export function SessionsPage() {
       fields={fields}
       rowToFormValues={(row) => ({ ...row, speakerIds: row.speakers?.map((s) => s.id) ?? [] })}
       searchPlaceholder="Search sessions by title, description, or track…"
+      extraRowActions={(row) => <CopyButton text={generateSessionPost(row)} label="Copy social post" />}
     />
   );
 }
