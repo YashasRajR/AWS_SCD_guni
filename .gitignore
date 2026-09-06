@@ -17,3 +17,5 @@ coverage/
 test-results/
 playwright-report/
 blob-report/
+backend/uploads/*
+!backend/uploads/.gitkeep

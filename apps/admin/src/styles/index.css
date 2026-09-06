@@ -462,6 +462,20 @@ textarea {
   align-self: flex-start;
 }
 
+.image-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.image-field-preview {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
 .form-help {
   margin: 0;
   font-size: 0.78rem;

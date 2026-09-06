@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { fromDateTimeLocalValue, toDateTimeLocalValue } from '../lib/format.js';
+import { uploadImage } from '../lib/uploads.js';
 
-export type FieldType = 'text' | 'textarea' | 'number' | 'checkbox' | 'select' | 'datetime' | 'date' | 'multiselect';
+export type FieldType = 'text' | 'textarea' | 'number' | 'checkbox' | 'select' | 'datetime' | 'date' | 'multiselect' | 'image';
 
 export interface FieldOption {
   value: string;
@@ -54,6 +55,57 @@ function toInputValue(field: FieldDef, raw: unknown): string | boolean | string[
   if (field.type === 'datetime') return toDateTimeLocalValue(raw as string | null | undefined);
   if (raw === null || raw === undefined) return '';
   return String(raw);
+}
+
+/** A URL text field backed by a real upload -- picking a file uploads it
+ * immediately and fills the field with the returned URL, with a live
+ * preview; the URL can still be pasted/edited by hand for an external
+ * image, since the field is just a string underneath. */
+function ImageField({
+  id,
+  value,
+  onChange,
+}: {
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const handleFile = async (file: File | undefined) => {
+    if (!file) return;
+    setUploading(true);
+    setUploadError(null);
+    try {
+      onChange(await uploadImage(file));
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Failed to upload image.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="image-field">
+      {value && <img src={value} alt="" className="image-field-preview" />}
+      <input
+        id={id}
+        type="text"
+        value={value}
+        placeholder="Paste a URL, or upload a file below"
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <input
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        disabled={uploading}
+        onChange={(e) => handleFile(e.target.files?.[0])}
+      />
+      {uploading && <p className="form-help">Uploading…</p>}
+      {uploadError && <p className="form-error">{uploadError}</p>}
+    </div>
+  );
 }
 
 export function ResourceForm({ fields, initialValues, submitLabel, onSubmit, onCancel }: ResourceFormProps) {
@@ -156,6 +208,12 @@ export function ResourceForm({ fields, initialValues, submitLabel, onSubmit, onC
                 </option>
               ))}
             </select>
+          ) : field.type === 'image' ? (
+            <ImageField
+              id={field.name}
+              value={values[field.name] as string}
+              onChange={(value) => setField(field.name, value)}
+            />
           ) : (
             <input
               id={field.name}

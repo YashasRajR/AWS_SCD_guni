@@ -8,6 +8,7 @@ import { errorHandler, notFoundHandler } from '../middleware/error-handler/index
 import { healthRouter } from '../routes/health.js';
 import { readyRouter } from '../routes/ready.js';
 import { apiRouter } from '../routes/index.js';
+import { resolveUploadDir } from '../integrations/storage/local-storage.js';
 
 /**
  * Conceptual pipeline (per the architecture doc):
@@ -56,6 +57,12 @@ export function createApp(): Express {
   // versioned away.
   app.use('/health', healthRouter);
   app.use('/ready', readyRouter);
+
+  // Uploaded images -- outside /api/v1 and its rate limiter, same
+  // reasoning as health/ready: this is static asset serving, not an API
+  // call. Public and unauthenticated, matching every other image URL the
+  // spec allows (speaker photos, etc. were always plain public URLs).
+  app.use('/uploads', express.static(resolveUploadDir()));
 
   app.use('/api/v1', createApiRateLimiter(), apiRouter);
 

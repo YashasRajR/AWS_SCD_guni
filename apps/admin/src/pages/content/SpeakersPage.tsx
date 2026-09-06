@@ -16,7 +16,7 @@ const fields: FieldDef[] = [
   { name: 'designation', label: 'Designation', type: 'text' },
   { name: 'organization', label: 'Organization', type: 'text' },
   { name: 'bio', label: 'Bio', type: 'textarea' },
-  { name: 'profileImage', label: 'Profile image URL', type: 'text' },
+  { name: 'profileImage', label: 'Profile image', type: 'image' },
   { name: 'linkedinUrl', label: 'LinkedIn URL', type: 'text' },
   { name: 'websiteUrl', label: 'Website URL', type: 'text' },
   { name: 'displayOrder', label: 'Display order', type: 'number' },

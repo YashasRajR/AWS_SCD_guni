@@ -55,6 +55,15 @@ const envSchema = z.object({
 
   STORAGE_BUCKET: z.string().optional().default(''),
 
+  // Local-disk storage adapter for uploaded images (speaker photos, etc.)
+  // -- see integrations/storage/local-storage.ts. UPLOAD_DIR is resolved
+  // relative to the backend process's cwd; PUBLIC_API_URL is the origin
+  // uploaded files are served from, so a stored URL still resolves from
+  // apps on other origins (web/volunteer), not just the admin app.
+  UPLOAD_DIR: z.string().optional().default('uploads'),
+  PUBLIC_API_URL: z.string().url().default('http://localhost:4000'),
+  UPLOAD_MAX_BYTES: z.coerce.number().int().positive().default(5 * 1024 * 1024),
+
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
   RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().positive().default(100),
 
