@@ -98,11 +98,16 @@ export const paymentsService = {
       throw AppError.validation('Only a pending registration can be paid for.');
     }
 
-    const event = await eventService.getCurrent();
-    const fee = Number(event.registrationFee);
+    // Priced from the ticket plan the attendee selected at registration
+    // time — never the event's flat legacy `registrationFee` (kept only
+    // for events with no plans configured at all).
+    const plan = registration.ticketPlan;
+    const event = plan ? null : await eventService.getCurrent();
+    const fee = Number(plan ? plan.price : event!.registrationFee);
     if (!(fee > 0)) {
       throw AppError.validation('This event does not require payment.');
     }
+    const currency = plan ? plan.currency : event!.currency;
 
     const existing = await paymentsRepository.findByRegistrationId(registration.id);
     if (existing?.status === 'PAID') {
@@ -114,7 +119,7 @@ export const paymentsService = {
     const payment =
       existing && existing.status !== 'FAILED'
         ? existing
-        : await paymentsRepository.createPending(registration.id, event.registrationFee, event.currency);
+        : await paymentsRepository.createPending(registration.id, String(fee), currency);
 
     const provider = getPaymentProvider();
     let providerOrderId: string;

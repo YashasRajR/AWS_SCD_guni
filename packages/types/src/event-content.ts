@@ -118,3 +118,17 @@ export interface Announcement {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface TicketPlan {
+  id: string;
+  code: string;
+  name: string;
+  description: string | null;
+  /** Decimal string, e.g. "200.00" -- see EventConfig.registrationFee for why. */
+  price: string;
+  currency: string;
+  isActive: boolean;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}

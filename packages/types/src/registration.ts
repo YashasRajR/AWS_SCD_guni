@@ -1,4 +1,5 @@
 import type { PaymentStatus, QrScanResult, QrTokenStatus, QrTokenType, RegistrationStatus, TicketStatus } from './enums.js';
+import type { TicketPlan } from './event-content.js';
 
 export interface Attendee {
   id: string;
@@ -19,6 +20,9 @@ export interface Registration {
   attendeeId: string;
   registrationNumber: string;
   status: RegistrationStatus;
+  ticketPlanId: string | null;
+  /** Joined in for display -- null only for pre-ticket-plan-era rows. */
+  ticketPlan: TicketPlan | null;
   registeredAt: string;
   confirmedAt: string | null;
   cancelledAt: string | null;

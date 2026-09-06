@@ -1,6 +1,8 @@
 import { Router } from 'express';
+import { registerForEventSchema } from '@scd/validation';
 import { authenticate } from '../../middleware/authentication/index.js';
 import { requireRole } from '../../middleware/authorization/index.js';
+import { validate } from '../../middleware/validation/index.js';
 import { asyncHandler } from '../../utils/async-handler.js';
 import { userDashboardController } from './user-dashboard.controller.js';
 
@@ -13,7 +15,11 @@ userDashboardRouter.use(authenticate, requireRole('ATTENDEE'));
 userDashboardRouter.get('/', asyncHandler(userDashboardController.getMe));
 userDashboardRouter.get('/profile', asyncHandler(userDashboardController.getProfile));
 userDashboardRouter.get('/registration', asyncHandler(userDashboardController.getRegistration));
-userDashboardRouter.post('/registration', asyncHandler(userDashboardController.createRegistration));
+userDashboardRouter.post(
+  '/registration',
+  validate(registerForEventSchema),
+  asyncHandler(userDashboardController.createRegistration),
+);
 userDashboardRouter.get('/ticket', asyncHandler(userDashboardController.getTicket));
 userDashboardRouter.get('/ticket/pdf', asyncHandler(userDashboardController.getTicketPdf));
 userDashboardRouter.get('/payment', asyncHandler(userDashboardController.getPayment));

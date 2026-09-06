@@ -6,3 +6,9 @@ export const updateRegistrationStatusSchema = z.object({
   status: z.enum(REGISTRATION_STATUSES),
 });
 export type UpdateRegistrationStatusInput = z.infer<typeof updateRegistrationStatusSchema>;
+
+// --- Attendee: register for the event -------------------------------------
+export const registerForEventSchema = z.object({
+  ticketPlanCode: z.string().trim().min(2).max(40),
+});
+export type RegisterForEventInput = z.infer<typeof registerForEventSchema>;

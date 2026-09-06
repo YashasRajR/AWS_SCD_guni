@@ -15,6 +15,7 @@ const NAV_SECTIONS: {
     title: 'Event content',
     links: [
       { to: '/content/event', label: 'Event details', permission: PERMISSIONS.MANAGE_SETTINGS },
+      { to: '/content/ticket-plans', label: 'Ticket plans', permission: PERMISSIONS.MANAGE_SETTINGS },
       { to: '/content/speakers', label: 'Speakers', permission: PERMISSIONS.MANAGE_SPEAKERS },
       { to: '/content/sessions', label: 'Sessions', permission: PERMISSIONS.MANAGE_SESSIONS },
       { to: '/content/venues', label: 'Venues', permission: PERMISSIONS.MANAGE_VENUES },

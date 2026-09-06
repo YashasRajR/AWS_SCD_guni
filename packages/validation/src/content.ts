@@ -144,6 +144,25 @@ export type CreateFaqInput = z.infer<typeof createFaqSchema>;
 export const updateFaqSchema = createFaqSchema.partial();
 export type UpdateFaqInput = z.infer<typeof updateFaqSchema>;
 
+// --- Ticket plans -------------------------------------------------------------
+export const createTicketPlanSchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(2)
+    .max(40)
+    .regex(/^[A-Z0-9_]+$/, 'Use uppercase letters, digits, and underscores only (e.g. STUDENT).'),
+  name: z.string().trim().min(2).max(120),
+  description: z.string().trim().max(2000).optional(),
+  price: z.coerce.number().min(0),
+  currency: z.string().trim().length(3).default('INR'),
+  isActive: z.boolean().default(true),
+  displayOrder: z.number().int().min(0).default(0),
+});
+export type CreateTicketPlanInput = z.infer<typeof createTicketPlanSchema>;
+export const updateTicketPlanSchema = createTicketPlanSchema.partial();
+export type UpdateTicketPlanInput = z.infer<typeof updateTicketPlanSchema>;
+
 // --- Announcements -----------------------------------------------------------
 export const createAnnouncementSchema = z.object({
   title: z.string().trim().min(2).max(300),

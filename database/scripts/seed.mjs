@@ -131,6 +131,20 @@ async function main() {
     );
     const eventId = eventRes.rows[0].id;
 
+    // --- Ticket plans (spec: Student ₹200 / Professional ₹350) -------------
+    const TICKET_PLANS = [
+      { code: 'STUDENT', name: 'Student', price: 200, displayOrder: 0 },
+      { code: 'PROFESSIONAL', name: 'Professional', price: 350, displayOrder: 1 },
+    ];
+    for (const plan of TICKET_PLANS) {
+      await client.query(
+        `INSERT INTO ticket_plans (code, name, price, currency, is_active, display_order)
+         VALUES ($1, $2, $3, 'INR', TRUE, $4)
+         ON CONFLICT (code) DO UPDATE SET price = EXCLUDED.price`,
+        [plan.code, plan.name, plan.price, plan.displayOrder],
+      );
+    }
+
     // --- Checkpoints (seed data only — never hard-coded into app logic) ---
     for (const cp of CHECKPOINTS) {
       await client.query(

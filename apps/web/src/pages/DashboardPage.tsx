@@ -1,6 +1,16 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { Attendee, Certificate, Checkpoint, EventConfig, Payment, PublicUser, Registration, Ticket } from '@scd/types';
+import type {
+  Attendee,
+  Certificate,
+  Checkpoint,
+  EventConfig,
+  Payment,
+  PublicUser,
+  Registration,
+  Ticket,
+  TicketPlan,
+} from '@scd/types';
 import { ApiClientError } from '@scd/api-client';
 import { useResource } from '../lib/hooks.js';
 import { apiClient } from '../lib/api.js';
@@ -65,6 +75,7 @@ export function DashboardPage() {
     reload: reloadAchievements,
   } = useResource<unknown>('/me/achievements');
   const { data: event } = useResource<EventConfig>('/event');
+  const { items: ticketPlans } = useResource<TicketPlan>('/ticket-plans');
   const {
     data: payment,
     error: paymentError,
@@ -73,15 +84,20 @@ export function DashboardPage() {
 
   const [registering, setRegistering] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
+  const [selectedPlanCode, setSelectedPlanCode] = useState('');
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
   const [checkoutPending, setCheckoutPending] = useState(false);
 
   const handleRegister = async () => {
+    if (!selectedPlanCode) {
+      setRegisterError('Pick a ticket type first.');
+      return;
+    }
     setRegistering(true);
     setRegisterError(null);
     try {
-      await apiClient.post('/me/registration', {});
+      await apiClient.post('/me/registration', { ticketPlanCode: selectedPlanCode });
       reloadRegistration();
     } catch (err) {
       setRegisterError(err instanceof ApiClientError ? err.message : 'Failed to register.');
@@ -117,7 +133,11 @@ export function DashboardPage() {
     }
   };
 
-  const requiresPayment = event ? Number(event.registrationFee) > 0 : false;
+  const requiresPayment = registration?.ticketPlan
+    ? Number(registration.ticketPlan.price) > 0
+    : event
+      ? Number(event.registrationFee) > 0
+      : false;
   const completedCount = progress.filter((p) => p.completed).length;
 
   useDocumentHead({ title: 'My Dashboard' });
@@ -167,8 +187,26 @@ export function DashboardPage() {
           ) : (
             <>
               <p className="status-line">You haven&apos;t registered for the event yet.</p>
+              {ticketPlans.length > 0 && (
+                <label className="form-field">
+                  <span>Ticket type</span>
+                  <select value={selectedPlanCode} onChange={(e) => setSelectedPlanCode(e.target.value)}>
+                    <option value="">Select a ticket type…</option>
+                    {ticketPlans.map((plan) => (
+                      <option key={plan.code} value={plan.code}>
+                        {plan.name} — {plan.currency} {plan.price}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
               {registerError && <p className="form-error">{registerError}</p>}
-              <button type="button" className="btn btn-primary" onClick={handleRegister} disabled={registering}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleRegister}
+                disabled={registering || (ticketPlans.length > 0 && !selectedPlanCode)}
+              >
                 {registering ? 'Registering…' : 'Register for the event'}
               </button>
             </>
@@ -193,7 +231,9 @@ export function DashboardPage() {
                 <p className="dashboard-card-row">
                   <Badge tone={statusTone(payment?.status ?? 'PENDING')}>{payment?.status ?? 'PENDING'}</Badge>
                   <span className="dashboard-card-meta">
-                    {event?.currency} {event?.registrationFee}
+                    {registration?.ticketPlan
+                      ? `${registration.ticketPlan.currency} ${registration.ticketPlan.price}`
+                      : `${event?.currency} ${event?.registrationFee}`}
                   </span>
                 </p>
                 {checkoutPending && (

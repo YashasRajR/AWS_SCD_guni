@@ -4,6 +4,7 @@ import { registrationsRepository } from './registrations.repository.js';
 import { toCsv } from '../../utils/csv.js';
 import { toRegistration } from './registrations.types.js';
 import { eventService } from '../event/event.service.js';
+import { ticketPlansService } from '../ticket-plans/ticket-plans.service.js';
 import { ticketsService } from '../tickets/tickets.service.js';
 import { attendeesService } from '../attendees/attendees.service.js';
 import { usersService } from '../users/users.service.js';
@@ -38,6 +39,7 @@ export const registrationsService = {
         'University',
         'Department',
         'Year',
+        'Ticket plan',
         'Registered at',
         'Confirmed at',
         'Payment status',
@@ -53,6 +55,7 @@ export const registrationsService = {
         r.university,
         r.department,
         r.year,
+        r.ticket_plan_name,
         r.registered_at,
         r.confirmed_at,
         r.payment_status,
@@ -71,14 +74,17 @@ export const registrationsService = {
   },
 
   /**
-   * Self-service — an attendee registering themselves for the event.
-   * One registration per attendee (this platform is single-edition this
-   * phase, so "the event" is unambiguous — see docs/architecture). Honors
-   * the event's registration window when one is configured.
+   * Self-service — an attendee registering themselves for the event under
+   * a specific ticket plan (see ticket-plans module). One registration per
+   * attendee (this platform is single-edition this phase, so "the event"
+   * is unambiguous — see docs/architecture). Honors the event's
+   * registration window when one is configured.
    */
-  async create(attendeeId: string): Promise<Registration> {
+  async create(attendeeId: string, ticketPlanCode: string): Promise<Registration> {
     const existing = await registrationsRepository.findByAttendeeId(attendeeId);
     if (existing) throw AppError.duplicate('You are already registered for this event.');
+
+    const plan = await ticketPlansService.requireActiveByCode(ticketPlanCode);
 
     const event = await eventService.getCurrent().catch(() => null);
     if (event) {
@@ -97,7 +103,7 @@ export const registrationsService = {
     // the real backstop: catch its violation here and surface the same
     // clean 409 instead of a raw constraint error.
     try {
-      const row = await registrationsRepository.create(attendeeId);
+      const row = await registrationsRepository.create(attendeeId, plan.id);
       return toRegistration(row);
     } catch (err) {
       if ((err as PgError).code === '23505') {

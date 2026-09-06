@@ -63,6 +63,7 @@ export function RegistrationsPage() {
 
   const columns: Column<Registration>[] = [
     { key: 'registrationNumber', label: 'Registration #', render: (r) => r.registrationNumber },
+    { key: 'ticketPlan', label: 'Ticket plan', render: (r) => r.ticketPlan?.name ?? '—' },
     {
       key: 'status',
       label: 'Status',
