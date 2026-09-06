@@ -1,5 +1,4 @@
 import { getPool } from '../../config/database.js';
-import { generateReferenceCode } from '@scd/utils';
 import type { RegistrationExportRow, RegistrationRow } from './registrations.types.js';
 
 // Every read below joins in the selected ticket plan (if any) so
@@ -52,11 +51,22 @@ export const registrationsRepository = {
     couponId: string | null,
     discountAmount: string,
   ): Promise<RegistrationRow> {
+    // Registration ID format (spec #20): "GUNI AWS SCD <event year YY> <NNN>",
+    // e.g. "GUNI AWS SCD 26 001". The year comes from the event row itself
+    // (not the clock) so registering ahead of the event still tags the
+    // right year; the sequence number comes from registration_number_seq
+    // (see migration 056) inside this same INSERT so it's one atomic,
+    // concurrency-safe statement -- no separate read-then-write race.
     const { rows } = await getPool().query<{ id: string }>(
       `INSERT INTO registrations (attendee_id, registration_number, ticket_plan_id, coupon_id, discount_amount)
-       VALUES ($1, $2, $3, $4, $5)
+       VALUES (
+         $1,
+         'GUNI AWS SCD ' || to_char((SELECT event_date FROM events ORDER BY created_at DESC LIMIT 1), 'YY')
+           || ' ' || lpad(nextval('registration_number_seq')::text, 3, '0'),
+         $2, $3, $4
+       )
        RETURNING id`,
-      [attendeeId, generateReferenceCode('REG'), ticketPlanId, couponId, discountAmount],
+      [attendeeId, ticketPlanId, couponId, discountAmount],
     );
     return (await this.findById(rows[0]!.id))!;
   },

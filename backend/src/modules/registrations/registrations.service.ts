@@ -127,6 +127,10 @@ export const registrationsService = {
       if ((err as PgError).code === '23505') {
         throw AppError.duplicate('You are already registered for this event.');
       }
+      // registration_number_seq hit its MAXVALUE of 999 (spec #20's hard cap).
+      if ((err as PgError).code === '2200H') {
+        throw AppError.validation('Registration capacity for this event has been reached.');
+      }
       throw err;
     }
     if (pricing) {
