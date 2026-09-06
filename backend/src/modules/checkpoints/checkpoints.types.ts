@@ -39,6 +39,10 @@ export interface CheckpointProgressItem {
   checkpoint: Checkpoint;
   completed: boolean;
   completedAt: string | null;
+  /** Present only when completed -- lets a caller (e.g. the admin
+   * attendee-detail page) link straight to the correction endpoint
+   * (POST /admin/checkpoints/attendance/:attendanceId/reverse). */
+  attendanceId: string | null;
 }
 
 export function toCheckpoint(row: CheckpointRow): Checkpoint {

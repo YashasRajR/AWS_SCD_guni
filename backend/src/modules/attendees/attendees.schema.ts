@@ -1,1 +1,8 @@
-export { attendeeSearchQuerySchema, paginationQuerySchema } from '@scd/validation';
+export {
+  attendeeSearchQuerySchema,
+  paginationQuerySchema,
+  attendeesListQuerySchema,
+  updateAttendeeSchema,
+  archiveAttendeeSchema,
+  uuidParamSchema,
+} from '@scd/validation';

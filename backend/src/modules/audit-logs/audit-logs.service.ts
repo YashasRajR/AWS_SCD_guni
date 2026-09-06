@@ -63,4 +63,9 @@ export const auditLogsService = {
       pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
     };
   },
+
+  async listForEntities(pairs: { entityType: string; entityId: string }[]): Promise<AuditLog[]> {
+    const rows = await auditLogsRepository.listForEntities(pairs);
+    return rows.map(toAuditLog);
+  },
 };

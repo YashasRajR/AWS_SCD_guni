@@ -10,8 +10,18 @@ export interface AttendeeRow {
   year: string | null;
   profile_image: string | null;
   registration_type: string | null;
+  deleted_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface UpdateAttendeeInput {
+  fullName?: string;
+  phone?: string;
+  university?: string;
+  department?: string;
+  year?: string;
+  registrationType?: string;
 }
 
 export interface CreateAttendeeInput {
@@ -48,6 +58,7 @@ export function toAttendee(row: AttendeeRow): Attendee {
     year: row.year,
     profileImage: row.profile_image,
     registrationType: row.registration_type,
+    deletedAt: row.deleted_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

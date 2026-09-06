@@ -21,6 +21,7 @@ import { SocialLinksPage } from './pages/content/SocialLinksPage.js';
 import { AnnouncementsPage } from './pages/content/AnnouncementsPage.js';
 import { RegistrationsPage } from './pages/RegistrationsPage.js';
 import { AttendeesPage } from './pages/AttendeesPage.js';
+import { AttendeeDetailPage } from './pages/AttendeeDetailPage.js';
 import { CheckpointsPage } from './pages/CheckpointsPage.js';
 import { VolunteersPage } from './pages/VolunteersPage.js';
 import { AuditLogsPage } from './pages/AuditLogsPage.js';
@@ -82,6 +83,7 @@ function AppRoutes() {
         <Route path="content/announcements" element={<AnnouncementsPage />} />
         <Route path="registrations" element={<RegistrationsPage />} />
         <Route path="attendees" element={<AttendeesPage />} />
+        <Route path="attendees/:id" element={<AttendeeDetailPage />} />
         <Route path="checkpoints" element={<CheckpointsPage />} />
         <Route path="volunteers" element={<VolunteersPage />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />

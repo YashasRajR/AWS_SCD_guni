@@ -60,10 +60,12 @@ export const checkpointsService = {
       checkpointsRepository.getAttendeeCompletions(attendeeId, eventId),
     ]);
     const completedMap = new Map(completions.map((c) => [c.checkpoint_id, c.completed_at]));
+    const attendanceIdMap = new Map(completions.map((c) => [c.checkpoint_id, c.id]));
     return checkpoints.map((row) => ({
       checkpoint: toCheckpoint(row),
       completed: completedMap.has(row.id),
       completedAt: completedMap.get(row.id) ?? null,
+      attendanceId: attendanceIdMap.get(row.id) ?? null,
     }));
   },
 

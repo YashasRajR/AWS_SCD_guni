@@ -34,6 +34,20 @@ export interface CheckpointAttendance {
   checkpointName?: string;
 }
 
+/** One checkpoint's completion status for a single attendee -- shape
+ * returned by checkpointsService.getProgressForAttendee(), reused as-is
+ * by the admin attendee-detail aggregate (spec #34). attendanceId is
+ * null when not yet completed; set it lets the detail page link
+ * straight to the existing correction endpoint
+ * (POST /admin/checkpoints/attendance/:attendanceId/reverse) without a
+ * second lookup. */
+export interface AttendeeCheckpointProgress {
+  checkpoint: Checkpoint;
+  completed: boolean;
+  completedAt: string | null;
+  attendanceId: string | null;
+}
+
 export interface Volunteer {
   id: string;
   userId: string;

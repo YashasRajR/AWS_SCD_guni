@@ -1,6 +1,11 @@
 import { Router } from 'express';
 import { PERMISSIONS } from '@scd/constants';
-import { paginationQuerySchema } from '@scd/validation';
+import {
+  attendeesListQuerySchema,
+  updateAttendeeSchema,
+  archiveAttendeeSchema,
+  uuidParamSchema,
+} from '@scd/validation';
 import { authenticate } from '../../middleware/authentication/index.js';
 import { requirePermission } from '../../middleware/authorization/index.js';
 import { validate } from '../../middleware/validation/index.js';
@@ -22,6 +27,48 @@ attendeesRouter.get(
   '/',
   authenticate,
   requirePermission(PERMISSIONS.VIEW_ATTENDEE),
-  validate(paginationQuerySchema, 'query'),
+  validate(attendeesListQuerySchema, 'query'),
   asyncHandler(attendeesController.list),
+);
+
+attendeesRouter.get(
+  '/:id',
+  authenticate,
+  requirePermission(PERMISSIONS.VIEW_ATTENDEE),
+  validate(uuidParamSchema, 'params'),
+  asyncHandler(attendeesController.getDetail),
+);
+
+attendeesRouter.patch(
+  '/:id',
+  authenticate,
+  requirePermission(PERMISSIONS.UPDATE_ATTENDEE),
+  validate(uuidParamSchema, 'params'),
+  validate(updateAttendeeSchema),
+  asyncHandler(attendeesController.update),
+);
+
+attendeesRouter.post(
+  '/:id/archive',
+  authenticate,
+  requirePermission(PERMISSIONS.UPDATE_ATTENDEE),
+  validate(uuidParamSchema, 'params'),
+  validate(archiveAttendeeSchema),
+  asyncHandler(attendeesController.archive),
+);
+
+attendeesRouter.post(
+  '/:id/restore',
+  authenticate,
+  requirePermission(PERMISSIONS.UPDATE_ATTENDEE),
+  validate(uuidParamSchema, 'params'),
+  asyncHandler(attendeesController.restore),
+);
+
+attendeesRouter.post(
+  '/:id/reset-access',
+  authenticate,
+  requirePermission(PERMISSIONS.UPDATE_ATTENDEE),
+  validate(uuidParamSchema, 'params'),
+  asyncHandler(attendeesController.resetAccess),
 );

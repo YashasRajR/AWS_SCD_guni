@@ -1,6 +1,12 @@
 import type { Pool, PoolClient } from 'pg';
 import { getPool } from '../../config/database.js';
-import type { AttendeeExportRow, AttendeeRow, CreateAttendeeInput } from './attendees.types.js';
+import { buildUpdateSet } from '../../utils/sql.js';
+import type {
+  AttendeeExportRow,
+  AttendeeRow,
+  CreateAttendeeInput,
+  UpdateAttendeeInput,
+} from './attendees.types.js';
 
 /** Accepts either the shared pool or a transaction client — see
  * users.repository.ts's Queryable for why. */
@@ -46,9 +52,10 @@ export const attendeesRepository = {
       `SELECT a.* FROM attendees a
        JOIN users u ON u.id = a.user_id
        LEFT JOIN registrations r ON r.attendee_id = a.id
-       WHERE a.full_name ILIKE $1
+       WHERE a.deleted_at IS NULL
+         AND (a.full_name ILIKE $1
           OR u.email ILIKE $1
-          OR r.registration_number ILIKE $1
+          OR r.registration_number ILIKE $1)
        GROUP BY a.id
        ORDER BY a.full_name
        LIMIT $2`,
@@ -75,6 +82,7 @@ export const attendeesRepository = {
        FROM attendees a
        JOIN users u ON u.id = a.user_id
        LEFT JOIN registrations r ON r.attendee_id = a.id
+       WHERE a.deleted_at IS NULL
        ORDER BY a.created_at DESC`,
     );
     return rows;
@@ -86,14 +94,16 @@ export const attendeesRepository = {
     page: number,
     pageSize: number,
     search?: string,
+    archived = false,
   ): Promise<{ rows: AttendeeRow[]; total: number }> {
     const offset = (page - 1) * pageSize;
     const values: unknown[] = [];
-    let where = '';
+    const conditions = [archived ? 'a.deleted_at IS NOT NULL' : 'a.deleted_at IS NULL'];
     if (search && search.trim()) {
       values.push(`%${search.trim()}%`);
-      where = `WHERE a.full_name ILIKE $1 OR u.email ILIKE $1 OR r.registration_number ILIKE $1`;
+      conditions.push('(a.full_name ILIKE $1 OR u.email ILIKE $1 OR r.registration_number ILIKE $1)');
     }
+    const where = `WHERE ${conditions.join(' AND ')}`;
 
     const baseFrom = `FROM attendees a
        JOIN users u ON u.id = a.user_id
@@ -114,5 +124,40 @@ export const attendeesRepository = {
       [...values, pageSize, offset],
     );
     return { rows, total: Number(countRes.rows[0]?.count ?? 0) };
+  },
+
+  async update(id: string, patch: UpdateAttendeeInput): Promise<AttendeeRow | null> {
+    const { setClause, values, nextIndex } = buildUpdateSet({
+      full_name: patch.fullName,
+      phone: patch.phone,
+      university: patch.university,
+      department: patch.department,
+      year: patch.year,
+      registration_type: patch.registrationType,
+    });
+    if (values.length === 0) return this.findById(id);
+    values.push(id);
+    const { rows } = await getPool().query<AttendeeRow>(
+      `UPDATE attendees SET ${setClause} WHERE id = $${nextIndex} RETURNING *`,
+      values,
+    );
+    return rows[0] ?? null;
+  },
+
+  /** Soft-delete (spec #34/#55) -- excluded from list/search/export from then on. */
+  async archive(id: string): Promise<AttendeeRow | null> {
+    const { rows } = await getPool().query<AttendeeRow>(
+      `UPDATE attendees SET deleted_at = now() WHERE id = $1 AND deleted_at IS NULL RETURNING *`,
+      [id],
+    );
+    return rows[0] ?? null;
+  },
+
+  async restore(id: string): Promise<AttendeeRow | null> {
+    const { rows } = await getPool().query<AttendeeRow>(
+      `UPDATE attendees SET deleted_at = NULL WHERE id = $1 AND deleted_at IS NOT NULL RETURNING *`,
+      [id],
+    );
+    return rows[0] ?? null;
   },
 };

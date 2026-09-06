@@ -1,6 +1,9 @@
 import type { PaymentStatus, QrScanResult, QrTokenStatus, QrTokenType, RegistrationStatus, TicketStatus } from './enums.js';
 import type { TicketPlan } from './event-content.js';
 import type { Coupon } from './coupons.js';
+import type { Invoice } from './invoices.js';
+import type { AttendeeCheckpointProgress } from './checkpoints.js';
+import type { AuditLog } from './identity.js';
 
 export interface Attendee {
   id: string;
@@ -12,8 +15,27 @@ export interface Attendee {
   year: string | null;
   profileImage: string | null;
   registrationType: string | null;
+  /** Soft-delete marker (spec #34/#55) -- non-null means archived, excluded
+   * from normal listings/search/export. */
+  deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/** Everything the admin attendee-detail page (spec #34) needs in one call --
+ * assembled by attendeesService.getDetail() from the existing per-domain
+ * services rather than duplicating their data. */
+export interface AttendeeDetail {
+  attendee: Attendee;
+  /** From the linked user account -- not on Attendee itself. */
+  email: string | null;
+  registration: Registration | null;
+  payment: Payment | null;
+  ticket: Ticket | null;
+  invoice: Invoice | null;
+  qrTokens: QrToken[];
+  checkpointProgress: AttendeeCheckpointProgress[];
+  activityHistory: AuditLog[];
 }
 
 export interface Registration {

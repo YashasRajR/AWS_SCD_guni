@@ -34,4 +34,23 @@ export const auditLogsRepository = {
     ]);
     return { rows, total: Number(countResult.rows[0]?.count ?? 0) };
   },
+
+  /**
+   * Cross-entity activity history for the admin attendee-detail page
+   * (spec #34) -- an attendee's own audit trail plus their
+   * registration/ticket/invoice ids, so a ticket reissue or a
+   * registration status change shows up on the attendee's timeline
+   * without a separate audit_logs table per entity. Capped at 200 rows;
+   * this is a detail-page timeline, not an export.
+   */
+  async listForEntities(pairs: { entityType: string; entityId: string }[]): Promise<AuditLogRow[]> {
+    if (pairs.length === 0) return [];
+    const values = pairs.flatMap((p) => [p.entityType, p.entityId]);
+    const tuples = pairs.map((_, i) => `($${i * 2 + 1}, $${i * 2 + 2})`).join(', ');
+    const { rows } = await getPool().query<AuditLogRow>(
+      `SELECT * FROM audit_logs WHERE (entity_type, entity_id) IN (${tuples}) ORDER BY created_at DESC LIMIT 200`,
+      values,
+    );
+    return rows;
+  },
 };
