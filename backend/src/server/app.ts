@@ -21,6 +21,15 @@ export function createApp(): Express {
   const app = express();
 
   app.disable('x-powered-by');
+  // Deployment (docs/deployment/deployment.md) puts nginx in front of this
+  // process in production. Without this, express-rate-limit's IP-based
+  // keying reads the proxy's own address (or throws on the X-Forwarded-For
+  // header nginx sets) instead of the real client -- every request would
+  // share one rate-limit bucket. `1` = trust exactly one hop (the nginx
+  // reverse proxy), not the whole X-Forwarded-For chain a client could spoof.
+  if (env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1);
+  }
   app.use(
     helmet({
       // The API serves JSON only — no need for a browser CSP here.
