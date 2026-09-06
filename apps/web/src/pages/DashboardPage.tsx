@@ -462,12 +462,21 @@ export function DashboardPage() {
         </section>
 
         <section className="dashboard-card">
+          <h2>Create My SCD Post</h2>
+          <p className="status-line">Generate a LinkedIn post and Instagram caption for attending the event.</p>
+          <Link to="/dashboard/social-post" className="btn-link">
+            Create my post →
+          </Link>
+        </section>
+
+        <section className="dashboard-card">
           <h2>Quick links</h2>
           <ul className="dashboard-links">
             <li><Link to="/dashboard/profile">My profile</Link></li>
             <li><Link to="/dashboard/achievements">Achievements</Link></li>
             <li><Link to="/dashboard/certificates">Certificates</Link></li>
             <li><Link to="/dashboard/wrapped">Event wrapped</Link></li>
+            <li><Link to="/dashboard/social-post">Create my SCD post</Link></li>
           </ul>
         </section>
       </div>

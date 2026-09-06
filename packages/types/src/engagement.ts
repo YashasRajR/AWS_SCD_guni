@@ -76,6 +76,22 @@ export interface SocialShare {
   createdAt: string;
 }
 
+/** "Create My SCD Post" draft (spec #28) -- one per attendee. */
+export interface SocialPost {
+  id: string;
+  attendeeId: string;
+  bio: string;
+  interests: string[];
+  photoUrl: string | null;
+  linkedinText: string;
+  instagramText: string;
+  hashtags: string[];
+  eventUrl: string;
+  approvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface EmailRecord {
   id: string;
   userId: string | null;

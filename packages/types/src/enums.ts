@@ -102,7 +102,7 @@ export type AchievementConditionType = (typeof ACHIEVEMENT_CONDITION_TYPES)[numb
 export const SOCIAL_PLATFORMS = ['LINKEDIN', 'INSTAGRAM'] as const;
 export type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number];
 
-export const SOCIAL_CONTENT_TYPES = ['CERTIFICATE', 'ACHIEVEMENT', 'EVENT_WRAPPED'] as const;
+export const SOCIAL_CONTENT_TYPES = ['CERTIFICATE', 'ACHIEVEMENT', 'EVENT_WRAPPED', 'SCD_POST'] as const;
 export type SocialContentType = (typeof SOCIAL_CONTENT_TYPES)[number];
 
 export const EMAIL_STATUSES = ['PENDING', 'SENT', 'FAILED', 'RETRYING'] as const;

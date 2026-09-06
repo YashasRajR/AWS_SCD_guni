@@ -1,7 +1,12 @@
 import type { Request, Response } from 'express';
 import { attendeesService } from '../attendees/attendees.service.js';
 import { registrationsService } from '../registrations/registrations.service.js';
-import type { PreviewCouponInput, RegisterForEventInput } from '@scd/validation';
+import type {
+  PreviewCouponInput,
+  RegisterForEventInput,
+  SaveSocialPostInput,
+  RecordSocialShareInput,
+} from '@scd/validation';
 import { ticketsService } from '../tickets/tickets.service.js';
 import { invoicesService } from '../invoices/invoices.service.js';
 import { ticketPlansService } from '../ticket-plans/ticket-plans.service.js';
@@ -13,6 +18,9 @@ import { achievementsService } from '../achievements/achievements.service.js';
 import { eventWrappedService } from '../event-wrapped/event-wrapped.service.js';
 import { eventService } from '../event/event.service.js';
 import { usersService } from '../users/users.service.js';
+import { socialPostsService } from '../social-posts/social-posts.service.js';
+import { socialSharingService } from '../social-sharing/social-sharing.service.js';
+import { uploadsService } from '../uploads/uploads.service.js';
 import { auditLogsService } from '../audit-logs/audit-logs.service.js';
 import { sendCreated, sendSuccess } from '../../utils/response.js';
 import { AppError } from '../../utils/errors.js';
@@ -161,5 +169,40 @@ export const userDashboardController = {
     }
     // Auto-generate if none exists yet
     sendSuccess(res, await eventWrappedService.generate(attendee.id, event.id));
+  },
+
+  // --- "Create My SCD Post" (spec #28) ------------------------------------
+  async getSocialPost(req: Request, res: Response): Promise<void> {
+    const attendee = await attendeesService.requireByUserId(req.identity!.userId);
+    sendSuccess(res, await socialPostsService.get(attendee.id));
+  },
+
+  /** Also used for "Regenerate" -- same endpoint, it always rebuilds the copy. */
+  async saveSocialPost(req: Request, res: Response): Promise<void> {
+    const attendee = await attendeesService.requireByUserId(req.identity!.userId);
+    const input = req.body as SaveSocialPostInput;
+    const post = await socialPostsService.save(attendee.id, attendee.fullName, input);
+    sendSuccess(res, post, 'Post generated.');
+  },
+
+  async approveSocialPost(req: Request, res: Response): Promise<void> {
+    const attendee = await attendeesService.requireByUserId(req.identity!.userId);
+    sendSuccess(res, await socialPostsService.approve(attendee.id), 'Post approved.');
+  },
+
+  async uploadSocialPostPhoto(req: Request, res: Response): Promise<void> {
+    await attendeesService.requireByUserId(req.identity!.userId);
+    if (!req.file) throw AppError.validation('No file was uploaded.');
+    sendSuccess(res, await uploadsService.storeImage(req.file));
+  },
+
+  /** Never touches a real LinkedIn/Instagram account -- just logs that the
+   * attendee clicked a share link, for their own history. */
+  async recordSocialShare(req: Request, res: Response): Promise<void> {
+    const attendee = await attendeesService.requireByUserId(req.identity!.userId);
+    const event = await eventService.getCurrent();
+    const { platform } = req.body as RecordSocialShareInput;
+    await socialSharingService.record(attendee.id, event.id, platform, 'SCD_POST');
+    sendSuccess(res, { recorded: true });
   },
 };

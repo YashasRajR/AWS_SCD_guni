@@ -22,6 +22,7 @@ import { ProfilePage } from './pages/ProfilePage.js';
 import { MyAchievementsPage } from './pages/MyAchievementsPage.js';
 import { MyCertificatePage } from './pages/MyCertificatePage.js';
 import { EventWrappedPage } from './pages/EventWrappedPage.js';
+import { SocialPostPage } from './pages/SocialPostPage.js';
 
 function RequireAttendee({ children }: { children: ReactElement }) {
   const { status } = useAuth();
@@ -89,6 +90,14 @@ function AppRoutes() {
           element={
             <RequireAttendee>
               <MyCertificatePage />
+            </RequireAttendee>
+          }
+        />
+        <Route
+          path="dashboard/social-post"
+          element={
+            <RequireAttendee>
+              <SocialPostPage />
             </RequireAttendee>
           }
         />

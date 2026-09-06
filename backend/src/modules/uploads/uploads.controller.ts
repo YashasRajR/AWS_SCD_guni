@@ -1,9 +1,7 @@
-import crypto from 'node:crypto';
-import path from 'node:path';
 import type { NextFunction, Request, Response } from 'express';
 import multer from 'multer';
 import { getEnv } from '../../config/env.js';
-import { getStorageProvider } from '../../integrations/storage/index.js';
+import { uploadsService } from './uploads.service.js';
 import { AppError } from '../../utils/errors.js';
 import { sendCreated } from '../../utils/response.js';
 
@@ -43,13 +41,7 @@ export const uploadsController = {
    * same endpoint rather than growing a bespoke one per module). */
   async upload(req: Request, res: Response): Promise<void> {
     if (!req.file) throw AppError.validation('No file was uploaded.');
-    const ext = path.extname(req.file.originalname).toLowerCase() || '.bin';
-    const key = `${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}${ext}`;
-    const { url } = await getStorageProvider().upload({
-      key,
-      contentType: req.file.mimetype,
-      body: req.file.buffer,
-    });
+    const { url } = await uploadsService.storeImage(req.file);
     sendCreated(res, { url }, 'File uploaded.');
   },
 };

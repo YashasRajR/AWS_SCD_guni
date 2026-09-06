@@ -9,4 +9,16 @@ export const socialSharingRepository = {
     );
     return rows;
   },
+
+  async record(
+    attendeeId: string,
+    eventId: string,
+    platform: SocialShareRow['platform'],
+    contentType: SocialShareRow['content_type'],
+  ): Promise<void> {
+    await getPool().query(
+      'INSERT INTO social_shares (attendee_id, event_id, platform, content_type) VALUES ($1, $2, $3, $4)',
+      [attendeeId, eventId, platform, contentType],
+    );
+  },
 };
