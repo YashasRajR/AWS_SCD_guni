@@ -1,0 +1,13 @@
+ALTER TABLE events DROP COLUMN contact_phone;
+ALTER TABLE events DROP COLUMN contact_email;
+ALTER TABLE events DROP COLUMN footer_text;
+ALTER TABLE events DROP COLUMN header_cta_visible;
+ALTER TABLE events DROP COLUMN header_cta_url;
+ALTER TABLE events DROP COLUMN header_cta_label;
+ALTER TABLE events DROP COLUMN logo_url;
+ALTER TABLE events DROP COLUMN secondary_cta_url;
+ALTER TABLE events DROP COLUMN secondary_cta_label;
+ALTER TABLE events DROP COLUMN primary_cta_url;
+ALTER TABLE events DROP COLUMN primary_cta_label;
+ALTER TABLE events DROP COLUMN hero_background_image;
+ALTER TABLE events DROP COLUMN hero_subtitle;

@@ -14,6 +14,19 @@ export interface EventRow {
   status: EventStatus;
   registration_fee: string;
   currency: string;
+  hero_subtitle: string | null;
+  hero_background_image: string | null;
+  primary_cta_label: string | null;
+  primary_cta_url: string | null;
+  secondary_cta_label: string | null;
+  secondary_cta_url: string | null;
+  logo_url: string | null;
+  header_cta_label: string | null;
+  header_cta_url: string | null;
+  header_cta_visible: boolean;
+  footer_text: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -33,6 +46,19 @@ export function toEventConfig(row: EventRow): EventConfig {
     status: row.status,
     registrationFee: row.registration_fee,
     currency: row.currency,
+    heroSubtitle: row.hero_subtitle,
+    heroBackgroundImage: row.hero_background_image,
+    primaryCtaLabel: row.primary_cta_label,
+    primaryCtaUrl: row.primary_cta_url,
+    secondaryCtaLabel: row.secondary_cta_label,
+    secondaryCtaUrl: row.secondary_cta_url,
+    logoUrl: row.logo_url,
+    headerCtaLabel: row.header_cta_label,
+    headerCtaUrl: row.header_cta_url,
+    headerCtaVisible: row.header_cta_visible,
+    footerText: row.footer_text,
+    contactEmail: row.contact_email,
+    contactPhone: row.contact_phone,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

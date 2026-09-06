@@ -34,6 +34,9 @@ export type TicketStatus = (typeof TICKET_STATUSES)[number];
 export const DISCOUNT_TYPES = ['PERCENT', 'FIXED'] as const;
 export type DiscountType = (typeof DISCOUNT_TYPES)[number];
 
+export const SITE_LINK_KINDS = ['NAV', 'SOCIAL'] as const;
+export type SiteLinkKind = (typeof SITE_LINK_KINDS)[number];
+
 export const QR_TOKEN_TYPES = ['REGISTRATION', 'GOODIE'] as const;
 export type QrTokenType = (typeof QR_TOKEN_TYPES)[number];
 

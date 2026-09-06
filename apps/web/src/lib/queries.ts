@@ -4,6 +4,7 @@ import type {
   EventConfig,
   Faq,
   Session,
+  SiteLink,
   Speaker,
   TimelineItem,
   Venue,
@@ -47,4 +48,12 @@ export function useFAQs() {
 
 export function useAnnouncements() {
   return useResource<Announcement>('/announcements');
+}
+
+export function useNavLinks() {
+  return useResource<SiteLink>('/nav-links');
+}
+
+export function useSocialLinks() {
+  return useResource<SiteLink>('/social-links');
 }

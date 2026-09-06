@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import type { SiteLink } from '@scd/types';
 import { useAuth } from '../../lib/auth.js';
+import { useEvent, useNavLinks } from '../../lib/queries.js';
 import { Button } from '../ui/Button.js';
 
 interface NavLinkDef {
@@ -24,7 +26,40 @@ const NAV_LINKS: NavLinkDef[] = [
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-function NavLinks({ onNavigate }: { onNavigate: () => void }) {
+/** Renders the admin-configured nav links (GET /nav-links) when any are
+ * published, falling back to the original hard-coded set otherwise -- so
+ * the header still works before an admin has added any CMS nav items. */
+function NavLinks({ links, onNavigate }: { links: SiteLink[]; onNavigate: () => void }) {
+  if (links.length > 0) {
+    return (
+      <>
+        {links.map((link) =>
+          link.isExternal ? (
+            <a
+              key={link.id}
+              href={link.url}
+              className="nav-link"
+              target={link.openNewTab ? '_blank' : undefined}
+              rel={link.openNewTab ? 'noopener noreferrer' : undefined}
+              onClick={onNavigate}
+            >
+              {link.label}
+            </a>
+          ) : (
+            <NavLink
+              key={link.id}
+              to={link.url}
+              className={({ isActive }) => (isActive ? 'nav-link nav-link-active' : 'nav-link')}
+              onClick={onNavigate}
+            >
+              {link.label}
+            </NavLink>
+          ),
+        )}
+      </>
+    );
+  }
+
   return (
     <>
       {NAV_LINKS.map((link) =>
@@ -93,6 +128,8 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
+  const { items: navLinks } = useNavLinks();
+  const { data: event } = useEvent();
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -149,12 +186,16 @@ export function Header() {
       </a>
       <div className="site-header-row">
         <NavLink to="/" className="brand" onClick={closeMenu}>
-          <span className="brand-mark">SCD</span>
+          {event?.logoUrl ? (
+            <img src={event.logoUrl} alt="" className="brand-logo" />
+          ) : (
+            <span className="brand-mark">SCD</span>
+          )}
           <span className="brand-name">AWS Student Community Day</span>
         </NavLink>
 
         <nav className="desktop-nav" aria-label="Primary">
-          <NavLinks onNavigate={closeMenu} />
+          <NavLinks links={navLinks} onNavigate={closeMenu} />
         </nav>
 
         <div className="nav-auth">
@@ -195,7 +236,7 @@ export function Header() {
               </button>
             </div>
             <nav aria-label="Mobile primary" style={{ display: 'flex', flexDirection: 'column' }}>
-              <NavLinks onNavigate={closeMenu} />
+              <NavLinks links={navLinks} onNavigate={closeMenu} />
               <div className="nav-auth">
                 <AuthLinks onNavigate={closeMenu} />
               </div>

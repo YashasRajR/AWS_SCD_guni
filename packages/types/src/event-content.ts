@@ -1,4 +1,4 @@
-import type { AnnouncementPriority, ContentStatus, EventStatus, SessionType, TimelineItemType } from './enums.js';
+import type { AnnouncementPriority, ContentStatus, EventStatus, SessionType, SiteLinkKind, TimelineItemType } from './enums.js';
 
 export interface EventConfig {
   id: string;
@@ -15,6 +15,21 @@ export interface EventConfig {
   /** "0.00" means this edition is free — the payment flow never triggers. */
   registrationFee: string;
   currency: string;
+  // Hero/header/footer/contact content -- admin-editable site chrome (spec
+  // sections 4/5/38), all living on this same singleton row.
+  heroSubtitle: string | null;
+  heroBackgroundImage: string | null;
+  primaryCtaLabel: string | null;
+  primaryCtaUrl: string | null;
+  secondaryCtaLabel: string | null;
+  secondaryCtaUrl: string | null;
+  logoUrl: string | null;
+  headerCtaLabel: string | null;
+  headerCtaUrl: string | null;
+  headerCtaVisible: boolean;
+  footerText: string | null;
+  contactEmail: string | null;
+  contactPhone: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -101,6 +116,19 @@ export interface Faq {
   question: string;
   answer: string;
   category: string | null;
+  displayOrder: number;
+  status: ContentStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SiteLink {
+  id: string;
+  kind: SiteLinkKind;
+  label: string;
+  url: string;
+  isExternal: boolean;
+  openNewTab: boolean;
   displayOrder: number;
   status: ContentStatus;
   createdAt: string;

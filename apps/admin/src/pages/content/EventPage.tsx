@@ -49,6 +49,19 @@ const FIELDS: FieldDef[] = [
       { value: 'ARCHIVED', label: 'Archived' },
     ],
   },
+  { name: 'heroSubtitle', label: 'Hero subtitle', type: 'text', help: 'A short line shown above the description on the homepage hero.' },
+  { name: 'heroBackgroundImage', label: 'Hero background image', type: 'image' },
+  { name: 'primaryCtaLabel', label: 'Hero primary button label', type: 'text', placeholder: 'Register Now' },
+  { name: 'primaryCtaUrl', label: 'Hero primary button destination', type: 'text', help: 'Leave blank to use the default (Register/Dashboard) behavior.' },
+  { name: 'secondaryCtaLabel', label: 'Hero secondary button label', type: 'text', placeholder: 'Explore Agenda' },
+  { name: 'secondaryCtaUrl', label: 'Hero secondary button destination', type: 'text', help: 'Leave blank to use the default (/agenda).' },
+  { name: 'logoUrl', label: 'Site logo', type: 'image', help: 'Shown in the header in place of the default "SCD" mark.' },
+  { name: 'headerCtaLabel', label: 'Header CTA label', type: 'text' },
+  { name: 'headerCtaUrl', label: 'Header CTA destination', type: 'text' },
+  { name: 'headerCtaVisible', label: 'Show header CTA button', type: 'checkbox' },
+  { name: 'footerText', label: 'Footer tagline', type: 'textarea', help: 'Leave blank to use the default tagline.' },
+  { name: 'contactEmail', label: 'Contact email', type: 'text' },
+  { name: 'contactPhone', label: 'Contact phone', type: 'text' },
 ];
 
 export function EventPage() {

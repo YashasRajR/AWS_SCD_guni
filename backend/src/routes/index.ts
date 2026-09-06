@@ -7,6 +7,7 @@ import { agendaRouter, agendaAdminRouter } from '../modules/agenda/agenda.routes
 import { timelineRouter, timelineAdminRouter } from '../modules/timeline/timeline.routes.js';
 import { venuesRouter, venuesAdminRouter } from '../modules/venues/venues.routes.js';
 import { faqRouter, faqAdminRouter } from '../modules/faq/faq.routes.js';
+import { createSiteLinksRouters } from '../modules/site-links/site-links.routes.js';
 import { ticketPlansRouter, ticketPlansAdminRouter } from '../modules/ticket-plans/ticket-plans.routes.js';
 import { couponsAdminRouter } from '../modules/coupons/coupons.routes.js';
 import {
@@ -47,6 +48,9 @@ import { usersAdminRouter } from '../modules/users/users.routes.js';
  */
 export const apiRouter = Router();
 
+const navLinks = createSiteLinksRouters('NAV');
+const socialLinks = createSiteLinksRouters('SOCIAL');
+
 // --- PUBLIC ---------------------------------------------------------------
 // Read-only, PUBLISHED-only. Each has an /admin/content/* sibling below
 // with full CRUD across every status, gated by its MANAGE_* permission.
@@ -57,6 +61,8 @@ apiRouter.use('/agenda', agendaRouter);
 apiRouter.use('/timeline', timelineRouter);
 apiRouter.use('/venues', venuesRouter);
 apiRouter.use('/faqs', faqRouter);
+apiRouter.use('/nav-links', navLinks.publicRouter);
+apiRouter.use('/social-links', socialLinks.publicRouter);
 apiRouter.use('/ticket-plans', ticketPlansRouter);
 apiRouter.use('/announcements', announcementsRouter);
 apiRouter.use('/certificates', certificatesPublicRouter);
@@ -99,6 +105,8 @@ apiRouter.use('/admin/content/agenda', agendaAdminRouter);
 apiRouter.use('/admin/content/timeline', timelineAdminRouter);
 apiRouter.use('/admin/content/venues', venuesAdminRouter);
 apiRouter.use('/admin/content/faqs', faqAdminRouter);
+apiRouter.use('/admin/content/nav-links', navLinks.adminRouter);
+apiRouter.use('/admin/content/social-links', socialLinks.adminRouter);
 apiRouter.use('/admin/content/ticket-plans', ticketPlansAdminRouter);
 apiRouter.use('/admin/content/coupons', couponsAdminRouter);
 apiRouter.use('/admin/content/announcements', announcementsAdminRouter);

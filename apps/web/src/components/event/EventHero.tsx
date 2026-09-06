@@ -23,8 +23,17 @@ export function EventHero() {
     { label: 'Venues', value: venues.length },
   ].filter((s) => s.value > 0);
 
+  const heroStyle = event?.heroBackgroundImage
+    ? {
+        backgroundImage: `url(${event.heroBackgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }
+    : undefined;
+
   return (
-    <section className="hero">
+    <section className="hero" style={heroStyle}>
       <div className="hero-inner">
         <span className="hero-eyebrow">AWS Student Community Day 2026</span>
 
@@ -43,6 +52,7 @@ export function EventHero() {
         ) : (
           <>
             <h1>{event.name}</h1>
+            {event.heroSubtitle && <p className="hero-subtitle">{event.heroSubtitle}</p>}
             {event.description && <p className="hero-lede">{event.description}</p>}
             <dl className="hero-facts">
               <div>
@@ -60,7 +70,13 @@ export function EventHero() {
         )}
 
         <div className="hero-actions">
-          {status === 'signed-in' ? (
+          {/* Admin-configured CTAs (spec: "every button must have an editable
+           * destination") fall back to the signed-in-aware defaults when unset. */}
+          {event?.primaryCtaUrl ? (
+            <Button href={event.primaryCtaUrl} size="large">
+              {event.primaryCtaLabel || 'Register Now'}
+            </Button>
+          ) : status === 'signed-in' ? (
             <Button to="/dashboard" size="large">
               Go to my dashboard
             </Button>
@@ -69,9 +85,15 @@ export function EventHero() {
               Register Now
             </Button>
           )}
-          <Button to="/agenda" size="large" variant="secondary">
-            Explore Agenda
-          </Button>
+          {event?.secondaryCtaUrl ? (
+            <Button href={event.secondaryCtaUrl} size="large" variant="secondary">
+              {event.secondaryCtaLabel || 'Explore Agenda'}
+            </Button>
+          ) : (
+            <Button to="/agenda" size="large" variant="secondary">
+              Explore Agenda
+            </Button>
+          )}
         </div>
 
         {stats.length > 0 && (

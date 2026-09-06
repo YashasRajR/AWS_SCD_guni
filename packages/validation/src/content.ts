@@ -34,6 +34,20 @@ export const createEventSchema = z.object({
   // 0 = a free event; the payment flow is simply never triggered for it.
   registrationFee: z.coerce.number().min(0).default(0),
   currency: z.string().trim().toUpperCase().length(3).default('INR'),
+  // Hero/header/footer/contact site content (spec sections 4/5/38).
+  heroSubtitle: z.string().trim().max(300).optional(),
+  heroBackgroundImage: z.string().trim().url().optional(),
+  primaryCtaLabel: z.string().trim().max(60).optional(),
+  primaryCtaUrl: z.string().trim().max(500).optional(),
+  secondaryCtaLabel: z.string().trim().max(60).optional(),
+  secondaryCtaUrl: z.string().trim().max(500).optional(),
+  logoUrl: z.string().trim().url().optional(),
+  headerCtaLabel: z.string().trim().max(60).optional(),
+  headerCtaUrl: z.string().trim().max(500).optional(),
+  headerCtaVisible: z.boolean().default(false),
+  footerText: z.string().trim().max(2000).optional(),
+  contactEmail: z.string().trim().email().optional(),
+  contactPhone: z.string().trim().max(40).optional(),
 });
 export type CreateEventInput = z.infer<typeof createEventSchema>;
 export const updateEventSchema = createEventSchema.partial();
@@ -134,6 +148,20 @@ export const updateTimelineItemSchema = createTimelineItemSchema.partial();
 export type UpdateTimelineItemInput = z.infer<typeof updateTimelineItemSchema>;
 
 // --- FAQs ----------------------------------------------------------------------
+// --- Site links (nav items + social links; a `kind` discriminator keeps
+// these two structurally-identical lists as one table/module) -------------
+export const createSiteLinkSchema = z.object({
+  label: z.string().trim().min(1).max(120),
+  url: z.string().trim().min(1).max(500),
+  isExternal: z.boolean().default(false),
+  openNewTab: z.boolean().default(false),
+  displayOrder: z.number().int().min(0).default(0),
+  status: contentStatusSchema.default('DRAFT'),
+});
+export type CreateSiteLinkInput = z.infer<typeof createSiteLinkSchema>;
+export const updateSiteLinkSchema = createSiteLinkSchema.partial();
+export type UpdateSiteLinkInput = z.infer<typeof updateSiteLinkSchema>;
+
 export const createFaqSchema = z.object({
   question: z.string().trim().min(2).max(500),
   answer: z.string().trim().min(2).max(5000),

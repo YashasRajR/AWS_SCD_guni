@@ -34,8 +34,10 @@ export const eventRepository = {
   async create(input: CreateEventInput): Promise<EventRow> {
     const { rows } = await getPool().query<EventRow>(
       `INSERT INTO events
-         (name, slug, description, event_date, start_time, end_time, venue, registration_open, registration_close, status, registration_fee, currency)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+         (name, slug, description, event_date, start_time, end_time, venue, registration_open, registration_close, status, registration_fee, currency,
+          hero_subtitle, hero_background_image, primary_cta_label, primary_cta_url, secondary_cta_label, secondary_cta_url,
+          logo_url, header_cta_label, header_cta_url, header_cta_visible, footer_text, contact_email, contact_phone)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)
        RETURNING *`,
       [
         input.name,
@@ -50,6 +52,19 @@ export const eventRepository = {
         input.status ?? 'DRAFT',
         input.registrationFee ?? 0,
         input.currency ?? 'INR',
+        input.heroSubtitle ?? null,
+        input.heroBackgroundImage ?? null,
+        input.primaryCtaLabel ?? null,
+        input.primaryCtaUrl ?? null,
+        input.secondaryCtaLabel ?? null,
+        input.secondaryCtaUrl ?? null,
+        input.logoUrl ?? null,
+        input.headerCtaLabel ?? null,
+        input.headerCtaUrl ?? null,
+        input.headerCtaVisible ?? false,
+        input.footerText ?? null,
+        input.contactEmail ?? null,
+        input.contactPhone ?? null,
       ],
     );
     return rows[0]!;
@@ -69,6 +84,19 @@ export const eventRepository = {
       status: patch.status,
       registration_fee: patch.registrationFee,
       currency: patch.currency,
+      hero_subtitle: patch.heroSubtitle,
+      hero_background_image: patch.heroBackgroundImage,
+      primary_cta_label: patch.primaryCtaLabel,
+      primary_cta_url: patch.primaryCtaUrl,
+      secondary_cta_label: patch.secondaryCtaLabel,
+      secondary_cta_url: patch.secondaryCtaUrl,
+      logo_url: patch.logoUrl,
+      header_cta_label: patch.headerCtaLabel,
+      header_cta_url: patch.headerCtaUrl,
+      header_cta_visible: patch.headerCtaVisible,
+      footer_text: patch.footerText,
+      contact_email: patch.contactEmail,
+      contact_phone: patch.contactPhone,
     });
     if (values.length === 0) return this.findById(id);
     values.push(id);
