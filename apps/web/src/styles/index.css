@@ -1011,6 +1011,42 @@ ol {
   flex-shrink: 0;
 }
 
+.about-sections-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+.about-section-block {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+@media (min-width: 700px) {
+  .about-section-block:has(.about-section-image) {
+    grid-template-columns: 200px 1fr;
+  }
+}
+
+.about-section-image {
+  width: 100%;
+  max-width: 200px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+}
+
+.about-section-block h3 {
+  margin: 0 0 var(--space-2);
+}
+
+.about-section-block p {
+  color: var(--muted);
+  margin: 0 0 var(--space-2);
+}
+
 .highlight-card {
   background: var(--surface);
   border: 1px solid var(--border);

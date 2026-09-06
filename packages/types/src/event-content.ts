@@ -165,6 +165,20 @@ export interface Announcement {
   updatedAt: string;
 }
 
+/** About/AWS Section CMS block (spec #6). */
+export interface AboutSection {
+  id: string;
+  title: string;
+  body: string;
+  imageUrl: string | null;
+  linkUrl: string | null;
+  linkLabel: string | null;
+  displayOrder: number;
+  status: ContentStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface GalleryItem {
   id: string;
   imageUrl: string;

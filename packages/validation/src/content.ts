@@ -256,6 +256,20 @@ export const updateAnnouncementSchema = createAnnouncementSchema.partial();
 export type UpdateAnnouncementInput = z.infer<typeof updateAnnouncementSchema>;
 
 // --- Gallery ---------------------------------------------------------------
+// --- About/AWS section CMS (spec #6) -----------------------------------
+export const createAboutSectionSchema = z.object({
+  title: z.string().trim().min(2).max(200),
+  body: z.string().trim().min(1).max(5000),
+  imageUrl: z.string().trim().min(1).max(500).optional(),
+  linkUrl: z.string().trim().min(1).max(500).optional(),
+  linkLabel: z.string().trim().max(100).optional(),
+  displayOrder: z.number().int().min(0).default(0),
+  status: contentStatusSchema.default('DRAFT'),
+});
+export type CreateAboutSectionInput = z.infer<typeof createAboutSectionSchema>;
+export const updateAboutSectionSchema = createAboutSectionSchema.partial();
+export type UpdateAboutSectionInput = z.infer<typeof updateAboutSectionSchema>;
+
 export const createGalleryItemSchema = z.object({
   imageUrl: z.string().trim().min(1).max(500),
   caption: z.string().trim().max(300).optional(),

@@ -1,4 +1,5 @@
 import type {
+  AboutSection,
   AgendaItem,
   Announcement,
   EventConfig,
@@ -22,6 +23,10 @@ import { useResource } from './hooks.js';
 
 export function useEvent() {
   return useResource<EventConfig>('/event');
+}
+
+export function useAboutSections() {
+  return useResource<AboutSection>('/about-sections');
 }
 
 export function useSpeakers() {
