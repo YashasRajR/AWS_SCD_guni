@@ -24,6 +24,44 @@ async function downloadPdf(path: string, filename: string): Promise<void> {
   URL.revokeObjectURL(url);
 }
 
+interface DocumentVersion {
+  id: string;
+  version: number;
+  reason: string | null;
+  createdAt: string;
+}
+
+/** Reissue history (spec #35) -- lists the document_versions rows already
+ * exposed by the tickets/invoices admin "History" endpoints, reused here
+ * instead of a second history view. */
+function DocumentVersionHistory({ kind, id }: { kind: 'tickets' | 'invoices'; id: string }) {
+  const { data: versions, loading, error } = useResource<DocumentVersion[]>(`/admin/${kind}/${id}/versions`);
+  if (loading) return <p className="form-help">Loading history…</p>;
+  if (error) return <p className="form-error">{error}</p>;
+  if (!versions || versions.length === 0) {
+    return <p className="form-help">No prior versions — never reissued.</p>;
+  }
+  return (
+    <div className="qr-token-list">
+      {versions.map((v) => (
+        <div className="qr-token-row" key={v.id}>
+          <div>
+            <strong>Version {v.version}</strong> <span className="form-help">{formatDateTime(v.createdAt)}</span>
+            {v.reason && <div className="form-help">{v.reason}</div>}
+          </div>
+          <button
+            type="button"
+            className="btn-link"
+            onClick={() => downloadPdf(`/admin/${kind}/${id}/versions/${v.version}/pdf`, `${kind}-v${v.version}.pdf`)}
+          >
+            Download
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const EDITABLE_FIELDS = ['fullName', 'phone', 'university', 'department', 'year', 'registrationType'] as const;
 type EditableField = (typeof EDITABLE_FIELDS)[number];
 const FIELD_LABELS: Record<EditableField, string> = {
@@ -55,8 +93,18 @@ export function AttendeeDetailPage() {
   if (loading) return <p>Loading…</p>;
   if (error || !data) return <p className="form-error">{error ?? 'Not found.'}</p>;
 
-  const { attendee, email, registration, payment, ticket, invoice, qrTokens, checkpointProgress, activityHistory } =
-    data;
+  const {
+    attendee,
+    email,
+    registration,
+    payment,
+    ticket,
+    invoice,
+    qrTokens,
+    checkpointProgress,
+    activityHistory,
+    documentEmails,
+  } = data;
   const archived = Boolean(attendee.deletedAt);
 
   const startEdit = () => {
@@ -282,6 +330,8 @@ export function AttendeeDetailPage() {
               <dd>{formatDateTime(ticket.issuedAt)}</dd>
               <dt>Version</dt>
               <dd>{ticket.version}</dd>
+              <dt>Document generated</dt>
+              <dd>{ticket.pdfAvailable ? `Yes (${formatDateTime(ticket.pdfGeneratedAt)})` : 'Not yet'}</dd>
             </dl>
             <div className="row-actions">
               <button
@@ -299,6 +349,8 @@ export function AttendeeDetailPage() {
                 Resend email
               </button>
             </div>
+            <h3>Reissue history</h3>
+            <DocumentVersionHistory kind="tickets" id={ticket.id} />
           </>
         ) : (
           <p className="form-help">No ticket issued.</p>
@@ -337,6 +389,8 @@ export function AttendeeDetailPage() {
                 Resend email
               </button>
             </div>
+            <h3>Reissue history</h3>
+            <DocumentVersionHistory kind="invoices" id={invoice.id} />
           </>
         ) : (
           <p className="form-help">No invoice issued.</p>
@@ -400,6 +454,25 @@ export function AttendeeDetailPage() {
               </div>
             ))}
           </div>
+        )}
+      </section>
+
+      <section className="panel">
+        <h2>Document email delivery</h2>
+        {documentEmails.length === 0 ? (
+          <p className="form-help">No ticket/invoice emails sent yet.</p>
+        ) : (
+          <dl className="detail-list">
+            {documentEmails.map((rec) => (
+              <Fragment key={rec.id}>
+                <dt>{rec.template}</dt>
+                <dd>
+                  <StatusBadge status={rec.status} /> <span className="form-help">to {rec.recipient} —</span>{' '}
+                  {rec.sentAt ? formatDateTime(rec.sentAt) : (rec.failureReason ?? formatDateTime(rec.createdAt))}
+                </dd>
+              </Fragment>
+            ))}
+          </dl>
         )}
       </section>
 

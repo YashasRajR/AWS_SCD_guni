@@ -1,5 +1,6 @@
-import type { EmailTemplate } from '@scd/types';
+import type { EmailRecord, EmailTemplate } from '@scd/types';
 import { emailsRepository } from './emails.repository.js';
+import { toEmailRecord } from './emails.types.js';
 import { logger } from '../../utils/logger.js';
 
 /**
@@ -26,5 +27,10 @@ export const emailsService = {
     } catch (err) {
       logger.warn({ err, template, recipient }, 'Failed to record outgoing email intent');
     }
+  },
+
+  async listForUser(userId: string, templates: EmailTemplate[]): Promise<EmailRecord[]> {
+    const rows = await emailsRepository.listForUser(userId, templates);
+    return rows.map(toEmailRecord);
   },
 };

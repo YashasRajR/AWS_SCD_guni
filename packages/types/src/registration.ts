@@ -4,6 +4,7 @@ import type { Coupon } from './coupons.js';
 import type { Invoice } from './invoices.js';
 import type { AttendeeCheckpointProgress } from './checkpoints.js';
 import type { AuditLog } from './identity.js';
+import type { EmailRecord } from './engagement.js';
 
 export interface Attendee {
   id: string;
@@ -36,6 +37,10 @@ export interface AttendeeDetail {
   qrTokens: QrToken[];
   checkpointProgress: AttendeeCheckpointProgress[];
   activityHistory: AuditLog[];
+  /** Ticket/invoice email delivery status (spec #35) -- so an admin never
+   * has to search the attendee's inbox to know whether a document email
+   * actually went out. */
+  documentEmails: EmailRecord[];
 }
 
 export interface Registration {

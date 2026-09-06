@@ -31,6 +31,21 @@ export const emailsRepository = {
     return { rows, total: Number(countResult.rows[0]?.count ?? 0) };
   },
 
+  /**
+   * Delivery status for a specific user's document emails (ticket/invoice
+   * sends) -- the admin attendee-detail page (spec #35) needs this so an
+   * admin never has to search the attendee's own inbox to know whether a
+   * ticket/invoice email actually went out.
+   */
+  async listForUser(userId: string, templates: EmailTemplate[]): Promise<EmailRecordRow[]> {
+    if (templates.length === 0) return [];
+    const { rows } = await getPool().query<EmailRecordRow>(
+      `SELECT * FROM email_records WHERE user_id = $1 AND template = ANY($2) ORDER BY created_at DESC LIMIT 20`,
+      [userId, templates],
+    );
+    return rows;
+  },
+
   /** PENDING/RETRYING rows whose next_attempt_at has arrived, oldest first. */
   async listDue(limit: number): Promise<EmailRecordRow[]> {
     const { rows } = await getPool().query<EmailRecordRow>(

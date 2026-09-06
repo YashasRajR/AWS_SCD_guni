@@ -14,6 +14,7 @@ import { checkpointsService } from '../checkpoints/checkpoints.service.js';
 import { eventService } from '../event/event.service.js';
 import { auditLogsService } from '../audit-logs/audit-logs.service.js';
 import { usersRepository } from '../users/users.repository.js';
+import { emailsService } from '../emails/emails.service.js';
 import { authRepository } from '../auth/auth.repository.js';
 import { authService } from '../auth/auth.service.js';
 
@@ -154,6 +155,9 @@ export const attendeesService = {
     if (ticket) entityPairs.push({ entityType: 'ticket', entityId: ticket.id });
     if (invoice) entityPairs.push({ entityType: 'invoice', entityId: invoice.id });
     const activityHistory = await auditLogsService.listForEntities(entityPairs);
+    const documentEmails = user
+      ? await emailsService.listForUser(user.id, ['ticket', 'ticket-resend', 'invoice-resend'])
+      : [];
 
     return {
       attendee,
@@ -165,6 +169,7 @@ export const attendeesService = {
       qrTokens,
       checkpointProgress,
       activityHistory,
+      documentEmails,
     };
   },
 };
