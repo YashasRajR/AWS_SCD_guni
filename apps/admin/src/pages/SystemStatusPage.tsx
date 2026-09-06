@@ -12,6 +12,7 @@ interface SystemStatus {
   paymentGateway: IntegrationStatus;
   email: IntegrationStatus & { queueDepth: number };
   storage: IntegrationStatus;
+  sheetsSync: IntegrationStatus & { queueDepth: number };
 }
 
 function StatusDot({ status }: { status: 'ok' | 'error' }) {
@@ -32,6 +33,12 @@ export function SystemStatusPage() {
           extra: `Queue depth: ${data.email.queueDepth} pending`,
         },
         { key: 'storage', label: 'File storage', item: data.storage },
+        {
+          key: 'sheetsSync',
+          label: 'Sheets sync',
+          item: data.sheetsSync,
+          extra: `Queue depth: ${data.sheetsSync.queueDepth} pending`,
+        },
       ]
     : [];
 

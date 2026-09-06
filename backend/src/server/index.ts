@@ -11,6 +11,7 @@ import { getEnv } from '../config/env.js';
 import { checkDatabaseConnection, closeDatabasePool } from '../config/database.js';
 import { logger } from '../utils/logger.js';
 import { startEmailWorker, stopEmailWorker } from '../jobs/email-worker.js';
+import { startSheetsSyncWorker, stopSheetsSyncWorker } from '../jobs/sheets-sync-worker.js';
 
 async function main(): Promise<void> {
   const env = getEnv();
@@ -27,10 +28,12 @@ async function main(): Promise<void> {
   });
 
   const emailWorkerTimer = startEmailWorker();
+  const sheetsSyncWorkerTimer = startSheetsSyncWorker();
 
   const shutdown = (signal: string) => {
     logger.info(`Received ${signal}, shutting down gracefully...`);
     stopEmailWorker(emailWorkerTimer);
+    stopSheetsSyncWorker(sheetsSyncWorkerTimer);
     server.close(async (err) => {
       if (err) {
         logger.error({ err }, 'Error while closing HTTP server');

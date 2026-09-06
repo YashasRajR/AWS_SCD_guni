@@ -64,6 +64,16 @@ const envSchema = z.object({
   PUBLIC_API_URL: z.string().url().default('http://localhost:4000'),
   UPLOAD_MAX_BYTES: z.coerce.number().int().positive().default(5 * 1024 * 1024),
 
+  // Google Sheets sync (spec #41) — a service account's credentials, not
+  // OAuth, since this writes to one spreadsheet the organizers own
+  // (Console > IAM > Service Accounts > Keys > JSON), no per-user consent
+  // flow needed. Left blank, sync rows queue up but never send — see
+  // integrations/sheets/unconfigured-provider.ts — same never-fake-it
+  // pattern as the payment/email providers above.
+  GOOGLE_SHEETS_SPREADSHEET_ID: z.string().optional().default(''),
+  GOOGLE_SHEETS_SERVICE_ACCOUNT_EMAIL: z.string().optional().default(''),
+  GOOGLE_SHEETS_SERVICE_ACCOUNT_KEY: z.string().optional().default(''),
+
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
   RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().positive().default(100),
 

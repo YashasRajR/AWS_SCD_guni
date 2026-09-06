@@ -31,6 +31,7 @@ import { AchievementsPage } from './pages/AchievementsPage.js';
 import { EmailsPage } from './pages/EmailsPage.js';
 import { UsersPage } from './pages/UsersPage.js';
 import { SystemStatusPage } from './pages/SystemStatusPage.js';
+import { SheetsSyncPage } from './pages/SheetsSyncPage.js';
 
 function RequireAdmin({ children }: { children: ReactElement }) {
   const { status } = useAuth();
@@ -89,6 +90,7 @@ function AppRoutes() {
         <Route path="emails" element={<EmailsPage />} />
         <Route path="users" element={<UsersPage />} />
         <Route path="system-status" element={<SystemStatusPage />} />
+        <Route path="sheets-sync" element={<SheetsSyncPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

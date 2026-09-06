@@ -10,6 +10,7 @@ import { ticketsService } from '../tickets/tickets.service.js';
 import { attendeesService } from '../attendees/attendees.service.js';
 import { usersService } from '../users/users.service.js';
 import { emailsService } from '../emails/emails.service.js';
+import { sheetsSyncService } from '../sheets-sync/sheets-sync.service.js';
 import { logger } from '../../utils/logger.js';
 import { AppError } from '../../utils/errors.js';
 
@@ -153,6 +154,7 @@ export const registrationsService = {
     if (row.status === 'CONFIRMED' && before.status !== 'CONFIRMED') {
       const ticket = await ticketsService.issueIfNeeded(row.id);
       await this.notifyConfirmed(row.id, row.attendee_id, row.registration_number, ticket.id, ticket.ticketNumber);
+      await sheetsSyncService.enqueue('REGISTRATION', row.id);
     }
     return toRegistration(row);
   },

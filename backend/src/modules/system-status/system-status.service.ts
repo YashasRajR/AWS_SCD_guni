@@ -15,7 +15,7 @@ import type { IntegrationStatus, SystemStatus } from './system-status.types.js';
 export const systemStatusService = {
   async getStatus(): Promise<SystemStatus> {
     const env = getEnv();
-    const [databaseOk, storageOk, queueDepth] = await Promise.all([
+    const [databaseOk, storageOk, queueDepth, sheetsQueueDepth] = await Promise.all([
       checkDatabaseConnection(),
       access(resolveUploadDir(), fsConstants.W_OK)
         .then(() => true)
@@ -23,6 +23,11 @@ export const systemStatusService = {
       getPool()
         .query<{ count: string }>(
           `SELECT count(*)::text AS count FROM email_records WHERE status IN ('PENDING', 'RETRYING')`,
+        )
+        .then((r) => Number(r.rows[0]?.count ?? 0)),
+      getPool()
+        .query<{ count: string }>(
+          `SELECT count(*)::text AS count FROM sheets_sync_queue WHERE status IN ('PENDING', 'RETRYING')`,
         )
         .then((r) => Number(r.rows[0]?.count ?? 0)),
     ]);
@@ -62,6 +67,21 @@ export const systemStatusService = {
       detail: storageOk ? `Writable: ${resolveUploadDir()}` : 'Upload directory is not writable.',
     };
 
-    return { database, paymentGateway, email, storage };
+    const sheetsConfigured = Boolean(
+      env.GOOGLE_SHEETS_SPREADSHEET_ID &&
+        env.GOOGLE_SHEETS_SERVICE_ACCOUNT_EMAIL &&
+        env.GOOGLE_SHEETS_SERVICE_ACCOUNT_KEY,
+    );
+    const sheetsSync: IntegrationStatus & { queueDepth: number } = {
+      name: 'Google Sheets',
+      configured: sheetsConfigured,
+      status: sheetsConfigured ? 'ok' : 'error',
+      detail: sheetsConfigured
+        ? `Syncing to spreadsheet ${env.GOOGLE_SHEETS_SPREADSHEET_ID}.`
+        : 'GOOGLE_SHEETS_* not set — sync rows queue up but never send.',
+      queueDepth: sheetsQueueDepth,
+    };
+
+    return { database, paymentGateway, email, storage, sheetsSync };
   },
 };

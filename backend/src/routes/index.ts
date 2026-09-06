@@ -43,6 +43,7 @@ import {
 import { usersAdminRouter } from '../modules/users/users.routes.js';
 import { searchRouter } from '../modules/search/index.js';
 import { systemStatusRouter } from '../modules/system-status/index.js';
+import { sheetsSyncAdminRouter } from '../modules/sheets-sync/index.js';
 
 /**
  * Everything here is mounted under /api/v1 by server/app.ts. Route
@@ -104,6 +105,7 @@ apiRouter.use('/admin/qr-tokens', qrTokensAdminRouter);
 apiRouter.use('/admin/users', usersAdminRouter);
 apiRouter.use('/admin/search', searchRouter);
 apiRouter.use('/admin/system-status', systemStatusRouter);
+apiRouter.use('/admin/sheets-sync', sheetsSyncAdminRouter);
 
 // --- ADMIN content management (every status, not just PUBLISHED) -----------
 apiRouter.use('/admin/content/event', eventAdminRouter);

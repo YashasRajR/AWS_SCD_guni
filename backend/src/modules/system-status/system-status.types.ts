@@ -10,4 +10,5 @@ export interface SystemStatus {
   paymentGateway: IntegrationStatus;
   email: IntegrationStatus & { queueDepth: number };
   storage: IntegrationStatus;
+  sheetsSync: IntegrationStatus & { queueDepth: number };
 }
