@@ -29,6 +29,7 @@ This is a snapshot, not a criticism — the codebase already covers the hardest,
 | Certificates, achievements, event-wrapped | 49 | Fully built — exceeds the spec's "future-ready, don't need to implement" ask for certificates |
 | About/AWS section CMS | 6 | commit `76d49b6` — `about_sections` module (title/body/image/link, orderable, DRAFT/PUBLISHED/ARCHIVED), same shape as gallery/announcements; public `AboutEvent.tsx` renders it when published, falls back to static copy otherwise. |
 | Event Highlights KPI cards (date/time/venue/registration window/ticket prices/speaker+session counts/capacity) | 7 | commit `1903ef4` — extends the existing data-driven `EventInfo` section with per-ticket-plan price cards, speaker/session counts, and summed venue capacity, all from existing public endpoints (no hardcoded numbers). |
+| Downloadable event schedule PDF | 12 | commit `03cd4bd` — `schedule_pdf` singleton table + module: Generate/Regenerate (renders via pdfkit from live agenda+session+venue data), Publish/Unpublish, admin preview/download, and a manual-replace upload path. Public download button on Agenda/Timeline pages only appears once a published file exists; the public status endpoint never leaks an unpublished file's existence. |
 
 ---
 
