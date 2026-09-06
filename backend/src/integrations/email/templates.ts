@@ -81,6 +81,22 @@ export function renderEmailTemplate(
         `Hi ${name},\n\nYour registration for AWS Student Community Day 2026 is confirmed.\nRegistration number: ${number}\n\nYour ticket will follow separately. See you there!`,
       );
     }
+    case 'waitlisted': {
+      const name = str('fullName', 'there');
+      const number = str('registrationNumber');
+      return wrap(
+        `<p>Hi ${escapeHtml(name)},</p><p>You've been added to the waitlist for AWS Student Community Day 2026.</p><p><strong>Registration number:</strong> ${escapeHtml(number)}</p><p>We'll email you the moment a spot opens up — no action needed from you right now.</p>`,
+        `Hi ${name},\n\nYou've been added to the waitlist for AWS Student Community Day 2026.\nRegistration number: ${number}\n\nWe'll email you the moment a spot opens up -- no action needed from you right now.`,
+      );
+    }
+    case 'registration-rejected': {
+      const name = str('fullName', 'there');
+      const number = str('registrationNumber');
+      return wrap(
+        `<p>Hi ${escapeHtml(name)},</p><p>We're sorry to let you know your registration for AWS Student Community Day 2026 wasn't accepted.</p><p><strong>Registration number:</strong> ${escapeHtml(number)}</p><p>If you think this is a mistake, reply to this email and we'll take another look.</p>`,
+        `Hi ${name},\n\nWe're sorry to let you know your registration for AWS Student Community Day 2026 wasn't accepted.\nRegistration number: ${number}\n\nIf you think this is a mistake, reply to this email and we'll take another look.`,
+      );
+    }
     case 'ticket':
     case 'ticket-resend': {
       const name = str('fullName', 'there');

@@ -155,8 +155,58 @@ export const registrationsService = {
       const ticket = await ticketsService.issueIfNeeded(row.id);
       await this.notifyConfirmed(row.id, row.attendee_id, row.registration_number, ticket.id, ticket.ticketNumber);
       await sheetsSyncService.enqueue('REGISTRATION', row.id);
+    } else if (row.status === 'WAITLISTED' && before.status !== 'WAITLISTED') {
+      await this.notifyWaitlisted(row.attendee_id, row.registration_number);
+    } else if (row.status === 'REJECTED' && before.status !== 'REJECTED') {
+      await this.notifyRejected(row.attendee_id, row.registration_number);
     }
     return toRegistration(row);
+  },
+
+  /**
+   * Shared by notifyWaitlisted/notifyRejected below — same lookup +
+   * missing-attendee/user handling notifyConfirmed already does. Returns
+   * null (and logs why) instead of throwing, since a missing
+   * attendee/user should never block the status change itself.
+   */
+  async getNotifiableUser(
+    attendeeId: string,
+  ): Promise<{ fullName: string; userId: string; email: string } | null> {
+    const attendee = await attendeesService.getById(attendeeId);
+    if (!attendee) {
+      logger.warn({ attendeeId }, 'Registration status change has no matching attendee — skipping email');
+      return null;
+    }
+    const user = await usersService.getPublicUserById(attendee.userId);
+    if (!user) {
+      logger.warn({ attendeeId, userId: attendee.userId }, 'Attendee has no matching user — skipping email');
+      return null;
+    }
+    return { fullName: attendee.fullName, userId: user.id, email: user.email };
+  },
+
+  async notifyWaitlisted(attendeeId: string, registrationNumber: string): Promise<void> {
+    const recipient = await this.getNotifiableUser(attendeeId);
+    if (!recipient) return;
+    await emailsService.enqueue(
+      recipient.userId,
+      recipient.email,
+      'waitlisted',
+      "You're on the waitlist",
+      { fullName: recipient.fullName, registrationNumber },
+    );
+  },
+
+  async notifyRejected(attendeeId: string, registrationNumber: string): Promise<void> {
+    const recipient = await this.getNotifiableUser(attendeeId);
+    if (!recipient) return;
+    await emailsService.enqueue(
+      recipient.userId,
+      recipient.email,
+      'registration-rejected',
+      'Update on your registration',
+      { fullName: recipient.fullName, registrationNumber },
+    );
   },
 
   /**

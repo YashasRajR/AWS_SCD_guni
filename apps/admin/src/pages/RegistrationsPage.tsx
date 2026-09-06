@@ -120,6 +120,26 @@ export function RegistrationsPage() {
               </option>
             ))}
           </select>
+          {r.status === 'WAITLISTED' && (
+            <>
+              <button
+                type="button"
+                className="btn-link"
+                disabled={updatingId === r.id}
+                onClick={() => updateStatus(r, 'CONFIRMED')}
+              >
+                Promote
+              </button>
+              <button
+                type="button"
+                className="btn-link btn-link-danger"
+                disabled={updatingId === r.id}
+                onClick={() => updateStatus(r, 'REJECTED')}
+              >
+                Reject
+              </button>
+            </>
+          )}
         </div>
       ),
     },
@@ -133,7 +153,7 @@ export function RegistrationsPage() {
       <div className="page-header">
         <div>
           <h1>Registrations</h1>
-          <p className="page-description">Change a registration's status directly from the dropdown.</p>
+          <p className="page-description">Waitlisted registrations get quick Promote/Reject actions; any other transition is a plain status change from the dropdown.</p>
         </div>
         <button type="button" onClick={handleExport} disabled={exporting}>
           {exporting ? 'Exporting…' : 'Export CSV'}
