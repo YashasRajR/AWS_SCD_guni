@@ -19,6 +19,77 @@ const columns: Column<Ticket>[] = [
 
 const QR_TYPES: QrTokenType[] = ['REGISTRATION', 'GOODIE'];
 
+interface DocumentVersion {
+  id: string;
+  version: number;
+  reason: string | null;
+  createdAt: string;
+}
+
+async function downloadVersionPdf(
+  path: string,
+  filename: string,
+): Promise<void> {
+  const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api/v1';
+  const res = await fetch(`${baseUrl.replace(/\/$/, '')}${path}`, {
+    headers: { Authorization: `Bearer ${getStoredToken() ?? ''}` },
+  });
+  if (!res.ok) throw new Error('Failed to download PDF.');
+  const url = URL.createObjectURL(await res.blob());
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function TicketHistoryModal({ ticket, onClose }: { ticket: Ticket; onClose: () => void }) {
+  const { data: versions, loading, error } = useResource<DocumentVersion[]>(
+    `/admin/tickets/${ticket.id}/versions`,
+  );
+
+  return (
+    <Modal title={`Version history — ${ticket.ticketNumber}`} onClose={onClose}>
+      {loading ? (
+        <p>Loading…</p>
+      ) : error ? (
+        <p className="form-error">{error}</p>
+      ) : !versions || versions.length === 0 ? (
+        <p className="form-help">No prior versions — this ticket has never been reissued.</p>
+      ) : (
+        <div className="qr-token-list">
+          {versions.map((v) => (
+            <div className="qr-token-row" key={v.id}>
+              <div>
+                <strong>Version {v.version}</strong>{' '}
+                <span className="form-help">{formatDateTime(v.createdAt)}</span>
+                {v.reason && <div className="form-help">{v.reason}</div>}
+              </div>
+              <button
+                type="button"
+                className="btn-link"
+                onClick={() =>
+                  downloadVersionPdf(
+                    `/admin/tickets/${ticket.id}/versions/${v.version}/pdf`,
+                    `ticket-${ticket.ticketNumber}-v${v.version}.pdf`,
+                  )
+                }
+              >
+                Download
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="form-actions">
+        <button type="button" className="btn btn-primary" onClick={onClose}>
+          Done
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
 /** The PDF endpoint returns a raw application/pdf body (not the JSON
  * envelope), so it needs its own authenticated fetch rather than apiClient. */
 async function downloadTicketPdf(ticketId: string, ticketNumber: string): Promise<void> {
@@ -119,6 +190,7 @@ function QrTokensModal({ ticket, onClose }: { ticket: Ticket; onClose: () => voi
 export function TicketsPage() {
   const [page, setPage] = useState(1);
   const [qrTicket, setQrTicket] = useState<Ticket | null>(null);
+  const [historyTicket, setHistoryTicket] = useState<Ticket | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const { items, totalItems, totalPages, loading, error } = usePaginatedResource<Ticket>(
@@ -139,10 +211,16 @@ export function TicketsPage() {
   };
 
   const handleReissuePdf = async (ticket: Ticket) => {
+    const reason = window.prompt('Reason for reissuing this ticket PDF (kept in its version history):');
+    if (reason === null) return;
+    if (reason.trim().length < 3) {
+      setActionError('A reason of at least 3 characters is required.');
+      return;
+    }
     setBusyId(ticket.id);
     setActionError(null);
     try {
-      await apiClient.post(`/admin/tickets/${ticket.id}/reissue-pdf`);
+      await apiClient.post(`/admin/tickets/${ticket.id}/reissue-pdf`, { reason: reason.trim() });
     } catch (err) {
       setActionError(describeApiError(err));
     } finally {
@@ -167,7 +245,7 @@ export function TicketsPage() {
     {
       key: '__actions',
       label: '',
-      width: '320px',
+      width: '420px',
       render: (row) => (
         <div className="row-actions">
           <button type="button" className="btn-link" onClick={() => setQrTicket(row)}>
@@ -178,6 +256,9 @@ export function TicketsPage() {
           </button>
           <button type="button" className="btn-link" disabled={busyId === row.id} onClick={() => handleReissuePdf(row)}>
             Reissue PDF
+          </button>
+          <button type="button" className="btn-link" onClick={() => setHistoryTicket(row)}>
+            History
           </button>
           <button type="button" className="btn-link" disabled={busyId === row.id} onClick={() => handleResendEmail(row)}>
             Resend email
@@ -202,6 +283,7 @@ export function TicketsPage() {
       <Pagination page={page} totalPages={totalPages} totalItems={totalItems} onChange={setPage} />
 
       {qrTicket && <QrTokensModal ticket={qrTicket} onClose={() => setQrTicket(null)} />}
+      {historyTicket && <TicketHistoryModal ticket={historyTicket} onClose={() => setHistoryTicket(null)} />}
     </div>
   );
 }

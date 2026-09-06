@@ -7,7 +7,7 @@ import type { TicketRow } from './tickets.types.js';
 // don't drag a ~50-100KB blob along per row.
 const TICKET_COLUMNS = `
   id, registration_id, ticket_number, status, issued_at,
-  pdf_generated_at, created_at, updated_at,
+  pdf_generated_at, version, created_at, updated_at,
   NULL::bytea AS pdf_data
 `;
 
@@ -43,6 +43,11 @@ export const ticketsRepository = {
     ]);
   },
 
+  /** Admin regenerate (spec #62): bump the version counter after archiving the old PDF. */
+  async bumpVersion(id: string): Promise<void> {
+    await getPool().query('UPDATE tickets SET version = version + 1 WHERE id = $1', [id]);
+  },
+
   async list(page: number, pageSize: number): Promise<{ rows: TicketRow[]; total: number }> {
     const offset = (page - 1) * pageSize;
     const [{ rows }, countResult] = await Promise.all([
@@ -73,7 +78,7 @@ export const ticketsRepository = {
        VALUES ($1, $2)
        ON CONFLICT (registration_id) DO NOTHING
        RETURNING id, registration_id, ticket_number, status, issued_at,
-                 pdf_generated_at, created_at, updated_at, NULL::bytea AS pdf_data`,
+                 pdf_generated_at, version, created_at, updated_at, NULL::bytea AS pdf_data`,
       [registrationId, generateReferenceCode('TCK')],
     );
     if (rows[0]) return rows[0];

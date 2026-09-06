@@ -8,6 +8,7 @@ import { attendeesRepository } from '../attendees/attendees.repository.js';
 import { eventService } from '../event/event.service.js';
 import { emailsService } from '../emails/emails.service.js';
 import { usersService } from '../users/users.service.js';
+import { documentsRepository } from '../documents/documents.repository.js';
 import { AppError } from '../../utils/errors.js';
 import { logger } from '../../utils/logger.js';
 
@@ -51,12 +52,36 @@ export const ticketsService = {
     return pdf;
   },
 
-  /** Admin action: rotates both QR tokens and regenerates the PDF from scratch. */
-  async reissuePdf(ticketId: string): Promise<void> {
+  /**
+   * Admin action: rotates both QR tokens and regenerates the PDF from
+   * scratch (spec #62). The PDF being replaced is archived to
+   * document_versions first, under its current version number, so a
+   * lost/superseded ticket can still be looked up later; the QR rotation
+   * this already did (qrTokensService.rotateBoth) is what makes the old
+   * version unscannable.
+   */
+  async reissuePdf(ticketId: string, reason: string, adminUserId: string | null): Promise<void> {
     const ticket = await ticketsRepository.findById(ticketId);
     if (!ticket) throw AppError.notFound('Ticket');
+    const oldPdf = await ticketsRepository.findPdfData(ticketId);
+    if (oldPdf) {
+      await documentsRepository.archiveVersion('TICKET', ticketId, ticket.version, oldPdf, reason, adminUserId);
+    }
     const { registrationToken, goodieToken } = await qrTokensService.rotateBoth(ticketId);
     await renderAndStorePdf(ticket, registrationToken, goodieToken);
+    await ticketsRepository.bumpVersion(ticketId);
+  },
+
+  /** Version history for a ticket's PDF (spec #62 admin "History" view). */
+  async listVersions(ticketId: string) {
+    const rows = await documentsRepository.listVersions('TICKET', ticketId);
+    return rows.map((row) => ({ id: row.id, version: row.version, reason: row.reason, createdAt: row.created_at }));
+  },
+
+  async getVersionPdfBuffer(ticketId: string, version: number): Promise<Buffer> {
+    const pdf = await documentsRepository.getVersionPdf('TICKET', ticketId, version);
+    if (!pdf) throw AppError.notFound('Ticket PDF version');
+    return pdf;
   },
 
   /** Admin action: re-emails the (already-generated) ticket PDF to the attendee's own address. */

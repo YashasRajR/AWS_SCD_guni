@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS document_versions;
+ALTER TABLE invoices DROP COLUMN IF EXISTS version;
+ALTER TABLE tickets DROP COLUMN IF EXISTS version;

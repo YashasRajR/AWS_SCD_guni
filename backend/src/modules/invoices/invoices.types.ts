@@ -13,6 +13,7 @@ export interface InvoiceRow {
   created_at: string;
   updated_at: string;
   pdf_data: Buffer | null;
+  version: number;
 }
 
 export function toInvoice(row: InvoiceRow): Invoice {
@@ -27,6 +28,7 @@ export function toInvoice(row: InvoiceRow): Invoice {
     currency: row.currency,
     generatedAt: row.generated_at,
     pdfAvailable: row.pdf_data !== null,
+    version: row.version,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

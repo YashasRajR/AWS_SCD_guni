@@ -15,3 +15,17 @@ export const paginationQuerySchema = z.object({
   sortOrder: z.enum(['asc', 'desc']).optional(),
 });
 export type PaginationQuery = z.infer<typeof paginationQuerySchema>;
+
+// --- Admin: regenerate a ticket/invoice PDF (spec #62) --------------------
+// A reason is mandatory -- the whole point of version history is knowing
+// why a document changed, not just that it did.
+export const regenerateDocumentSchema = z.object({
+  reason: z.string().trim().min(3).max(500),
+});
+export type RegenerateDocumentInput = z.infer<typeof regenerateDocumentSchema>;
+
+// --- Admin: fetch one archived document version (spec #62) ----------------
+export const idVersionParamSchema = z.object({
+  id: z.string().uuid(),
+  version: z.coerce.number().int().min(1),
+});

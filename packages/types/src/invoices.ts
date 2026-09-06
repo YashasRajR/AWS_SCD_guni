@@ -10,6 +10,8 @@ export interface Invoice {
   currency: string;
   generatedAt: string | null;
   pdfAvailable: boolean;
+  /** Bumped by an admin regenerate (spec #62) -- see document_versions. */
+  version: number;
   createdAt: string;
   updatedAt: string;
 }

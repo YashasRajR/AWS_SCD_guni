@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import type { PaginationQuery } from '@scd/validation';
+import type { PaginationQuery, RegenerateDocumentInput } from '@scd/validation';
 import type { PaginatedData, Invoice } from '@scd/types';
 import { invoicesService } from './invoices.service.js';
 import { auditLogsService } from '../audit-logs/audit-logs.service.js';
@@ -23,5 +23,25 @@ export const invoicesController = {
     await invoicesService.resendEmail(invoiceId);
     await auditLogsService.log(req, 'INVOICE_EMAIL_RESENT', 'invoice', invoiceId, {});
     sendSuccess(res, { queued: true }, 'Invoice email queued for resend.');
+  },
+
+  /** Rebuilds the invoice PDF from current data (spec #62); the one it replaces is archived first. */
+  async regenerate(req: Request, res: Response): Promise<void> {
+    const invoiceId = req.params.id!;
+    const { reason } = req.body as RegenerateDocumentInput;
+    await invoicesService.regenerate(invoiceId, reason, req.identity?.userId ?? null);
+    await auditLogsService.log(req, 'INVOICE_PDF_REGENERATED', 'invoice', invoiceId, { reason });
+    sendSuccess(res, { regenerated: true }, 'Invoice PDF regenerated.');
+  },
+
+  /** Version history for an invoice's PDF (spec #62). */
+  async listVersions(req: Request, res: Response): Promise<void> {
+    const versions = await invoicesService.listVersions(req.params.id!);
+    sendSuccess(res, versions);
+  },
+
+  async getVersionPdf(req: Request, res: Response): Promise<void> {
+    const pdf = await invoicesService.getVersionPdfBuffer(req.params.id!, Number(req.params.version));
+    res.type('application/pdf').send(pdf);
   },
 };

@@ -4,7 +4,7 @@ import type { InvoiceRow } from './invoices.types.js';
 // Excludes pdf_data on list/lookup — same rationale as tickets.repository.ts.
 const INVOICE_COLUMNS = `
   id, payment_id, registration_id, invoice_number, amount, discount_amount,
-  tax_amount, currency, generated_at, created_at, updated_at,
+  tax_amount, currency, generated_at, version, created_at, updated_at,
   NULL::bytea AS pdf_data
 `;
 
@@ -38,6 +38,15 @@ export const invoicesRepository = {
       [id],
     );
     return rows[0]?.pdf_data ?? null;
+  },
+
+  /** Admin regenerate (spec #62): replace the stored PDF (old one is archived by the caller first). */
+  async setPdfData(id: string, pdf: Buffer): Promise<void> {
+    await getPool().query('UPDATE invoices SET pdf_data = $1, generated_at = now() WHERE id = $2', [pdf, id]);
+  },
+
+  async bumpVersion(id: string): Promise<void> {
+    await getPool().query('UPDATE invoices SET version = version + 1 WHERE id = $1', [id]);
   },
 
   async list(

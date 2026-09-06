@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import type { PaginationQuery } from '@scd/validation';
+import type { PaginationQuery, RegenerateDocumentInput } from '@scd/validation';
 import { ticketsRepository } from './tickets.repository.js';
 import { ticketsService } from './tickets.service.js';
 import { toTicket } from './tickets.types.js';
@@ -27,9 +27,21 @@ export const ticketsController = {
   /** Rotates both QR tokens and regenerates the PDF — e.g. resending a lost ticket. */
   async reissuePdf(req: Request, res: Response): Promise<void> {
     const ticketId = req.params.id!;
-    await ticketsService.reissuePdf(ticketId);
-    await auditLogsService.log(req, 'TICKET_PDF_REISSUED', 'ticket', ticketId, {});
+    const { reason } = req.body as RegenerateDocumentInput;
+    await ticketsService.reissuePdf(ticketId, reason, req.identity?.userId ?? null);
+    await auditLogsService.log(req, 'TICKET_PDF_REISSUED', 'ticket', ticketId, { reason });
     sendSuccess(res, { reissued: true }, 'Ticket PDF regenerated.');
+  },
+
+  /** Version history for a ticket's PDF (spec #62). */
+  async listVersions(req: Request, res: Response): Promise<void> {
+    const versions = await ticketsService.listVersions(req.params.id!);
+    sendSuccess(res, versions);
+  },
+
+  async getVersionPdf(req: Request, res: Response): Promise<void> {
+    const pdf = await ticketsService.getVersionPdfBuffer(req.params.id!, Number(req.params.version));
+    res.type('application/pdf').send(pdf);
   },
 
   /** Re-emails the ticket PDF to the attendee's own address (via emailsService's queue). */

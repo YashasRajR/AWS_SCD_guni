@@ -10,6 +10,8 @@ import { eventService } from '../event/event.service.js';
 import { toRegistration } from '../registrations/registrations.types.js';
 import { emailsService } from '../emails/emails.service.js';
 import { usersService } from '../users/users.service.js';
+import { paymentsRepository } from '../payments/payments.repository.js';
+import { documentsRepository } from '../documents/documents.repository.js';
 import { AppError } from '../../utils/errors.js';
 import { logger } from '../../utils/logger.js';
 
@@ -87,6 +89,69 @@ export const invoicesService = {
 
     logger.info({ invoiceId: row.id, paymentId: payment.id }, 'Invoice issued');
     return toInvoice(row);
+  },
+
+  /**
+   * Admin action (spec #62): rebuilds the invoice PDF from the current
+   * registration/payment/attendee data and archives the one it replaces
+   * to document_versions first. Unlike a ticket, an invoice has no QR
+   * token to rotate -- the version bump plus the archived reason is the
+   * whole audit trail here.
+   */
+  async regenerate(invoiceId: string, reason: string, adminUserId: string | null): Promise<void> {
+    const invoiceRow = await invoicesRepository.findById(invoiceId);
+    if (!invoiceRow) throw AppError.notFound('Invoice');
+    const oldPdf = await invoicesRepository.findPdfData(invoiceId);
+    if (oldPdf) {
+      await documentsRepository.archiveVersion(
+        'INVOICE',
+        invoiceId,
+        invoiceRow.version,
+        oldPdf,
+        reason,
+        adminUserId,
+      );
+    }
+
+    const registrationRow = await registrationsRepository.findById(invoiceRow.registration_id);
+    if (!registrationRow) throw AppError.notFound('Registration');
+    const registration = toRegistration(registrationRow);
+    const attendee = await attendeesRepository.findById(registration.attendeeId);
+    if (!attendee) throw AppError.notFound('Attendee');
+    const payment = await paymentsRepository.findById(invoiceRow.payment_id);
+    if (!payment) throw AppError.notFound('Payment');
+    const event = await eventService.getCurrent();
+
+    const pdf = await buildInvoicePdf({
+      invoiceNumber: invoiceRow.invoice_number,
+      registrationNumber: registration.registrationNumber,
+      attendeeName: attendee.full_name,
+      university: attendee.university,
+      eventName: event.name,
+      ticketPlanName: registration.ticketPlan?.name ?? null,
+      amount: invoiceRow.amount,
+      discountAmount: invoiceRow.discount_amount,
+      taxAmount: invoiceRow.tax_amount,
+      currency: invoiceRow.currency,
+      couponCode: registration.coupon?.code ?? null,
+      paymentReference: payment.provider_payment_id,
+      paidAt: payment.paid_at,
+    });
+
+    await invoicesRepository.setPdfData(invoiceId, pdf);
+    await invoicesRepository.bumpVersion(invoiceId);
+  },
+
+  /** Version history for an invoice's PDF (spec #62 admin "History" view). */
+  async listVersions(invoiceId: string) {
+    const rows = await documentsRepository.listVersions('INVOICE', invoiceId);
+    return rows.map((row) => ({ id: row.id, version: row.version, reason: row.reason, createdAt: row.created_at }));
+  },
+
+  async getVersionPdfBuffer(invoiceId: string, version: number): Promise<Buffer> {
+    const pdf = await documentsRepository.getVersionPdf('INVOICE', invoiceId, version);
+    if (!pdf) throw AppError.notFound('Invoice PDF version');
+    return pdf;
   },
 
   /** Admin action: re-emails the (already-generated) invoice PDF to the attendee's own address. */

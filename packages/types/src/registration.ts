@@ -57,6 +57,8 @@ export interface Ticket {
   issuedAt: string;
   pdfAvailable: boolean;
   pdfGeneratedAt: string | null;
+  /** Bumped by an admin reissue (spec #62) -- see document_versions. */
+  version: number;
   createdAt: string;
   updatedAt: string;
 }

@@ -1,6 +1,11 @@
 import { Router } from 'express';
 import { PERMISSIONS } from '@scd/constants';
-import { paginationQuerySchema, uuidParamSchema } from '@scd/validation';
+import {
+  paginationQuerySchema,
+  uuidParamSchema,
+  idVersionParamSchema,
+  regenerateDocumentSchema,
+} from '@scd/validation';
 import { authenticate } from '../../middleware/authentication/index.js';
 import { requirePermission } from '../../middleware/authorization/index.js';
 import { validate } from '../../middleware/validation/index.js';
@@ -30,7 +35,24 @@ ticketsAdminRouter.post(
   authenticate,
   requirePermission(PERMISSIONS.MANAGE_QR_TOKENS),
   validate(uuidParamSchema, 'params'),
+  validate(regenerateDocumentSchema),
   asyncHandler(ticketsController.reissuePdf),
+);
+
+ticketsAdminRouter.get(
+  '/:id/versions',
+  authenticate,
+  requirePermission(PERMISSIONS.MANAGE_REGISTRATIONS),
+  validate(uuidParamSchema, 'params'),
+  asyncHandler(ticketsController.listVersions),
+);
+
+ticketsAdminRouter.get(
+  '/:id/versions/:version/pdf',
+  authenticate,
+  requirePermission(PERMISSIONS.MANAGE_REGISTRATIONS),
+  validate(idVersionParamSchema, 'params'),
+  asyncHandler(ticketsController.getVersionPdf),
 );
 
 ticketsAdminRouter.post(

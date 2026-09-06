@@ -1,6 +1,11 @@
 import { Router } from 'express';
 import { PERMISSIONS } from '@scd/constants';
-import { paginationQuerySchema, uuidParamSchema } from '@scd/validation';
+import {
+  paginationQuerySchema,
+  uuidParamSchema,
+  idVersionParamSchema,
+  regenerateDocumentSchema,
+} from '@scd/validation';
 import { authenticate } from '../../middleware/authentication/index.js';
 import { requirePermission } from '../../middleware/authorization/index.js';
 import { validate } from '../../middleware/validation/index.js';
@@ -31,4 +36,29 @@ invoicesAdminRouter.post(
   requirePermission(PERMISSIONS.MANAGE_PAYMENTS),
   validate(uuidParamSchema, 'params'),
   asyncHandler(invoicesController.resendEmail),
+);
+
+invoicesAdminRouter.post(
+  '/:id/regenerate',
+  authenticate,
+  requirePermission(PERMISSIONS.MANAGE_PAYMENTS),
+  validate(uuidParamSchema, 'params'),
+  validate(regenerateDocumentSchema),
+  asyncHandler(invoicesController.regenerate),
+);
+
+invoicesAdminRouter.get(
+  '/:id/versions',
+  authenticate,
+  requirePermission(PERMISSIONS.MANAGE_PAYMENTS),
+  validate(uuidParamSchema, 'params'),
+  asyncHandler(invoicesController.listVersions),
+);
+
+invoicesAdminRouter.get(
+  '/:id/versions/:version/pdf',
+  authenticate,
+  requirePermission(PERMISSIONS.MANAGE_PAYMENTS),
+  validate(idVersionParamSchema, 'params'),
+  asyncHandler(invoicesController.getVersionPdf),
 );

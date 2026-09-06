@@ -8,6 +8,7 @@ export interface TicketRow {
   issued_at: string;
   pdf_data: Buffer | null;
   pdf_generated_at: string | null;
+  version: number;
   created_at: string;
   updated_at: string;
 }
@@ -21,6 +22,7 @@ export function toTicket(row: TicketRow): Ticket {
     issuedAt: row.issued_at,
     pdfAvailable: row.pdf_data != null,
     pdfGeneratedAt: row.pdf_generated_at,
+    version: row.version,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
