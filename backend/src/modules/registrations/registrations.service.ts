@@ -152,7 +152,7 @@ export const registrationsService = {
 
     if (row.status === 'CONFIRMED' && before.status !== 'CONFIRMED') {
       const ticket = await ticketsService.issueIfNeeded(row.id);
-      await this.notifyConfirmed(row.attendee_id, row.registration_number, ticket.id, ticket.ticketNumber);
+      await this.notifyConfirmed(row.id, row.attendee_id, row.registration_number, ticket.id, ticket.ticketNumber);
     }
     return toRegistration(row);
   },
@@ -165,6 +165,7 @@ export const registrationsService = {
    * committed by this point, and emailsService.enqueue() never throws.
    */
   async notifyConfirmed(
+    registrationId: string,
     attendeeId: string,
     registrationNumber: string,
     ticketId: string,
@@ -192,6 +193,7 @@ export const registrationsService = {
       registrationNumber,
       ticketNumber,
       ticketId,
+      registrationId,
     });
   },
 };

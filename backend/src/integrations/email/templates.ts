@@ -87,8 +87,17 @@ export function renderEmailTemplate(
       const ticketNumber = str('ticketNumber');
       const registrationNumber = str('registrationNumber');
       return wrap(
-        `<p>Hi ${escapeHtml(name)},</p><p>Here's your ticket for AWS Student Community Day 2026.</p><p><strong>Ticket number:</strong> ${escapeHtml(ticketNumber)}<br><strong>Registration number:</strong> ${escapeHtml(registrationNumber)}</p><p>You can also view your ticket any time in your dashboard.</p>`,
-        `Hi ${name},\n\nHere's your ticket for AWS Student Community Day 2026.\nTicket number: ${ticketNumber}\nRegistration number: ${registrationNumber}\n\nYou can also view your ticket any time in your dashboard.`,
+        `<p>Hi ${escapeHtml(name)},</p><p>Here's your ticket for AWS Student Community Day 2026 -- your fee receipt/invoice is attached too, if this registration required payment.</p><p><strong>Ticket number:</strong> ${escapeHtml(ticketNumber)}<br><strong>Registration number:</strong> ${escapeHtml(registrationNumber)}</p><p>You can also view your ticket and invoice any time in your dashboard.</p>`,
+        `Hi ${name},\n\nHere's your ticket for AWS Student Community Day 2026 -- your fee receipt/invoice is attached too, if this registration required payment.\nTicket number: ${ticketNumber}\nRegistration number: ${registrationNumber}\n\nYou can also view your ticket and invoice any time in your dashboard.`,
+      );
+    }
+    case 'invoice-resend': {
+      const name = str('fullName', 'there');
+      const invoiceNumber = str('invoiceNumber');
+      const registrationNumber = str('registrationNumber');
+      return wrap(
+        `<p>Hi ${escapeHtml(name)},</p><p>Here's your fee receipt / invoice for AWS Student Community Day 2026.</p><p><strong>Invoice number:</strong> ${escapeHtml(invoiceNumber)}<br><strong>Registration number:</strong> ${escapeHtml(registrationNumber)}</p><p>You can also view it any time in your dashboard.</p>`,
+        `Hi ${name},\n\nHere's your fee receipt / invoice for AWS Student Community Day 2026.\nInvoice number: ${invoiceNumber}\nRegistration number: ${registrationNumber}\n\nYou can also view it any time in your dashboard.`,
       );
     }
     case 'payment-success': {

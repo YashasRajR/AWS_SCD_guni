@@ -7,6 +7,7 @@ import { getPaymentProvider, PaymentProviderNotConfiguredError } from '../../int
 import { attendeesService } from '../attendees/attendees.service.js';
 import { usersService } from '../users/users.service.js';
 import { registrationsService } from '../registrations/registrations.service.js';
+import { invoicesService } from '../invoices/invoices.service.js';
 import { eventService } from '../event/event.service.js';
 import { emailsService } from '../emails/emails.service.js';
 import { logger } from '../../utils/logger.js';
@@ -207,6 +208,12 @@ export const paymentsService = {
       }
       const updated = await paymentsRepository.markPaid(payment.id, providerPaymentId ?? orderId);
       await registrationsService.updateStatus(updated.registration_id, { status: 'CONFIRMED' });
+      // Best-effort by design: a failure here must never undo or block the
+      // payment confirmation that just happened (spec: "PDF generation
+      // fails: retry without creating duplicate registration/payment").
+      await invoicesService.issueForPayment(updated).catch((err) => {
+        logger.error({ err, paymentId: updated.id }, 'Invoice issuance failed');
+      });
       await this.notifyPaymentResult(updated, true);
       await paymentsRepository.markWebhookEventProcessed(eventId, 'PROCESSED');
       await auditLogsService.logSystem('PAYMENT_CONFIRMED', 'payment', updated.id, {

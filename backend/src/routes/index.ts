@@ -31,6 +31,7 @@ import {
 import { achievementsAdminRouter } from '../modules/achievements/achievements.routes.js';
 import { emailsAdminRouter } from '../modules/emails/emails.routes.js';
 import { ticketsAdminRouter } from '../modules/tickets/tickets.routes.js';
+import { invoicesAdminRouter } from '../modules/invoices/invoices.routes.js';
 import {
   qrTokensByTicketRouter,
   qrTokensAdminRouter,
@@ -84,6 +85,7 @@ apiRouter.use('/admin/achievements', achievementsAdminRouter);
 apiRouter.use('/admin/emails', emailsAdminRouter);
 apiRouter.use('/admin/tickets', ticketsAdminRouter);
 apiRouter.use('/admin/tickets/:ticketId/qr-tokens', qrTokensByTicketRouter);
+apiRouter.use('/admin/invoices', invoicesAdminRouter);
 apiRouter.use('/admin/qr-tokens', qrTokensAdminRouter);
 apiRouter.use('/admin/users', usersAdminRouter);
 

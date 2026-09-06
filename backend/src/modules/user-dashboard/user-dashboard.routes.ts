@@ -27,6 +27,8 @@ userDashboardRouter.post(
 );
 userDashboardRouter.get('/ticket', asyncHandler(userDashboardController.getTicket));
 userDashboardRouter.get('/ticket/pdf', asyncHandler(userDashboardController.getTicketPdf));
+userDashboardRouter.get('/invoice', asyncHandler(userDashboardController.getInvoice));
+userDashboardRouter.get('/invoice/pdf', asyncHandler(userDashboardController.getInvoicePdf));
 userDashboardRouter.get('/payment', asyncHandler(userDashboardController.getPayment));
 userDashboardRouter.post('/payment/initiate', asyncHandler(userDashboardController.initiatePayment));
 userDashboardRouter.get('/progress', asyncHandler(userDashboardController.getProgress));

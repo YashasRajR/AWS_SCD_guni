@@ -3,6 +3,7 @@ import { attendeesService } from '../attendees/attendees.service.js';
 import { registrationsService } from '../registrations/registrations.service.js';
 import type { PreviewCouponInput, RegisterForEventInput } from '@scd/validation';
 import { ticketsService } from '../tickets/tickets.service.js';
+import { invoicesService } from '../invoices/invoices.service.js';
 import { ticketPlansService } from '../ticket-plans/ticket-plans.service.js';
 import { couponsService } from '../coupons/coupons.service.js';
 import { paymentsService } from '../payments/payments.service.js';
@@ -82,6 +83,26 @@ export const userDashboardController = {
     const ticket = await ticketsService.getByRegistrationId(registration.id);
     if (!ticket) throw AppError.notFound('Ticket');
     const pdf = await ticketsService.getPdfBuffer(ticket.id);
+    res.type('application/pdf').send(pdf);
+  },
+
+  async getInvoice(req: Request, res: Response): Promise<void> {
+    const attendee = await attendeesService.requireByUserId(req.identity!.userId);
+    const registration = await registrationsService.getByAttendeeId(attendee.id);
+    if (!registration) {
+      sendSuccess(res, null);
+      return;
+    }
+    sendSuccess(res, await invoicesService.getByRegistrationId(registration.id));
+  },
+
+  async getInvoicePdf(req: Request, res: Response): Promise<void> {
+    const attendee = await attendeesService.requireByUserId(req.identity!.userId);
+    const registration = await registrationsService.getByAttendeeId(attendee.id);
+    if (!registration) throw AppError.notFound('Invoice');
+    const invoice = await invoicesService.getByRegistrationId(registration.id);
+    if (!invoice) throw AppError.notFound('Invoice');
+    const pdf = await invoicesService.getPdfBuffer(invoice.id);
     res.type('application/pdf').send(pdf);
   },
 

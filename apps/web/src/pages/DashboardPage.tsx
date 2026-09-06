@@ -6,6 +6,7 @@ import type {
   Checkpoint,
   CouponPricing,
   EventConfig,
+  Invoice,
   Payment,
   PublicUser,
   Registration,
@@ -15,6 +16,7 @@ import type {
 import { ApiClientError } from '@scd/api-client';
 import { useResource } from '../lib/hooks.js';
 import { apiClient } from '../lib/api.js';
+import { getStoredToken } from '../lib/auth-storage.js';
 import { formatDateTime, statusTone } from '../lib/format.js';
 import { openRazorpayCheckout } from '../lib/razorpay.js';
 import { Badge } from '../components/ui/Badge.js';
@@ -47,6 +49,22 @@ function SectionError({ message, onRetry }: { message: string; onRetry?: () => v
   );
 }
 
+/** The PDF endpoints return a raw application/pdf body (not the JSON
+ * envelope), so they need their own authenticated fetch rather than apiClient. */
+async function downloadOwnPdf(path: string, filename: string): Promise<void> {
+  const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api/v1';
+  const res = await fetch(`${baseUrl.replace(/\/$/, '')}${path}`, {
+    headers: { Authorization: `Bearer ${getStoredToken() ?? ''}` },
+  });
+  if (!res.ok) throw new Error('Failed to download PDF.');
+  const url = URL.createObjectURL(await res.blob());
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 export function DashboardPage() {
   const { data: me, loading: meLoading, error: meError, reload: reloadMe } = useResource<MeData>('/me');
   const {
@@ -60,6 +78,11 @@ export function DashboardPage() {
     error: ticketError,
     reload: reloadTicket,
   } = useResource<Ticket>('/me/ticket', Boolean(registration));
+  const {
+    data: invoice,
+    error: invoiceError,
+    reload: reloadInvoice,
+  } = useResource<Invoice>('/me/invoice', Boolean(registration));
   const {
     items: progress,
     error: progressError,
@@ -333,10 +356,46 @@ export function DashboardPage() {
                 <span className="dashboard-card-meta">#{ticket.ticketNumber}</span>
               </p>
               <p className="status-line">Issued {formatDateTime(ticket.issuedAt)}.</p>
+              <button
+                type="button"
+                className="btn-link"
+                onClick={() => downloadOwnPdf('/me/ticket/pdf', `ticket-${ticket.ticketNumber}.pdf`)}
+              >
+                Download ticket PDF
+              </button>
             </>
           ) : (
             <p className="status-line">
               Your ticket will appear here once your registration is confirmed.
+            </p>
+          )}
+        </section>
+
+        <section className="dashboard-card">
+          <h2>Fee receipt</h2>
+          {invoiceError ? (
+            <SectionError message={invoiceError} onRetry={reloadInvoice} />
+          ) : invoice ? (
+            <>
+              <p className="dashboard-card-row">
+                <span className="dashboard-card-meta">#{invoice.invoiceNumber}</span>
+              </p>
+              <p className="status-line">
+                {invoice.currency} {invoice.amount} — generated {formatDateTime(invoice.generatedAt)}.
+              </p>
+              {invoice.pdfAvailable && (
+                <button
+                  type="button"
+                  className="btn-link"
+                  onClick={() => downloadOwnPdf('/me/invoice/pdf', `invoice-${invoice.invoiceNumber}.pdf`)}
+                >
+                  Download receipt PDF
+                </button>
+              )}
+            </>
+          ) : (
+            <p className="status-line">
+              Your fee receipt will appear here once your payment is confirmed.
             </p>
           )}
         </section>

@@ -97,6 +97,7 @@ export const EMAIL_TEMPLATES = [
   'payment-failed',
   'ticket',
   'ticket-resend',
+  'invoice-resend',
   'password-reset',
   'email-verification',
   'event-announcement',

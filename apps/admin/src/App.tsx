@@ -21,6 +21,7 @@ import { VolunteersPage } from './pages/VolunteersPage.js';
 import { AuditLogsPage } from './pages/AuditLogsPage.js';
 import { PaymentsPage } from './pages/PaymentsPage.js';
 import { TicketsPage } from './pages/TicketsPage.js';
+import { InvoicesPage } from './pages/InvoicesPage.js';
 import { CertificatesPage } from './pages/CertificatesPage.js';
 import { AchievementsPage } from './pages/AchievementsPage.js';
 import { EmailsPage } from './pages/EmailsPage.js';
@@ -73,6 +74,7 @@ function AppRoutes() {
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="payments" element={<PaymentsPage />} />
         <Route path="tickets" element={<TicketsPage />} />
+        <Route path="invoices" element={<InvoicesPage />} />
         <Route path="certificates" element={<CertificatesPage />} />
         <Route path="achievements" element={<AchievementsPage />} />
         <Route path="emails" element={<EmailsPage />} />

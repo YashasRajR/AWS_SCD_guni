@@ -1,6 +1,7 @@
 import { emailsRepository } from '../modules/emails/emails.repository.js';
 import { getEmailProvider, type EmailAttachment } from '../integrations/email/index.js';
 import { ticketsService } from '../modules/tickets/tickets.service.js';
+import { invoicesService } from '../modules/invoices/invoices.service.js';
 import { logger } from '../utils/logger.js';
 
 const POLL_INTERVAL_MS = 10_000;
@@ -13,33 +14,67 @@ function backoffMs(attempts: number): number {
 }
 
 /**
- * A 'ticket'/'ticket-resend' record carries the ticketId it was enqueued
- * for (see registrations.service.ts notifyConfirmed) — this fetches the
- * already-generated PDF at send time rather than enqueue time, so the
- * attachment is always whatever's currently stored (e.g. after an admin
- * reissue), not a stale copy. A missing/not-yet-generated PDF logs a
- * warning and sends the email without it rather than blocking delivery
- * of the rest of the ticket email or retrying forever over a PDF that
- * may never exist for this record.
+ * A 'ticket'/'ticket-resend' record carries the ticketId (and, for the
+ * invoice add-on, the registrationId) it was enqueued for — see
+ * registrations.service.ts notifyConfirmed. An 'invoice-resend' record
+ * carries the invoiceId directly. Both fetch the already-generated PDF(s)
+ * at send time rather than enqueue time, so the attachment is always
+ * whatever's currently stored (e.g. after an admin reissue), not a stale
+ * copy. A missing/not-yet-generated PDF logs a warning and is skipped
+ * rather than blocking delivery of the rest of the email or retrying
+ * forever over a PDF that may never exist for this record.
  */
 async function loadAttachments(
   template: string,
   data: Record<string, unknown>,
 ): Promise<EmailAttachment[] | undefined> {
+  if (template === 'invoice-resend') {
+    const invoiceId = typeof data.invoiceId === 'string' ? data.invoiceId : null;
+    const invoiceNumber = typeof data.invoiceNumber === 'string' ? data.invoiceNumber : 'invoice';
+    if (!invoiceId) return undefined;
+    try {
+      const pdf = await invoicesService.getPdfBuffer(invoiceId);
+      return [{ filename: `AWS-SCD-2026-${invoiceNumber}.pdf`, content: pdf }];
+    } catch (err) {
+      logger.warn({ err, invoiceId }, 'Invoice PDF not available for email attachment — sending without it');
+      return undefined;
+    }
+  }
+
   if (template !== 'ticket' && template !== 'ticket-resend') return undefined;
+  const attachments: EmailAttachment[] = [];
+
   const ticketId = typeof data.ticketId === 'string' ? data.ticketId : null;
   const ticketNumber = typeof data.ticketNumber === 'string' ? data.ticketNumber : 'ticket';
-  if (!ticketId) return undefined;
-  try {
-    const pdf = await ticketsService.getPdfBuffer(ticketId);
-    return [{ filename: `AWS-SCD-2026-${ticketNumber}.pdf`, content: pdf }];
-  } catch (err) {
-    logger.warn(
-      { err, ticketId },
-      'Ticket PDF not available for email attachment — sending without it',
-    );
-    return undefined;
+  if (ticketId) {
+    try {
+      const pdf = await ticketsService.getPdfBuffer(ticketId);
+      attachments.push({ filename: `AWS-SCD-2026-${ticketNumber}.pdf`, content: pdf });
+    } catch (err) {
+      logger.warn(
+        { err, ticketId },
+        'Ticket PDF not available for email attachment — sending without it',
+      );
+    }
   }
+
+  const registrationId = typeof data.registrationId === 'string' ? data.registrationId : null;
+  if (registrationId) {
+    try {
+      const invoice = await invoicesService.getByRegistrationId(registrationId);
+      if (invoice?.pdfAvailable) {
+        const pdf = await invoicesService.getPdfBuffer(invoice.id);
+        attachments.push({ filename: `AWS-SCD-2026-${invoice.invoiceNumber}.pdf`, content: pdf });
+      }
+    } catch (err) {
+      logger.warn(
+        { err, registrationId },
+        'Invoice PDF not available for email attachment — sending without it',
+      );
+    }
+  }
+
+  return attachments.length > 0 ? attachments : undefined;
 }
 
 /**

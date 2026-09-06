@@ -41,6 +41,7 @@ const NAV_SECTIONS: {
       { to: '/attendees', label: 'Attendees', permission: PERMISSIONS.VIEW_ATTENDEE },
       { to: '/payments', label: 'Payments', permission: PERMISSIONS.MANAGE_PAYMENTS },
       { to: '/tickets', label: 'Tickets', permission: PERMISSIONS.MANAGE_REGISTRATIONS },
+      { to: '/invoices', label: 'Invoices', permission: PERMISSIONS.MANAGE_PAYMENTS },
       { to: '/checkpoints', label: 'Checkpoints', permission: PERMISSIONS.MANAGE_CHECKPOINTS },
       { to: '/volunteers', label: 'Volunteers', permission: PERMISSIONS.MANAGE_VOLUNTEERS },
       { to: '/certificates', label: 'Certificates', permission: PERMISSIONS.MANAGE_CERTIFICATES },
