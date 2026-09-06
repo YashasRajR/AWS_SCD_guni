@@ -40,14 +40,22 @@ export const invoicesRepository = {
     return rows[0]?.pdf_data ?? null;
   },
 
-  async list(page: number, pageSize: number): Promise<{ rows: InvoiceRow[]; total: number }> {
+  async list(
+    page: number,
+    pageSize: number,
+    search?: string,
+  ): Promise<{ rows: InvoiceRow[]; total: number }> {
     const offset = (page - 1) * pageSize;
+    const where = search && search.trim() ? 'WHERE invoice_number ILIKE $1' : '';
+    const values = search && search.trim() ? [`%${search.trim()}%`] : [];
+    const limitIdx = values.length + 1;
+    const offsetIdx = values.length + 2;
     const [{ rows }, countResult] = await Promise.all([
       getPool().query<InvoiceRow>(
-        `SELECT ${INVOICE_COLUMNS} FROM invoices ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
-        [pageSize, offset],
+        `SELECT ${INVOICE_COLUMNS} FROM invoices ${where} ORDER BY created_at DESC LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
+        [...values, pageSize, offset],
       ),
-      getPool().query<{ count: string }>('SELECT count(*) FROM invoices'),
+      getPool().query<{ count: string }>(`SELECT count(*) FROM invoices ${where}`, values),
     ]);
     return { rows, total: Number(countResult.rows[0]?.count ?? 0) };
   },

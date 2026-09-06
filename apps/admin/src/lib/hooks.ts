@@ -133,3 +133,33 @@ export function useCurrentEventId(): string | null {
   }, []);
   return eventId;
 }
+
+/**
+ * Debounces a search box into a query-ready value, and resets to page 1
+ * whenever it changes (a stale page number could otherwise land past the
+ * end of the filtered result set). Mirrors the inline pattern in
+ * ContentCrudPage.tsx, shared here for the plain list pages that added
+ * search support without the full create/edit/delete CRUD scaffold.
+ */
+export function useDebouncedSearch(
+  setPage: (page: number) => void,
+  initial = '',
+  delayMs = 300,
+): {
+  searchInput: string;
+  setSearchInput: (value: string) => void;
+  search: string;
+} {
+  const [searchInput, setSearchInput] = useState(initial);
+  const [search, setSearch] = useState(initial);
+
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setSearch(searchInput);
+      setPage(1);
+    }, delayMs);
+    return () => clearTimeout(handle);
+  }, [searchInput, delayMs, setPage]);
+
+  return { searchInput, setSearchInput, search };
+}

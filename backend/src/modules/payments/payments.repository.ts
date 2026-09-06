@@ -129,15 +129,28 @@ export const paymentsRepository = {
     return rows;
   },
 
-  /** Admin listing, newest first. */
-  async list(page: number, pageSize: number): Promise<{ rows: PaymentRow[]; total: number }> {
+  /** Admin listing, newest first. Optional search matches the gateway
+   * order/payment id or the registration it belongs to. */
+  async list(
+    page: number,
+    pageSize: number,
+    search?: string,
+  ): Promise<{ rows: PaymentRow[]; total: number }> {
     const offset = (page - 1) * pageSize;
+    const hasSearch = Boolean(search && search.trim());
+    const values = hasSearch ? [`%${search!.trim()}%`] : [];
+    const where = hasSearch
+      ? `WHERE p.provider_payment_id ILIKE $1 OR p.provider_order_id ILIKE $1 OR r.registration_number ILIKE $1`
+      : '';
+    const join = hasSearch ? 'JOIN registrations r ON r.id = p.registration_id' : '';
+    const limitIdx = values.length + 1;
+    const offsetIdx = values.length + 2;
     const [{ rows }, countResult] = await Promise.all([
       getPool().query<PaymentRow>(
-        'SELECT * FROM payments ORDER BY created_at DESC LIMIT $1 OFFSET $2',
-        [pageSize, offset],
+        `SELECT p.* FROM payments p ${join} ${where} ORDER BY p.created_at DESC LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
+        [...values, pageSize, offset],
       ),
-      getPool().query<{ count: string }>('SELECT count(*) FROM payments'),
+      getPool().query<{ count: string }>(`SELECT count(*) FROM payments p ${join} ${where}`, values),
     ]);
     return { rows, total: Number(countResult.rows[0]?.count ?? 0) };
   },

@@ -70,8 +70,8 @@ export const registrationsService = {
     );
   },
 
-  async list(page: number, pageSize: number): Promise<PaginatedData<Registration>> {
-    const { rows, total } = await registrationsRepository.list(page, pageSize);
+  async list(page: number, pageSize: number, search?: string): Promise<PaginatedData<Registration>> {
+    const { rows, total } = await registrationsRepository.list(page, pageSize, search);
     return {
       items: rows.map(toRegistration),
       pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },

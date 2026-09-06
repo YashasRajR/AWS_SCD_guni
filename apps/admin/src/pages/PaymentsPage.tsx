@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import type { Payment } from '@scd/types';
-import { usePaginatedResource } from '../lib/hooks.js';
+import { usePaginatedResource, useDebouncedSearch } from '../lib/hooks.js';
 import { formatDateTime } from '../lib/format.js';
 import { Table, type Column } from '../components/Table.js';
 import { Pagination } from '../components/Pagination.js';
@@ -17,10 +18,14 @@ const columns: Column<Payment>[] = [
 ];
 
 export function PaymentsPage() {
+  const [urlParams] = useSearchParams();
   const [page, setPage] = useState(1);
+  const { searchInput, setSearchInput, search } = useDebouncedSearch(setPage, urlParams.get('search') ?? '');
   const { items, totalItems, totalPages, loading, error } = usePaginatedResource<Payment>(
     '/admin/payments',
     page,
+    20,
+    { search: search || undefined },
   );
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -50,6 +55,16 @@ export function PaymentsPage() {
       </div>
 
       {exportError && <p className="form-error">{exportError}</p>}
+
+      <div className="page-toolbar">
+        <input
+          type="search"
+          className="input search-input"
+          placeholder="Search by gateway ID or registration #…"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+        />
+      </div>
 
       <Table columns={columns} rows={items} getRowId={(r) => r.id} loading={loading} error={error} />
       <Pagination page={page} totalPages={totalPages} totalItems={totalItems} onChange={setPage} />

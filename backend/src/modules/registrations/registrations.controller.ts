@@ -13,8 +13,8 @@ export const registrationsController = {
   },
 
   async list(req: Request, res: Response): Promise<void> {
-    const { page, pageSize } = req.query as unknown as PaginationQuery;
-    const data = await registrationsService.list(page, pageSize);
+    const { page, pageSize, search } = req.query as unknown as PaginationQuery;
+    const data = await registrationsService.list(page, pageSize, search);
     sendSuccess(res, data);
   },
 

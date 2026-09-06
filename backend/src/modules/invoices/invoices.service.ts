@@ -30,8 +30,8 @@ export const invoicesService = {
     return row ? toInvoice(row) : null;
   },
 
-  async list(page: number, pageSize: number): Promise<PaginatedData<Invoice>> {
-    const { rows, total } = await invoicesRepository.list(page, pageSize);
+  async list(page: number, pageSize: number, search?: string): Promise<PaginatedData<Invoice>> {
+    const { rows, total } = await invoicesRepository.list(page, pageSize, search);
     return {
       items: rows.map(toInvoice),
       pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },

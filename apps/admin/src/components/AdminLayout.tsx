@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { hasPermission } from '@scd/auth';
 import { PERMISSIONS } from '@scd/constants';
 import { useAuth } from '../lib/auth.js';
+import { GlobalSearch } from './GlobalSearch.js';
 
 const NAV_SECTIONS: {
   title: string;
@@ -97,7 +98,7 @@ export function AdminLayout() {
       </aside>
       <div className="app-main">
         <header className="topbar">
-          <span />
+          <GlobalSearch />
           <div className="topbar-user">
             <span className="topbar-email">{identity?.email ?? 'Admin'}</span>
             <button type="button" className="btn btn-secondary" onClick={logout}>

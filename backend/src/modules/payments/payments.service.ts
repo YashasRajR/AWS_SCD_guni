@@ -76,8 +76,8 @@ export const paymentsService = {
     );
   },
 
-  async list(page: number, pageSize: number): Promise<PaginatedData<Payment>> {
-    const { rows, total } = await paymentsRepository.list(page, pageSize);
+  async list(page: number, pageSize: number, search?: string): Promise<PaginatedData<Payment>> {
+    const { rows, total } = await paymentsRepository.list(page, pageSize, search);
     return {
       items: rows.map(toPayment),
       pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },

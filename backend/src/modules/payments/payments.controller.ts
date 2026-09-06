@@ -14,8 +14,8 @@ export const paymentsController = {
   },
 
   async list(req: Request, res: Response): Promise<void> {
-    const { page, pageSize } = req.query as unknown as PaginationQuery;
-    sendSuccess(res, await paymentsService.list(page, pageSize));
+    const { page, pageSize, search } = req.query as unknown as PaginationQuery;
+    sendSuccess(res, await paymentsService.list(page, pageSize, search));
   },
 
   /** Attendee-owned: starts a checkout for the caller's own registration. */

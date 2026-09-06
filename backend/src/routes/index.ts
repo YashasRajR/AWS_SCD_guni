@@ -41,6 +41,7 @@ import {
   qrTokensAdminRouter,
 } from '../modules/qr-tokens/qr-tokens.routes.js';
 import { usersAdminRouter } from '../modules/users/users.routes.js';
+import { searchRouter } from '../modules/search/index.js';
 
 /**
  * Everything here is mounted under /api/v1 by server/app.ts. Route
@@ -100,6 +101,7 @@ apiRouter.use('/admin/invoices', invoicesAdminRouter);
 apiRouter.use('/admin/uploads', uploadsAdminRouter);
 apiRouter.use('/admin/qr-tokens', qrTokensAdminRouter);
 apiRouter.use('/admin/users', usersAdminRouter);
+apiRouter.use('/admin/search', searchRouter);
 
 // --- ADMIN content management (every status, not just PUBLISHED) -----------
 apiRouter.use('/admin/content/event', eventAdminRouter);

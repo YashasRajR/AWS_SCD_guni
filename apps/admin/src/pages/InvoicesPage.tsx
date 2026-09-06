@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import type { Invoice } from '@scd/types';
 import { describeApiError } from '@scd/api-client';
-import { usePaginatedResource } from '../lib/hooks.js';
+import { usePaginatedResource, useDebouncedSearch } from '../lib/hooks.js';
 import { apiClient } from '../lib/api.js';
 import { getStoredToken } from '../lib/auth-storage.js';
 import { formatDateTime } from '../lib/format.js';
@@ -33,12 +34,16 @@ const columns: Column<Invoice>[] = [
 ];
 
 export function InvoicesPage() {
+  const [urlParams] = useSearchParams();
   const [page, setPage] = useState(1);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const { searchInput, setSearchInput, search } = useDebouncedSearch(setPage, urlParams.get('search') ?? '');
   const { items, totalItems, totalPages, loading, error } = usePaginatedResource<Invoice>(
     '/admin/invoices',
     page,
+    20,
+    { search: search || undefined },
   );
 
   const handleDownloadPdf = async (invoice: Invoice) => {
@@ -104,6 +109,16 @@ export function InvoicesPage() {
       </div>
 
       {actionError && <p className="form-error">{actionError}</p>}
+
+      <div className="page-toolbar">
+        <input
+          type="search"
+          className="input search-input"
+          placeholder="Search by invoice #…"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+        />
+      </div>
 
       <Table columns={tableColumns} rows={items} getRowId={(r) => r.id} loading={loading} error={error} />
       <Pagination page={page} totalPages={totalPages} totalItems={totalItems} onChange={setPage} />

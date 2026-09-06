@@ -77,14 +77,25 @@ export const registrationsRepository = {
     return rows[0] ?? null;
   },
 
-  async list(page: number, pageSize: number): Promise<{ rows: RegistrationRow[]; total: number }> {
+  async list(
+    page: number,
+    pageSize: number,
+    search?: string,
+  ): Promise<{ rows: RegistrationRow[]; total: number }> {
     const offset = (page - 1) * pageSize;
+    const where = search && search.trim() ? 'WHERE r.registration_number ILIKE $1' : '';
+    const values = search && search.trim() ? [`%${search.trim()}%`] : [];
+    const limitIdx = values.length + 1;
+    const offsetIdx = values.length + 2;
     const [{ rows }, countResult] = await Promise.all([
       getPool().query<RegistrationRow>(
-        `${SELECT_WITH_TICKET_PLAN} ORDER BY r.created_at DESC LIMIT $1 OFFSET $2`,
-        [pageSize, offset],
+        `${SELECT_WITH_TICKET_PLAN} ${where} ORDER BY r.created_at DESC LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
+        [...values, pageSize, offset],
       ),
-      getPool().query<{ count: string }>('SELECT count(*) FROM registrations'),
+      getPool().query<{ count: string }>(
+        `SELECT count(*) FROM registrations r ${where}`,
+        values,
+      ),
     ]);
     return { rows, total: Number(countResult.rows[0]?.count ?? 0) };
   },

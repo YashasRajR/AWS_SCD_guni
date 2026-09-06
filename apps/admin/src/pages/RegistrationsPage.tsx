@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import type { Registration } from '@scd/types';
-import { usePaginatedResource } from '../lib/hooks.js';
+import { usePaginatedResource, useDebouncedSearch } from '../lib/hooks.js';
 import { apiClient } from '../lib/api.js';
 import { ApiClientError } from '@scd/api-client';
 import { formatDateTime } from '../lib/format.js';
@@ -26,10 +27,14 @@ async function downloadRegistrationsCsv(): Promise<void> {
 }
 
 export function RegistrationsPage() {
+  const [urlParams] = useSearchParams();
   const [page, setPage] = useState(1);
+  const { searchInput, setSearchInput, search } = useDebouncedSearch(setPage, urlParams.get('search') ?? '');
   const { items, totalItems, totalPages, loading, error, reload } = usePaginatedResource<Registration>(
     '/admin/registrations',
     page,
+    20,
+    { search: search || undefined },
   );
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [rowError, setRowError] = useState<string | null>(null);
@@ -102,6 +107,16 @@ export function RegistrationsPage() {
       </div>
 
       {rowError && <p className="form-error">{rowError}</p>}
+
+      <div className="page-toolbar">
+        <input
+          type="search"
+          className="input search-input"
+          placeholder="Search by registration #…"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+        />
+      </div>
 
       <Table columns={columns} rows={items} getRowId={(r) => r.id} loading={loading} error={error} />
       <Pagination page={page} totalPages={totalPages} totalItems={totalItems} onChange={setPage} />
