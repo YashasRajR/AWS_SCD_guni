@@ -37,6 +37,26 @@ const ROLE_PERMISSIONS = {
   ADMIN: PERMISSIONS.filter((code) => code !== 'MANAGE_ROLES'),
   VOLUNTEER: ['VIEW_ATTENDEE', 'COMPLETE_CHECKPOINT'],
   ATTENDEE: [],
+  // Narrower admin roles (spec #43) — keep in sync with
+  // packages/constants/src/permissions.ts ROLE_PERMISSION_SEED.
+  FINANCE_ADMIN: ['VIEW_ATTENDEE', 'MANAGE_PAYMENTS', 'VIEW_REPORTS'],
+  CONTENT_ADMIN: [
+    'MANAGE_SPEAKERS',
+    'MANAGE_SESSIONS',
+    'MANAGE_AGENDA',
+    'MANAGE_TIMELINE',
+    'MANAGE_VENUES',
+    'MANAGE_FAQ',
+    'MANAGE_ANNOUNCEMENTS',
+    'MANAGE_SETTINGS',
+  ],
+  VOLUNTEER_MANAGER: [
+    'VIEW_ATTENDEE',
+    'MANAGE_VOLUNTEERS',
+    'MANAGE_CHECKPOINTS',
+    'MANAGE_QR_TOKENS',
+    'COMPLETE_CHECKPOINT',
+  ],
 };
 
 const DEV_PASSWORD = 'DevPassw0rd!'; // clearly-fake dev-only password for every seeded account
@@ -86,7 +106,15 @@ async function main() {
     await client.query('BEGIN');
 
     // --- Roles -----------------------------------------------------------
-    for (const name of ['SUPER_ADMIN', 'ADMIN', 'VOLUNTEER', 'ATTENDEE']) {
+    for (const name of [
+      'SUPER_ADMIN',
+      'ADMIN',
+      'VOLUNTEER',
+      'ATTENDEE',
+      'FINANCE_ADMIN',
+      'CONTENT_ADMIN',
+      'VOLUNTEER_MANAGER',
+    ]) {
       await client.query(
         `INSERT INTO roles (name, description) VALUES ($1, $2)
          ON CONFLICT (name) DO NOTHING`,
@@ -185,6 +213,9 @@ async function main() {
       roleName: 'ATTENDEE',
       fullName: 'Dev Attendee Two',
     });
+    await upsertUser(client, { email: 'finance@dev.local', roleName: 'FINANCE_ADMIN' });
+    await upsertUser(client, { email: 'content@dev.local', roleName: 'CONTENT_ADMIN' });
+    await upsertUser(client, { email: 'volunteermgr@dev.local', roleName: 'VOLUNTEER_MANAGER' });
 
     // Assign the dev volunteer to the Registration checkpoint.
     const volunteerRow = await client.query('SELECT id FROM volunteers WHERE user_id = $1', [
@@ -209,6 +240,9 @@ async function main() {
     console.log('    volunteer@dev.local   (VOLUNTEER, assigned to Registration checkpoint)');
     console.log('    attendee1@dev.local   (ATTENDEE)');
     console.log('    attendee2@dev.local   (ATTENDEE)');
+    console.log('    finance@dev.local     (FINANCE_ADMIN)');
+    console.log('    content@dev.local     (CONTENT_ADMIN)');
+    console.log('    volunteermgr@dev.local (VOLUNTEER_MANAGER)');
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;

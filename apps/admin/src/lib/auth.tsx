@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { PublicUser } from '@scd/types';
-import { decodeAccessToken, isTokenExpired, hasRole } from '@scd/auth';
+import { decodeAccessToken, isTokenExpired, hasAnyRole } from '@scd/auth';
 import type { AuthenticatedIdentity } from '@scd/types';
 import { apiClient } from './api.js';
 import {
@@ -32,13 +32,24 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-/** Decodes+validates a stored token, returning the identity only if it's a non-expired ADMIN token. */
+// Roles allowed into the admin panel. SUPER_ADMIN/ADMIN have full access;
+// the others are permission-scoped (spec #43) but still sign in here —
+// route/action visibility narrows per-permission via hasPermission().
+const ADMIN_PANEL_ROLES = [
+  'SUPER_ADMIN',
+  'ADMIN',
+  'FINANCE_ADMIN',
+  'CONTENT_ADMIN',
+  'VOLUNTEER_MANAGER',
+] as const;
+
+/** Decodes+validates a stored token, returning the identity only if it's a non-expired admin-panel token. */
 function loadAdminIdentity(token: string | null): AuthenticatedIdentity | null {
   if (!token) return null;
   try {
     const decoded = decodeAccessToken(token);
     if (isTokenExpired(decoded)) return null;
-    if (!hasRole(decoded, 'ADMIN')) return null;
+    if (!hasAnyRole(decoded, [...ADMIN_PANEL_ROLES])) return null;
     return decoded;
   } catch {
     return null;
