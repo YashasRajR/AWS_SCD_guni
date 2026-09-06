@@ -42,9 +42,9 @@ This is a snapshot, not a criticism — the codebase already covers the hardest,
 | 28 | Social post/bio generator ("Create My SCD Post") | 🟡 Stub only | `backend/src/modules/social-sharing/social-sharing.service.ts` explicitly says *"Model + service boundary only in this phase. No LinkedIn/Instagram API integration and no image generation"* — it only lists an attendee's past shares. The actual generator (bio input, interest selection, AI copy generation with no invented claims, branded image, LinkedIn/Instagram-formatted output) doesn't exist. |
 | 41 | Google Sheets sync | ❌ Missing | Zero references to Sheets/spreadsheet sync anywhere in the repo. No sync queue, no admin sync-status page, no reconciliation UI. |
 | 8, 9, 10 | Real image upload (drag-drop → storage → preview) | ✅ Done | commit `d1cd8d2` — `POST /admin/uploads` (multer + local-disk `StorageProvider`), a reusable `image` field type in `ResourceForm` (file picker + preview), wired into speakers' profile-image field. Gallery/event hero images still don't exist as content fields yet (sections 9/4/5 CMS gaps below), but the upload plumbing they'll need is built. |
-| 9 | Gallery (CRUD, lightbox, categorization) | ❌ Missing | Zero references to "gallery" anywhere. |
-| 14 | Past Events | ❌ Missing | Zero references to past-event cards/archive. |
-| 40 | Popup / announcement-banner system | 🟡 Partial | `announcements` module has `publishAt`/`expiresAt`/`priority`/`status` — closer to a scheduled content list than a popup engine. Missing: display-frequency (once / every visit / until dismissed), dismissal tracking, target-audience targeting, and an image+button+URL popup layout. |
+| 9 | Gallery (CRUD, lightbox, categorization) | ✅ Done | commit `0eeea99` — `gallery_items` module (category/event year/optional session link, admin CRUD with reorder), responsive grid + lightbox on the public site. |
+| 14 | Past Events | ✅ Done | commit `0eeea99` — `past_events` module (flat archive cards per the spec's "visual glimpses" framing), admin CRUD with reorder, public grid page. |
+| 40 | Popup / announcement-banner system | ✅ Done | commit `0eeea99` — `announcements` extended with image/button/showAsPopup/displayFrequency/targetAudience; a showAsPopup announcement renders as a dismissible modal (localStorage-tracked for once/until-dismissed) instead of the top banner. Audience targeting is signed-in-vs-guest only (the spec doesn't enumerate audience values, and there's no other viewer segmentation on this public endpoint). |
 | 50 | Sponsor management | ❌ Missing | Zero references to "sponsor" anywhere (spec marks this "future ready" — acceptable to leave for V2). |
 | 4, 5 | Header/nav/logo/CTA CMS, Hero CMS | ✅ Done | commit `327bc74` — hero subtitle/background image/CTAs and logo/header-CTA/footer-text/contact fields added to the `events` row; a new `site_links` table (kind=NAV/SOCIAL) backs admin-editable nav items and social links, each with add/remove/reorder (display order) and internal-vs-external/open-in-new-tab. Public header/footer/hero fall back to the original hard-coded content when nothing's configured yet. |
 | 44 | Global admin search (by name/email/reg ID/ticket ID/payment ID/...) | ❌ Missing | No global-search component or endpoint found in `apps/admin`. Each list page has its own local filter/search, but there's no cross-entity search bar. |
@@ -80,7 +80,7 @@ If the goal is to close the gap between "very solid backend platform" and "the s
 3. ~~**Invoice/receipt PDF** (section 25)~~ — done, commit `5f2999c`.
 4. ~~**Real image upload** (section 8)~~ — done, commit `d1cd8d2`.
 5. ~~**Hero/header/footer/nav CMS** (sections 4, 5, 38)~~ — done, commit `327bc74`.
-6. **Gallery, Past Events, Popups** (sections 9, 14, 40) — smaller CMS modules, same pattern as the ones already built (content module + admin CRUD page).
+6. ~~**Gallery, Past Events, Popups** (sections 9, 14, 40)~~ — done, commit `0eeea99`.
 7. **RBAC role split + global admin search + bulk operations + system health monitor** (sections 43, 44, 59, 52) — polish items that make the admin portal feel complete but don't block core event operations.
 8. **Google Sheets sync, social post generator, soft-delete migration** (sections 41, 28, 55) — larger or more speculative pieces; worth sequencing last since the event can run without them.
 
