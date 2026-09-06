@@ -1,5 +1,6 @@
 import type { PaymentStatus, QrScanResult, QrTokenStatus, QrTokenType, RegistrationStatus, TicketStatus } from './enums.js';
 import type { TicketPlan } from './event-content.js';
+import type { Coupon } from './coupons.js';
 
 export interface Attendee {
   id: string;
@@ -23,6 +24,10 @@ export interface Registration {
   ticketPlanId: string | null;
   /** Joined in for display -- null only for pre-ticket-plan-era rows. */
   ticketPlan: TicketPlan | null;
+  couponId: string | null;
+  coupon: Coupon | null;
+  /** Decimal string, "0.00" when no coupon was applied. */
+  discountAmount: string;
   registeredAt: string;
   confirmedAt: string | null;
   cancelledAt: string | null;

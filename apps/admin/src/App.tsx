@@ -6,6 +6,7 @@ import { LoginPage } from './pages/LoginPage.js';
 import { DashboardPage } from './pages/DashboardPage.js';
 import { EventPage } from './pages/content/EventPage.js';
 import { TicketPlansPage } from './pages/content/TicketPlansPage.js';
+import { CouponsPage } from './pages/content/CouponsPage.js';
 import { SpeakersPage } from './pages/content/SpeakersPage.js';
 import { SessionsPage } from './pages/content/SessionsPage.js';
 import { VenuesPage } from './pages/content/VenuesPage.js';
@@ -57,6 +58,7 @@ function AppRoutes() {
         <Route index element={<DashboardPage />} />
         <Route path="content/event" element={<EventPage />} />
         <Route path="content/ticket-plans" element={<TicketPlansPage />} />
+        <Route path="content/coupons" element={<CouponsPage />} />
         <Route path="content/speakers" element={<SpeakersPage />} />
         <Route path="content/sessions" element={<SessionsPage />} />
         <Route path="content/venues" element={<VenuesPage />} />

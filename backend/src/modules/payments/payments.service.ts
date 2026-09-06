@@ -99,11 +99,13 @@ export const paymentsService = {
     }
 
     // Priced from the ticket plan the attendee selected at registration
-    // time — never the event's flat legacy `registrationFee` (kept only
+    // time, minus whatever coupon discount was locked in at that same
+    // moment — never the event's flat legacy `registrationFee` (kept only
     // for events with no plans configured at all).
     const plan = registration.ticketPlan;
     const event = plan ? null : await eventService.getCurrent();
-    const fee = Number(plan ? plan.price : event!.registrationFee);
+    const basePrice = Number(plan ? plan.price : event!.registrationFee);
+    const fee = Math.max(0, basePrice - Number(registration.discountAmount));
     if (!(fee > 0)) {
       throw AppError.validation('This event does not require payment.');
     }

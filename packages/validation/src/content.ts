@@ -5,6 +5,7 @@ import {
   SESSION_TYPES,
   TIMELINE_ITEM_TYPES,
   ANNOUNCEMENT_PRIORITIES,
+  DISCOUNT_TYPES,
 } from '@scd/types';
 
 // Shared building blocks -----------------------------------------------------
@@ -162,6 +163,47 @@ export const createTicketPlanSchema = z.object({
 export type CreateTicketPlanInput = z.infer<typeof createTicketPlanSchema>;
 export const updateTicketPlanSchema = createTicketPlanSchema.partial();
 export type UpdateTicketPlanInput = z.infer<typeof updateTicketPlanSchema>;
+
+// --- Coupons --------------------------------------------------------------
+const isoDateTimeOptional = z.string().datetime().optional();
+
+const couponFieldsSchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(2)
+    .max(40)
+    .regex(/^[A-Z0-9_-]+$/, 'Use uppercase letters, digits, hyphens, and underscores only (e.g. AWSGUNI25).'),
+  name: z.string().trim().max(120).optional(),
+  discountType: z.enum(DISCOUNT_TYPES),
+  discountValue: z.coerce.number().positive(),
+  currency: z.string().trim().length(3).default('INR'),
+  startsAt: isoDateTimeOptional,
+  endsAt: isoDateTimeOptional,
+  maxUses: z.coerce.number().int().positive().optional(),
+  perUserLimit: z.coerce.number().int().positive().default(1),
+  ticketPlanId: z.string().uuid().optional(),
+  minOrderAmount: z.coerce.number().min(0).optional(),
+  maxDiscountAmount: z.coerce.number().min(0).optional(),
+  isActive: z.boolean().default(true),
+});
+
+// A PERCENT discount over 100 is nonsensical -- checked here rather than
+// left to coupons.service.ts so bad input never reaches the database.
+const discountValueRefinement = (v: { discountType: string; discountValue: number }) =>
+  v.discountType !== 'PERCENT' || v.discountValue <= 100;
+const discountValueRefinementOpts = {
+  message: 'A percentage discount cannot exceed 100.',
+  path: ['discountValue'],
+};
+
+export const createCouponSchema = couponFieldsSchema.refine(discountValueRefinement, discountValueRefinementOpts);
+export type CreateCouponInput = z.infer<typeof createCouponSchema>;
+export const updateCouponSchema = couponFieldsSchema.partial().refine((v) => {
+  if (!v.discountType || v.discountValue === undefined) return true;
+  return discountValueRefinement({ discountType: v.discountType, discountValue: v.discountValue });
+}, discountValueRefinementOpts);
+export type UpdateCouponInput = z.infer<typeof updateCouponSchema>;
 
 // --- Announcements -----------------------------------------------------------
 export const createAnnouncementSchema = z.object({

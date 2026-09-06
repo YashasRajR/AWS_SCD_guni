@@ -5,6 +5,7 @@ import { toCsv } from '../../utils/csv.js';
 import { toRegistration } from './registrations.types.js';
 import { eventService } from '../event/event.service.js';
 import { ticketPlansService } from '../ticket-plans/ticket-plans.service.js';
+import { couponsService } from '../coupons/coupons.service.js';
 import { ticketsService } from '../tickets/tickets.service.js';
 import { attendeesService } from '../attendees/attendees.service.js';
 import { usersService } from '../users/users.service.js';
@@ -40,6 +41,8 @@ export const registrationsService = {
         'Department',
         'Year',
         'Ticket plan',
+        'Coupon code',
+        'Discount amount',
         'Registered at',
         'Confirmed at',
         'Payment status',
@@ -56,6 +59,8 @@ export const registrationsService = {
         r.department,
         r.year,
         r.ticket_plan_name,
+        r.coupon_code,
+        r.discount_amount,
         r.registered_at,
         r.confirmed_at,
         r.payment_status,
@@ -80,7 +85,7 @@ export const registrationsService = {
    * is unambiguous — see docs/architecture). Honors the event's
    * registration window when one is configured.
    */
-  async create(attendeeId: string, ticketPlanCode: string): Promise<Registration> {
+  async create(attendeeId: string, ticketPlanCode: string, couponCode?: string): Promise<Registration> {
     const existing = await registrationsRepository.findByAttendeeId(attendeeId);
     if (existing) throw AppError.duplicate('You are already registered for this event.');
 
@@ -97,20 +102,36 @@ export const registrationsService = {
       }
     }
 
+    // Priced (and, on success, redeemed below) BEFORE the registration row
+    // exists — an invalid/expired/exhausted coupon must never leave a
+    // registration behind with no discount applied.
+    const pricing = couponCode
+      ? await couponsService.price(couponCode, Number(plan.price), plan.currency, plan.id, attendeeId)
+      : null;
+
     // The findByAttendeeId check above is not race-safe on its own — two
     // simultaneous submits can both pass it before either INSERT lands.
     // registrations_attendee_id_unique (see database/migrations/033) is
     // the real backstop: catch its violation here and surface the same
     // clean 409 instead of a raw constraint error.
+    let row;
     try {
-      const row = await registrationsRepository.create(attendeeId, plan.id);
-      return toRegistration(row);
+      row = await registrationsRepository.create(
+        attendeeId,
+        plan.id,
+        pricing?.couponId ?? null,
+        pricing?.discountAmount ?? '0',
+      );
     } catch (err) {
       if ((err as PgError).code === '23505') {
         throw AppError.duplicate('You are already registered for this event.');
       }
       throw err;
     }
+    if (pricing) {
+      await couponsService.recordUsage(pricing.couponId, attendeeId, row.id, pricing.discountAmount);
+    }
+    return toRegistration(row);
   },
 
   /**

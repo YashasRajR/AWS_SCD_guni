@@ -145,6 +145,14 @@ async function main() {
       );
     }
 
+    // --- Demo coupon (spec example: AWSGUNI25 -- 25% off, capped, no
+    // per-plan restriction) -----------------------------------------------
+    await client.query(
+      `INSERT INTO coupons (code, name, discount_type, discount_value, currency, per_user_limit, is_active)
+       VALUES ('AWSGUNI25', '25% off', 'PERCENT', 25, 'INR', 1, TRUE)
+       ON CONFLICT (UPPER(code)) DO NOTHING`,
+    );
+
     // --- Checkpoints (seed data only — never hard-coded into app logic) ---
     for (const cp of CHECKPOINTS) {
       await client.query(

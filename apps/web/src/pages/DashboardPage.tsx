@@ -4,6 +4,7 @@ import type {
   Attendee,
   Certificate,
   Checkpoint,
+  CouponPricing,
   EventConfig,
   Payment,
   PublicUser,
@@ -85,9 +86,31 @@ export function DashboardPage() {
   const [registering, setRegistering] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [selectedPlanCode, setSelectedPlanCode] = useState('');
+  const [couponCode, setCouponCode] = useState('');
+  const [couponPricing, setCouponPricing] = useState<CouponPricing | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
   const [checkoutPending, setCheckoutPending] = useState(false);
+
+  const handleApplyCoupon = async () => {
+    if (!selectedPlanCode || !couponCode.trim()) return;
+    setApplyingCoupon(true);
+    setCouponError(null);
+    setCouponPricing(null);
+    try {
+      const pricing = await apiClient.post<CouponPricing>('/me/coupons/preview', {
+        ticketPlanCode: selectedPlanCode,
+        couponCode: couponCode.trim(),
+      });
+      setCouponPricing(pricing);
+    } catch (err) {
+      setCouponError(err instanceof ApiClientError ? err.message : 'Could not apply that coupon.');
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
 
   const handleRegister = async () => {
     if (!selectedPlanCode) {
@@ -97,7 +120,10 @@ export function DashboardPage() {
     setRegistering(true);
     setRegisterError(null);
     try {
-      await apiClient.post('/me/registration', { ticketPlanCode: selectedPlanCode });
+      await apiClient.post('/me/registration', {
+        ticketPlanCode: selectedPlanCode,
+        couponCode: couponPricing ? couponCode.trim() : undefined,
+      });
       reloadRegistration();
     } catch (err) {
       setRegisterError(err instanceof ApiClientError ? err.message : 'Failed to register.');
@@ -190,7 +216,14 @@ export function DashboardPage() {
               {ticketPlans.length > 0 && (
                 <label className="form-field">
                   <span>Ticket type</span>
-                  <select value={selectedPlanCode} onChange={(e) => setSelectedPlanCode(e.target.value)}>
+                  <select
+                    value={selectedPlanCode}
+                    onChange={(e) => {
+                      setSelectedPlanCode(e.target.value);
+                      setCouponPricing(null);
+                      setCouponError(null);
+                    }}
+                  >
                     <option value="">Select a ticket type…</option>
                     {ticketPlans.map((plan) => (
                       <option key={plan.code} value={plan.code}>
@@ -199,6 +232,38 @@ export function DashboardPage() {
                     ))}
                   </select>
                 </label>
+              )}
+              {selectedPlanCode && (
+                <div className="dashboard-card-row">
+                  <label className="form-field" style={{ flex: 1 }}>
+                    <span>Coupon code (optional)</span>
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => {
+                        setCouponCode(e.target.value);
+                        setCouponPricing(null);
+                        setCouponError(null);
+                      }}
+                      placeholder="e.g. AWSGUNI25"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={handleApplyCoupon}
+                    disabled={applyingCoupon || !couponCode.trim()}
+                  >
+                    {applyingCoupon ? 'Applying…' : 'Apply'}
+                  </button>
+                </div>
+              )}
+              {couponError && <p className="form-error">{couponError}</p>}
+              {couponPricing && (
+                <p className="status-line">
+                  {couponPricing.currency} {couponPricing.originalAmount} − {couponPricing.currency}{' '}
+                  {couponPricing.discountAmount} = <strong>{couponPricing.currency} {couponPricing.finalAmount}</strong>
+                </p>
               )}
               {registerError && <p className="form-error">{registerError}</p>}
               <button
@@ -232,7 +297,13 @@ export function DashboardPage() {
                   <Badge tone={statusTone(payment?.status ?? 'PENDING')}>{payment?.status ?? 'PENDING'}</Badge>
                   <span className="dashboard-card-meta">
                     {registration?.ticketPlan
-                      ? `${registration.ticketPlan.currency} ${registration.ticketPlan.price}`
+                      ? `${registration.ticketPlan.currency} ${(
+                          Number(registration.ticketPlan.price) - Number(registration.discountAmount)
+                        ).toFixed(2)}${
+                          Number(registration.discountAmount) > 0
+                            ? ` (${registration.coupon?.code} applied)`
+                            : ''
+                        }`
                       : `${event?.currency} ${event?.registrationFee}`}
                   </span>
                 </p>

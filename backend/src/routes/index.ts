@@ -8,6 +8,7 @@ import { timelineRouter, timelineAdminRouter } from '../modules/timeline/timelin
 import { venuesRouter, venuesAdminRouter } from '../modules/venues/venues.routes.js';
 import { faqRouter, faqAdminRouter } from '../modules/faq/faq.routes.js';
 import { ticketPlansRouter, ticketPlansAdminRouter } from '../modules/ticket-plans/ticket-plans.routes.js';
+import { couponsAdminRouter } from '../modules/coupons/coupons.routes.js';
 import {
   announcementsRouter,
   announcementsAdminRouter,
@@ -95,4 +96,5 @@ apiRouter.use('/admin/content/timeline', timelineAdminRouter);
 apiRouter.use('/admin/content/venues', venuesAdminRouter);
 apiRouter.use('/admin/content/faqs', faqAdminRouter);
 apiRouter.use('/admin/content/ticket-plans', ticketPlansAdminRouter);
+apiRouter.use('/admin/content/coupons', couponsAdminRouter);
 apiRouter.use('/admin/content/announcements', announcementsAdminRouter);

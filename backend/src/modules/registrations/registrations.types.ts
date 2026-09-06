@@ -1,4 +1,4 @@
-import type { Registration, RegistrationStatus } from '@scd/types';
+import type { DiscountType, Registration, RegistrationStatus } from '@scd/types';
 
 export interface RegistrationRow {
   id: string;
@@ -6,6 +6,8 @@ export interface RegistrationRow {
   registration_number: string;
   status: RegistrationStatus;
   ticket_plan_id: string | null;
+  coupon_id: string | null;
+  discount_amount: string;
   registered_at: string;
   confirmed_at: string | null;
   cancelled_at: string | null;
@@ -23,6 +25,23 @@ export interface RegistrationRow {
   tp_display_order: number | null;
   tp_created_at: string | null;
   tp_updated_at: string | null;
+  // Joined coupon columns -- all null when coupon_id is null.
+  c_id: string | null;
+  c_code: string | null;
+  c_name: string | null;
+  c_discount_type: DiscountType | null;
+  c_discount_value: string | null;
+  c_currency: string | null;
+  c_starts_at: string | null;
+  c_ends_at: string | null;
+  c_max_uses: number | null;
+  c_per_user_limit: number | null;
+  c_ticket_plan_id: string | null;
+  c_min_order_amount: string | null;
+  c_max_discount_amount: string | null;
+  c_is_active: boolean | null;
+  c_created_at: string | null;
+  c_updated_at: string | null;
 }
 
 export interface RegistrationExportRow {
@@ -35,6 +54,8 @@ export interface RegistrationExportRow {
   department: string | null;
   year: string | null;
   ticket_plan_name: string | null;
+  coupon_code: string | null;
+  discount_amount: string;
   registered_at: string;
   confirmed_at: string | null;
   payment_status: string | null;
@@ -63,6 +84,28 @@ export function toRegistration(row: RegistrationRow): Registration {
           updatedAt: row.tp_updated_at!,
         }
       : null,
+    couponId: row.coupon_id,
+    coupon: row.c_id
+      ? {
+          id: row.c_id,
+          code: row.c_code!,
+          name: row.c_name,
+          discountType: row.c_discount_type!,
+          discountValue: row.c_discount_value!,
+          currency: row.c_currency!,
+          startsAt: row.c_starts_at,
+          endsAt: row.c_ends_at,
+          maxUses: row.c_max_uses,
+          perUserLimit: row.c_per_user_limit!,
+          ticketPlanId: row.c_ticket_plan_id,
+          minOrderAmount: row.c_min_order_amount,
+          maxDiscountAmount: row.c_max_discount_amount,
+          isActive: row.c_is_active!,
+          createdAt: row.c_created_at!,
+          updatedAt: row.c_updated_at!,
+        }
+      : null,
+    discountAmount: row.discount_amount,
     registeredAt: row.registered_at,
     confirmedAt: row.confirmed_at,
     cancelledAt: row.cancelled_at,

@@ -17,9 +17,26 @@ const SELECT_WITH_TICKET_PLAN = `
     tp.is_active AS tp_is_active,
     tp.display_order AS tp_display_order,
     tp.created_at AS tp_created_at,
-    tp.updated_at AS tp_updated_at
+    tp.updated_at AS tp_updated_at,
+    c.id AS c_id,
+    c.code AS c_code,
+    c.name AS c_name,
+    c.discount_type AS c_discount_type,
+    c.discount_value AS c_discount_value,
+    c.currency AS c_currency,
+    c.starts_at AS c_starts_at,
+    c.ends_at AS c_ends_at,
+    c.max_uses AS c_max_uses,
+    c.per_user_limit AS c_per_user_limit,
+    c.ticket_plan_id AS c_ticket_plan_id,
+    c.min_order_amount AS c_min_order_amount,
+    c.max_discount_amount AS c_max_discount_amount,
+    c.is_active AS c_is_active,
+    c.created_at AS c_created_at,
+    c.updated_at AS c_updated_at
   FROM registrations r
   LEFT JOIN ticket_plans tp ON tp.id = r.ticket_plan_id
+  LEFT JOIN coupons c ON c.id = r.coupon_id
 `;
 
 export const registrationsRepository = {
@@ -29,12 +46,17 @@ export const registrationsRepository = {
    * implemented in a later phase -- this establishes the data model +
    * service boundary now, per spec.
    */
-  async create(attendeeId: string, ticketPlanId: string): Promise<RegistrationRow> {
+  async create(
+    attendeeId: string,
+    ticketPlanId: string,
+    couponId: string | null,
+    discountAmount: string,
+  ): Promise<RegistrationRow> {
     const { rows } = await getPool().query<{ id: string }>(
-      `INSERT INTO registrations (attendee_id, registration_number, ticket_plan_id)
-       VALUES ($1, $2, $3)
+      `INSERT INTO registrations (attendee_id, registration_number, ticket_plan_id, coupon_id, discount_amount)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING id`,
-      [attendeeId, generateReferenceCode('REG'), ticketPlanId],
+      [attendeeId, generateReferenceCode('REG'), ticketPlanId, couponId, discountAmount],
     );
     return (await this.findById(rows[0]!.id))!;
   },
@@ -86,6 +108,8 @@ export const registrationsRepository = {
          a.department,
          a.year,
          tp.name AS ticket_plan_name,
+         c.code AS coupon_code,
+         r.discount_amount,
          r.registered_at,
          r.confirmed_at,
          p.status AS payment_status,
@@ -95,6 +119,7 @@ export const registrationsRepository = {
        JOIN attendees a ON a.id = r.attendee_id
        JOIN users u ON u.id = a.user_id
        LEFT JOIN ticket_plans tp ON tp.id = r.ticket_plan_id
+       LEFT JOIN coupons c ON c.id = r.coupon_id
        LEFT JOIN payments p ON p.registration_id = r.id
        ORDER BY r.created_at DESC`,
     );

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { registerForEventSchema } from '@scd/validation';
+import { previewCouponSchema, registerForEventSchema } from '@scd/validation';
 import { authenticate } from '../../middleware/authentication/index.js';
 import { requireRole } from '../../middleware/authorization/index.js';
 import { validate } from '../../middleware/validation/index.js';
@@ -19,6 +19,11 @@ userDashboardRouter.post(
   '/registration',
   validate(registerForEventSchema),
   asyncHandler(userDashboardController.createRegistration),
+);
+userDashboardRouter.post(
+  '/coupons/preview',
+  validate(previewCouponSchema),
+  asyncHandler(userDashboardController.previewCoupon),
 );
 userDashboardRouter.get('/ticket', asyncHandler(userDashboardController.getTicket));
 userDashboardRouter.get('/ticket/pdf', asyncHandler(userDashboardController.getTicketPdf));

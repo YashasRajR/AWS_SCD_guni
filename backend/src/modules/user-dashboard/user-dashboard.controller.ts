@@ -1,8 +1,10 @@
 import type { Request, Response } from 'express';
 import { attendeesService } from '../attendees/attendees.service.js';
 import { registrationsService } from '../registrations/registrations.service.js';
-import type { RegisterForEventInput } from '@scd/validation';
+import type { PreviewCouponInput, RegisterForEventInput } from '@scd/validation';
 import { ticketsService } from '../tickets/tickets.service.js';
+import { ticketPlansService } from '../ticket-plans/ticket-plans.service.js';
+import { couponsService } from '../coupons/coupons.service.js';
 import { paymentsService } from '../payments/payments.service.js';
 import { checkpointsService } from '../checkpoints/checkpoints.service.js';
 import { certificatesService } from '../certificates/certificates.service.js';
@@ -42,10 +44,25 @@ export const userDashboardController = {
    * before this runs — see user-dashboard.routes.ts). */
   async createRegistration(req: Request, res: Response): Promise<void> {
     const attendee = await attendeesService.requireByUserId(req.identity!.userId);
-    const { ticketPlanCode } = req.body as RegisterForEventInput;
-    const registration = await registrationsService.create(attendee.id, ticketPlanCode);
-    await auditLogsService.log(req, 'REGISTRATION_CREATED', 'registration', registration.id, { ticketPlanCode });
+    const { ticketPlanCode, couponCode } = req.body as RegisterForEventInput;
+    const registration = await registrationsService.create(attendee.id, ticketPlanCode, couponCode);
+    await auditLogsService.log(req, 'REGISTRATION_CREATED', 'registration', registration.id, {
+      ticketPlanCode,
+      couponCode,
+    });
     sendCreated(res, registration, 'Registered for the event.');
+  },
+
+  /** Preview -- validates a coupon and shows the resulting price WITHOUT
+   * redeeming it, so the "Apply coupon" step can show original/discount/
+   * final before the attendee commits (spec: show original, discount,
+   * final price before submitting). */
+  async previewCoupon(req: Request, res: Response): Promise<void> {
+    const attendee = await attendeesService.requireByUserId(req.identity!.userId);
+    const { ticketPlanCode, couponCode } = req.body as PreviewCouponInput;
+    const plan = await ticketPlansService.requireActiveByCode(ticketPlanCode);
+    const pricing = await couponsService.price(couponCode, Number(plan.price), plan.currency, plan.id, attendee.id);
+    sendSuccess(res, pricing);
   },
 
   async getTicket(req: Request, res: Response): Promise<void> {
