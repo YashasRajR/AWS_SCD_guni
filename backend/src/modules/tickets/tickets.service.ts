@@ -53,6 +53,7 @@ async function renderAndStorePdf(
     startTime: event.startTime,
     endTime: event.endTime,
     venue: event.venue,
+    supportEmail: event.contactEmail,
     registrationToken,
     goodieToken,
   });

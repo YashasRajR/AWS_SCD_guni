@@ -19,6 +19,7 @@ export interface TicketPdfInput {
   startTime: string | null;
   endTime: string | null;
   venue: string | null;
+  supportEmail: string | null;
   registrationToken: string;
   goodieToken: string;
 }
@@ -249,16 +250,14 @@ export async function buildTicketPdf(input: TicketPdfInput): Promise<Buffer> {
   // --- Footer -------------------------------------------------------------
   doc.moveTo(PAD_X, y).lineTo(PAD_X + CONTENT_W, y).strokeColor(COLOR.border).lineWidth(1).stroke();
   y += 12;
+  const queriesLine = input.supportEmail
+    ? `Non-transferable, admits one named attendee, void if altered or resold. Queries: ${input.supportEmail}, quoting ${input.registrationNumber}.`
+    : `Non-transferable, admits one named attendee, void if altered or resold. Queries: quote ${input.registrationNumber}.`;
   doc
     .font('Helvetica')
     .fontSize(9.5)
     .fillColor('#565d68')
-    .text(
-      `Non-transferable, admits one named attendee, void if altered or resold. Queries: quote ${input.registrationNumber}.`,
-      PAD_X,
-      y,
-      { width: CONTENT_W, lineGap: 2 },
-    );
+    .text(queriesLine, PAD_X, y, { width: CONTENT_W, lineGap: 2 });
   y += 44;
 
   doc.rect(0, y, PAGE_W, 34).fill(COLOR.masthead);

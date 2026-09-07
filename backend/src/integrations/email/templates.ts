@@ -200,15 +200,17 @@ function renderTicketEmail(data: Record<string, unknown>, isResend: boolean): Re
           <td style="padding:12px 0;vertical-align:top;border-bottom:1px solid rgba(51,32,82,0.18);font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:22px;color:#14181f;"><strong>${escapeHtml(eventDate)}</strong></td></tr>
       <tr><td width="120" style="width:120px;padding:12px 12px 12px 0;vertical-align:top;border-bottom:1px solid rgba(51,32,82,0.18);font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:1.6px;color:#656d79;text-transform:uppercase;">Time</td>
           <td style="padding:12px 0;vertical-align:top;border-bottom:1px solid rgba(51,32,82,0.18);font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:22px;color:#14181f;">${escapeHtml(eventTime)}</td></tr>
-      <tr><td width="120" style="width:120px;padding:12px 12px 12px 0;vertical-align:top;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:1.6px;color:#656d79;text-transform:uppercase;">Venue</td>
-          <td style="padding:12px 0;vertical-align:top;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:22px;color:#14181f;">${escapeHtml(venue)}</td></tr>
+      <tr><td width="120" style="width:120px;padding:12px 12px 12px 0;vertical-align:top;border-bottom:1px solid rgba(51,32,82,0.18);font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:1.6px;color:#656d79;text-transform:uppercase;">Venue</td>
+          <td style="padding:12px 0;vertical-align:top;border-bottom:1px solid rgba(51,32,82,0.18);font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:22px;color:#14181f;">${escapeHtml(venue)}</td></tr>
+      <tr><td width="120" style="width:120px;padding:12px 12px 12px 0;vertical-align:top;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:1.6px;color:#656d79;text-transform:uppercase;">Entry</td>
+          <td style="padding:12px 0;vertical-align:top;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:22px;color:#14181f;">Ticket PDF + college ID card</td></tr>
     </table>
   </td></tr>
 
   <tr><td class="pad-x" style="padding:30px 32px 0 32px;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#332052;"><tr><td style="padding:22px 24px;">
       <div style="font-family:Arial,Helvetica,sans-serif;font-size:10px;letter-spacing:2.4px;color:#f28a45;text-transform:uppercase;font-weight:bold;">Included with your pass</div>
-      <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#e8e2f2;padding-top:10px;">Checkpoints covered by this ticket. A volunteer or your QR code marks each one off.</div>
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#e8e2f2;padding-top:10px;">Five checkpoints, all covered by this ticket. A volunteer marks each one off against your name &mdash; no code to scan.</div>
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="padding-top:16px;"><tr>${checkpointChips}</tr></table>
     </td></tr></table>
   </td></tr>
@@ -246,6 +248,7 @@ THE ESSENTIALS
 Date: ${eventDate}
 Time: ${eventTime}
 Venue: ${venue}
+Entry: Ticket PDF + college ID card
 
 Included with your pass: ${checkpoints.join(', ')}.
 
