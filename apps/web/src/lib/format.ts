@@ -61,3 +61,19 @@ export function groupByDay<T>(items: T[], getStart: (item: T) => string): Map<st
   }
   return groups;
 }
+
+/**
+ * Derives the registration window's current phase from the event's
+ * configured open/close dates (spec #46 "registration cycle") — no
+ * separate status field to keep in sync, just the two timestamps that
+ * already drive backend enforcement in registrations.service.ts.
+ */
+export function getRegistrationPhase(
+  event: { registrationOpen: string | null; registrationClose: string | null } | null | undefined,
+): 'not-open' | 'open' | 'closed' {
+  if (!event) return 'open';
+  const now = Date.now();
+  if (event.registrationOpen && new Date(event.registrationOpen).getTime() > now) return 'not-open';
+  if (event.registrationClose && new Date(event.registrationClose).getTime() < now) return 'closed';
+  return 'open';
+}

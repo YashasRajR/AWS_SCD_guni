@@ -17,7 +17,7 @@ import { ApiClientError } from '@scd/api-client';
 import { useResource } from '../lib/hooks.js';
 import { apiClient } from '../lib/api.js';
 import { getStoredToken } from '../lib/auth-storage.js';
-import { formatDateTime, statusTone } from '../lib/format.js';
+import { formatDateTime, statusTone, getRegistrationPhase, formatDate } from '../lib/format.js';
 import { openRazorpayCheckout } from '../lib/razorpay.js';
 import { Badge } from '../components/ui/Badge.js';
 import { useDocumentHead } from '../lib/seo.js';
@@ -183,6 +183,8 @@ export function DashboardPage() {
     }
   };
 
+  const registrationPhase = getRegistrationPhase(event);
+
   const requiresPayment = registration?.ticketPlan
     ? Number(registration.ticketPlan.price) > 0
     : event
@@ -236,6 +238,14 @@ export function DashboardPage() {
             </>
           ) : (
             <>
+              {registrationPhase === 'not-open' ? (
+                <p className="status-line">
+                  Registration hasn&apos;t opened yet. It opens {formatDate(event?.registrationOpen)}.
+                </p>
+              ) : registrationPhase === 'closed' ? (
+                <p className="status-line">Registration is closed.</p>
+              ) : (
+                <>
               <p className="status-line">You haven&apos;t registered for the event yet.</p>
               {ticketPlans.length > 0 && (
                 <label className="form-field">
@@ -298,6 +308,8 @@ export function DashboardPage() {
               >
                 {registering ? 'Registering…' : 'Register for the event'}
               </button>
+                </>
+              )}
             </>
           )}
         </section>
