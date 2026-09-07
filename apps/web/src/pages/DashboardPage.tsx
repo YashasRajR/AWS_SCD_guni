@@ -115,6 +115,7 @@ export function DashboardPage() {
   const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   const [checkoutPending, setCheckoutPending] = useState(false);
 
   const handleApplyCoupon = async () => {
@@ -356,13 +357,22 @@ export function DashboardPage() {
                 <span className="dashboard-card-meta">#{ticket.ticketNumber}</span>
               </p>
               <p className="status-line">Issued {formatDateTime(ticket.issuedAt)}.</p>
-              <button
-                type="button"
-                className="btn-link"
-                onClick={() => downloadOwnPdf('/me/ticket/pdf', `ticket-${ticket.ticketNumber}.pdf`)}
-              >
-                Download ticket PDF
-              </button>
+              {ticket.pdfAvailable ? (
+                <button
+                  type="button"
+                  className="btn-link"
+                  onClick={() =>
+                    downloadOwnPdf('/me/ticket/pdf', `ticket-${ticket.ticketNumber}.pdf`).catch((err) =>
+                      setDownloadError(err instanceof Error ? err.message : 'Failed to download the ticket PDF.'),
+                    )
+                  }
+                >
+                  Download ticket PDF
+                </button>
+              ) : (
+                <p className="form-help">Your ticket PDF is still being generated — check back shortly.</p>
+              )}
+              {downloadError && <p className="form-error">{downloadError}</p>}
             </>
           ) : (
             <p className="status-line">
@@ -387,7 +397,11 @@ export function DashboardPage() {
                 <button
                   type="button"
                   className="btn-link"
-                  onClick={() => downloadOwnPdf('/me/invoice/pdf', `invoice-${invoice.invoiceNumber}.pdf`)}
+                  onClick={() =>
+                    downloadOwnPdf('/me/invoice/pdf', `invoice-${invoice.invoiceNumber}.pdf`).catch((err) =>
+                      setDownloadError(err instanceof Error ? err.message : 'Failed to download the receipt PDF.'),
+                    )
+                  }
                 >
                   Download receipt PDF
                 </button>
