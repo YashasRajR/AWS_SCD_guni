@@ -1788,6 +1788,21 @@ ol {
   grid-column: 1 / -1;
 }
 
+/* Small uppercase divider label for a group of fields within a long form
+   (e.g. "Student details" vs "Employment details" on the register page) --
+   same type treatment as a field label, just with breathing room above it. */
+.form-section-heading {
+  grid-column: 1 / -1;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: var(--text-caption);
+  font-weight: var(--fw-semibold);
+  color: var(--muted);
+  margin: var(--space-2) 0 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
 .form-field-checkbox {
   flex-direction: row;
   align-items: flex-start;
@@ -1805,7 +1820,9 @@ ol {
 .form-field input[type='text'],
 .form-field input[type='email'],
 .form-field input[type='password'],
-.form-field input[type='tel'] {
+.form-field input[type='tel'],
+.form-field input[type='url'],
+.form-field input[type='date'] {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 0.65rem 0.75rem;

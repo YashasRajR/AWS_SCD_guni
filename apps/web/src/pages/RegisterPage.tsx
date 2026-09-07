@@ -93,6 +93,7 @@ export function RegisterPage() {
 
   const isStudent = form.registrationType === 'STUDENT';
   const isEmployee = form.registrationType === 'PROFESSIONAL';
+  const today = new Date().toISOString().slice(0, 10);
 
   return (
     <div className="auth-page">
@@ -154,6 +155,9 @@ export function RegisterPage() {
             <input
               type="tel"
               required
+              inputMode="tel"
+              pattern="[0-9+ ]{7,20}"
+              title="Digits only, optionally starting with +"
               value={form.phone}
               onChange={(e) => setField('phone', e.target.value)}
               autoComplete="tel"
@@ -184,93 +188,84 @@ export function RegisterPage() {
             </div>
           </fieldset>
 
-          {isStudent && (
+          {(isStudent || isEmployee) && (
             <>
-              <label className="form-field">
-                <span>College/university name *</span>
-                <input
-                  type="text"
-                  required
-                  value={form.university}
-                  onChange={(e) => setField('university', e.target.value)}
-                />
-              </label>
-              <label className="form-field">
-                <span>Department *</span>
-                <input
-                  type="text"
-                  required
-                  value={form.department}
-                  onChange={(e) => setField('department', e.target.value)}
-                />
-              </label>
-              <label className="form-field">
-                <span>Branch *</span>
-                <input
-                  type="text"
-                  required
-                  value={form.branch}
-                  onChange={(e) => setField('branch', e.target.value)}
-                />
-              </label>
-              <label className="form-field">
-                <span>Date of birth *</span>
-                <input
-                  type="date"
-                  required
-                  value={form.dateOfBirth}
-                  onChange={(e) => setField('dateOfBirth', e.target.value)}
-                />
-              </label>
-              <label className="form-field">
-                <span>Year of passout *</span>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. 2027"
-                  value={form.year}
-                  onChange={(e) => setField('year', e.target.value)}
-                />
-              </label>
-              <label className="form-field">
-                <span>LinkedIn profile</span>
-                <input
-                  type="url"
-                  value={form.linkedinUrl}
-                  onChange={(e) => setField('linkedinUrl', e.target.value)}
-                  placeholder="https://linkedin.com/in/yourname"
-                />
-              </label>
-            </>
-          )}
+              <p className="form-section-heading">{isStudent ? 'Student details' : 'Employment details'}</p>
 
-          {isEmployee && (
-            <>
-              <label className="form-field">
-                <span>Company name *</span>
-                <input
-                  type="text"
-                  required
-                  value={form.companyName}
-                  onChange={(e) => setField('companyName', e.target.value)}
-                />
-              </label>
-              <label className="form-field">
-                <span>Designation *</span>
-                <input
-                  type="text"
-                  required
-                  value={form.designation}
-                  onChange={(e) => setField('designation', e.target.value)}
-                />
-              </label>
+              {isStudent && (
+                <>
+                  <label className="form-field">
+                    <span>College/university name *</span>
+                    <input
+                      type="text"
+                      required
+                      value={form.university}
+                      onChange={(e) => setField('university', e.target.value)}
+                    />
+                  </label>
+                  <label className="form-field">
+                    <span>Department *</span>
+                    <input
+                      type="text"
+                      required
+                      value={form.department}
+                      onChange={(e) => setField('department', e.target.value)}
+                    />
+                  </label>
+                  <label className="form-field">
+                    <span>Branch *</span>
+                    <input
+                      type="text"
+                      required
+                      value={form.branch}
+                      onChange={(e) => setField('branch', e.target.value)}
+                    />
+                  </label>
+                  <label className="form-field">
+                    <span>Year of passout *</span>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. 2027"
+                      value={form.year}
+                      onChange={(e) => setField('year', e.target.value)}
+                    />
+                  </label>
+                </>
+              )}
+
+              {isEmployee && (
+                <>
+                  <label className="form-field">
+                    <span>Company name *</span>
+                    <input
+                      type="text"
+                      required
+                      value={form.companyName}
+                      onChange={(e) => setField('companyName', e.target.value)}
+                    />
+                  </label>
+                  <label className="form-field">
+                    <span>Designation *</span>
+                    <input
+                      type="text"
+                      required
+                      value={form.designation}
+                      onChange={(e) => setField('designation', e.target.value)}
+                    />
+                  </label>
+                </>
+              )}
+
               <label className="form-field">
                 <span>Date of birth *</span>
                 <input
                   type="date"
                   required
+                  max={today}
                   value={form.dateOfBirth}
                   onChange={(e) => setField('dateOfBirth', e.target.value)}
+                  autoComplete="bday"
                 />
               </label>
               <label className="form-field">
