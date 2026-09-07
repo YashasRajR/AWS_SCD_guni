@@ -8,6 +8,7 @@ describe('role spoofing via request body is ignored', () => {
       email,
       password: VALID_TEST_PASSWORD,
       fullName: 'Role Spoof Attempt',
+      registrationType: 'STUDENT',
       consent: true,
       // Forged fields per Phase 4 spec's example — none of these are
       // fields registerSchema declares, so zod strips them silently.

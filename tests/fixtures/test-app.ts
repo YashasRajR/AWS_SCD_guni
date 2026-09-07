@@ -27,6 +27,7 @@ export async function registerTestAttendee(label: string) {
     email,
     password: VALID_TEST_PASSWORD,
     fullName: `Test Attendee ${label}`,
+    registrationType: 'STUDENT',
     consent: true,
   });
   return { email, response: res };

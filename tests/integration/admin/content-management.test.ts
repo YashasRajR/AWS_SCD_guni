@@ -15,6 +15,7 @@ beforeAll(async () => {
     email: attendeeEmail,
     password: 'TestPassw0rd!',
     fullName: 'Content Test Attendee',
+    registrationType: 'STUDENT',
     consent: true,
   });
   attendeeToken = attendeeRegister.body.data.accessToken as string;
