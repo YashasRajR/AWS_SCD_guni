@@ -6,7 +6,7 @@ import { toRegistration } from './registrations.types.js';
 import { eventService } from '../event/event.service.js';
 import { ticketPlansService } from '../ticket-plans/ticket-plans.service.js';
 import { couponsService } from '../coupons/coupons.service.js';
-import { ticketsService } from '../tickets/tickets.service.js';
+import { ticketsService, formatAmountPaid } from '../tickets/tickets.service.js';
 import { attendeesService } from '../attendees/attendees.service.js';
 import { usersService } from '../users/users.service.js';
 import { emailsService } from '../emails/emails.service.js';
@@ -244,12 +244,29 @@ export const registrationsService = {
       'Your registration is confirmed',
       { fullName: attendee.fullName, registrationNumber },
     );
+
+    // Best-effort enrichment for the ticket email's richer layout -- a
+    // failure here still sends the (plainer) email rather than blocking
+    // the confirmed registration on it.
+    const [registrationRow, event] = await Promise.all([
+      registrationsRepository.findById(registrationId),
+      eventService.getCurrent(),
+    ]);
     await emailsService.enqueue(user.id, user.email, 'ticket', 'Your AWS Student Community Day ticket', {
       fullName: attendee.fullName,
       registrationNumber,
       ticketNumber,
       ticketId,
       registrationId,
+      ticketPlanName: registrationRow?.tp_name ?? null,
+      amountLabel: registrationRow ? formatAmountPaid(registrationRow, event) : null,
+      phone: attendee.phone,
+      issuedAt: new Date().toISOString(),
+      eventDate: event.eventDate,
+      startTime: event.startTime,
+      endTime: event.endTime,
+      venue: event.venue,
+      supportEmail: event.contactEmail,
     });
   },
 };

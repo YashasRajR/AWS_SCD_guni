@@ -3,8 +3,17 @@ import QRCode from 'qrcode';
 
 export interface TicketPdfInput {
   ticketNumber: string;
+  registrationNumber: string;
+  issuedAt: string;
   attendeeName: string;
   university: string | null;
+  department: string | null;
+  year: string | null;
+  phone: string | null;
+  ticketPlanName: string | null;
+  /** Pre-formatted, e.g. "INR 499.00" or "Free" -- the caller already knows
+   * which of ticket-plan price / event fee / coupon discount applies. */
+  amountLabel: string;
   eventName: string;
   eventDate: string;
   startTime: string | null;
@@ -14,51 +23,66 @@ export interface TicketPdfInput {
   goodieToken: string;
 }
 
-// ponytail: brand tokens copied from apps/web/src/styles/tokens.css rather than
-// shared as a package — this is the only server-side consumer of them.
+// ponytail: brand tokens copied from apps/web/src/styles/tokens.css rather
+// than shared as a package -- this is the only server-side consumer of
+// them. `border` is a flattened approximation of the site's
+// rgba(51,32,82,0.18) hairline (pdfkit strokes don't take rgba strings).
 const COLOR = {
+  masthead: '#332052',
   primary: '#50377a',
-  secondary: '#332052',
   accent: '#f28a45',
+  accentText: '#241934',
   foreground: '#14181f',
   muted: '#656d79',
-  border: '#d8d2e4',
+  mutedDark: '#3d4451',
+  border: '#e4e0e9',
+  bannerBg: '#eef1f5',
   success: '#1c7a41',
-  successBg: '#e5f6ec',
-  warningBg: '#fdf1dc',
-  warning: '#97650c',
-  surface: '#ffffff',
   background: '#f8f6fc',
+  white: '#ffffff',
+  lavender: '#c9bcdf',
 };
 
-function formatWhen(eventDate: string, startTime: string | null, endTime: string | null): string {
-  const date = new Date(eventDate).toLocaleDateString('en-IN', {
+const PAGE_W = 400;
+const PAD_X = 26;
+const CONTENT_W = PAGE_W - PAD_X * 2;
+
+function formatDate(eventDate: string): string {
+  return new Date(eventDate).toLocaleDateString('en-IN', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
-  if (!startTime) return date;
-  const time = endTime ? `${startTime} – ${endTime}` : startTime;
-  return `${date}, ${time}`;
+}
+
+function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
 }
 
 /**
- * Renders a one-page ticket PDF styled as a boarding-pass card (brand
- * colors from apps/web/src/styles/tokens.css): a purple header band, an
- * info stub, and a perforated QR stub with the two entry/goodie codes.
- * Called once at issuance time (see ticketsService.issueIfNeeded /
- * qrTokensService.reissuePdf) — both raw tokens must be passed in by the
- * caller since neither is ever persisted or retrievable again after that
- * moment.
+ * Renders the ticket as a tall "digital pass" card — mirrors the reference
+ * design in Ticket PDF.dc.html (masthead, attendee block, registration/
+ * ticket number stub, details grid, essentials, dual QR scan codes) using
+ * the site's own brand colors. Called once at issuance time (see
+ * ticketsService.issueIfNeeded / qrTokensService.reissuePdf) -- both raw
+ * tokens must be passed in by the caller since neither is ever persisted
+ * or retrievable again after that moment.
  */
 export async function buildTicketPdf(input: TicketPdfInput): Promise<Buffer> {
   const [registrationQr, goodieQr] = await Promise.all([
-    QRCode.toBuffer(input.registrationToken, { type: 'png', width: 240, margin: 1 }),
-    QRCode.toBuffer(input.goodieToken, { type: 'png', width: 240, margin: 1 }),
+    QRCode.toBuffer(input.registrationToken, { type: 'png', width: 260, margin: 1 }),
+    QRCode.toBuffer(input.goodieToken, { type: 'png', width: 260, margin: 1 }),
   ]);
 
-  const doc = new PDFDocument({ size: 'A4', margin: 50 });
+  const doc = new PDFDocument({ size: [PAGE_W, 1000], margin: 0 });
   const chunks: Buffer[] = [];
   doc.on('data', (chunk: Buffer) => chunks.push(chunk));
   const done = new Promise<Buffer>((resolve, reject) => {
@@ -66,118 +90,188 @@ export async function buildTicketPdf(input: TicketPdfInput): Promise<Buffer> {
     doc.on('error', reject);
   });
 
-  doc.rect(0, 0, doc.page.width, doc.page.height).fill(COLOR.background);
+  doc.rect(0, 0, PAGE_W, doc.page.height).fill(COLOR.background);
 
-  const cardX = doc.page.margins.left;
-  const cardW = doc.page.width - doc.page.margins.left - doc.page.margins.right;
-  const cardY = 90;
-  const headerH = 74;
-  const stubW = 190;
-  const bodyH = 260;
-  const cardBottom = cardY + headerH + bodyH;
-  const stubX = cardX + cardW - stubW;
-
-  // --- Card outline + header band -----------------------------------
-  doc.roundedRect(cardX, cardY, cardW, headerH + bodyH, 14).fillAndStroke(COLOR.surface, COLOR.border);
-  doc.save();
-  doc.roundedRect(cardX, cardY, cardW, headerH + bodyH, 14).clip();
-  doc.rect(cardX, cardY, cardW, headerH).fill(COLOR.primary);
-  doc.rect(cardX, cardY + headerH, cardW, 4).fill(COLOR.accent);
-  doc.restore();
-
+  // --- Masthead ---------------------------------------------------------
+  const mastheadH = 132;
+  doc.rect(0, 0, PAGE_W, mastheadH).fill(COLOR.masthead);
+  doc.font('Helvetica-Bold').fontSize(20).fillColor(COLOR.white);
+  ['AWS STUDENT', 'COMMUNITY', 'DAY 2026'].forEach((line, i) => {
+    doc.text(line, PAD_X, 22 + i * 21, { width: 220 });
+  });
+  doc.font('Helvetica-Bold').fontSize(8).fillColor(COLOR.lavender).text('DIGITAL', PAD_X + 220, 24, {
+    width: 154,
+    align: 'right',
+    characterSpacing: 1.5,
+  });
+  doc.font('Helvetica-Bold').fontSize(13).fillColor(COLOR.white).text('ATTENDEE PASS', PAD_X + 220, 36, {
+    width: 154,
+    align: 'right',
+  });
   doc
+    .font('Helvetica-Bold')
     .fontSize(9)
-    .fillColor('#d9cdef')
-    .text('AWS STUDENT COMMUNITY DAY', cardX + 28, cardY + 16, { characterSpacing: 1.2 });
-  doc
-    .fontSize(19)
-    .fillColor('#ffffff')
-    .text(input.eventName, cardX + 28, cardY + 30, { width: cardW - 56 - stubW });
-  doc
-    .fontSize(9.5)
-    .fillColor('#e4dbf2')
-    .text(formatWhen(input.eventDate, input.startTime, input.endTime), cardX + 28, cardY + 54, {
-      width: cardW - 56 - stubW,
-    });
+    .fillColor(COLOR.accent)
+    .text('GANPAT UNIVERSITY · MEHSANA, GUJARAT', PAD_X, 100, { characterSpacing: 1, width: 300 });
+  doc.rect(0, mastheadH, PAGE_W, 5).fill(COLOR.accent);
 
-  // --- Perforated divider between info stub and QR stub ---------------
-  const perfX = stubX;
-  doc.save();
-  doc.circle(perfX, cardY + headerH + 4, 9).fill(COLOR.background);
-  doc.circle(perfX, cardBottom, 9).fill(COLOR.background);
-  doc.restore();
-  doc
-    .dash(4, { space: 4 })
-    .moveTo(perfX, cardY + headerH + 16)
-    .lineTo(perfX, cardBottom - 16)
-    .strokeColor(COLOR.border)
-    .lineWidth(1)
-    .stroke()
-    .undash();
+  let y = mastheadH + 5 + 24;
 
-  // --- Left info stub ---------------------------------------------------
-  const infoX = cardX + 28;
-  const infoW = stubX - infoX - 24;
-  let y = cardY + headerH + 26;
-
-  doc.fontSize(8.5).fillColor(COLOR.muted).text('ATTENDEE', infoX, y, { characterSpacing: 1 });
-  y += 13;
-  doc.fontSize(14).fillColor(COLOR.foreground).text(input.attendeeName, infoX, y, { width: infoW });
-  y += 20;
-  if (input.university) {
-    doc.fontSize(10).fillColor(COLOR.muted).text(input.university, infoX, y, { width: infoW });
+  // --- Attendee -----------------------------------------------------------
+  doc.font('Helvetica-Bold').fontSize(8.5).fillColor(COLOR.muted).text('ATTENDEE', PAD_X, y, { characterSpacing: 1.5 });
+  y += 14;
+  doc.font('Helvetica-Bold').fontSize(24).fillColor(COLOR.masthead).text(input.attendeeName, PAD_X, y, {
+    width: CONTENT_W,
+  });
+  y += 30;
+  const subtitle = [input.university, input.department, input.year].filter(Boolean).join(' · ');
+  if (subtitle) {
+    doc.font('Helvetica').fontSize(10.5).fillColor(COLOR.mutedDark).text(subtitle, PAD_X, y, { width: CONTENT_W });
     y += 22;
   } else {
-    y += 8;
+    y += 6;
   }
+  y += 14;
 
-  doc.fontSize(8.5).fillColor(COLOR.muted).text('VENUE', infoX, y, { characterSpacing: 1 });
-  y += 13;
-  doc
-    .fontSize(10.5)
-    .fillColor(COLOR.foreground)
-    .text(input.venue ?? 'To be announced', infoX, y, { width: infoW });
-  y += 30;
-
-  // Status pill
-  doc.roundedRect(infoX, y, 76, 20, 10).fill(COLOR.successBg);
-  doc.fontSize(9).fillColor(COLOR.success).text('CONFIRMED', infoX, y + 5.5, { width: 76, align: 'center' });
-
-  // Ticket number chip
-  const chipY = y + 34;
-  doc.roundedRect(infoX, chipY, infoW, 30, 6).lineWidth(1).strokeColor(COLOR.border).stroke();
-  doc.fontSize(8).fillColor(COLOR.muted).text('TICKET NO.', infoX + 12, chipY + 6);
-  doc.fontSize(12).fillColor(COLOR.secondary).text(input.ticketNumber, infoX + 12, chipY + 15, {
-    characterSpacing: 0.5,
+  // --- Registration / ticket number stub -----------------------------------
+  const boxH = 56;
+  doc.roundedRect(PAD_X, y, CONTENT_W, boxH, 4).lineWidth(1.5).strokeColor(COLOR.masthead).stroke();
+  doc.font('Helvetica-Bold').fontSize(8).fillColor(COLOR.muted).text('REGISTRATION NO.', PAD_X + 14, y + 11, {
+    characterSpacing: 1,
   });
-
-  // --- Right QR stub ------------------------------------------------
-  const qrSize = 108;
-  const qrColX = stubX + (stubW - qrSize) / 2;
-  let qy = cardY + headerH + 22;
-
-  doc.image(registrationQr, qrColX, qy, { width: qrSize });
   doc
-    .fontSize(9)
+    .font('Courier-Bold')
+    .fontSize(18)
+    .fillColor(COLOR.primary)
+    .text(input.registrationNumber, PAD_X + 14, y + 24);
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(8)
+    .fillColor(COLOR.muted)
+    .text('TICKET', PAD_X, y + 11, { width: CONTENT_W - 14, align: 'right', characterSpacing: 1 });
+  doc
+    .font('Courier-Bold')
+    .fontSize(12)
     .fillColor(COLOR.foreground)
-    .text('ENTRY CHECK-IN', stubX, qy + qrSize + 6, { width: stubW, align: 'center' });
+    .text(input.ticketNumber, PAD_X, y + 27, { width: CONTENT_W - 14, align: 'right' });
+  y += boxH;
 
-  qy += qrSize + 26;
-  doc.image(goodieQr, qrColX, qy, { width: qrSize });
+  const bannerH = 48;
+  doc.rect(PAD_X, y, CONTENT_W, bannerH).fill(COLOR.bannerBg);
+  doc.rect(PAD_X, y, 4, bannerH).fill(COLOR.primary);
   doc
-    .fontSize(9)
-    .fillColor(COLOR.foreground)
-    .text('GOODIE CLAIM', stubX, qy + qrSize + 6, { width: stubW, align: 'center' });
+    .font('Helvetica')
+    .fontSize(10)
+    .fillColor(COLOR.mutedDark)
+    .text(
+      'Two scan codes below: one for entry at Registration, one for Goodies collection. Each is single-use and tied to this registration number.',
+      PAD_X + 16,
+      y + 9,
+      { width: CONTENT_W - 28, lineGap: 1.5 },
+    );
+  y += bannerH + 20;
 
-  // --- Footer notice --------------------------------------------------
-  doc.roundedRect(cardX, cardBottom + 24, cardW, 34, 8).fill(COLOR.warningBg);
-  doc
-    .fontSize(9)
-    .fillColor(COLOR.warning)
-    .text('Each QR code is single-use and tied to this ticket. Do not share this PDF publicly.', cardX, cardBottom + 34, {
-      width: cardW,
-      align: 'center',
+  // --- Details grid (2x2) -------------------------------------------------
+  const colW = CONTENT_W / 2;
+  function gridCell(label: string, value: string, col: 0 | 1, row: 0 | 1, valueColor = COLOR.foreground): void {
+    const x = PAD_X + col * colW;
+    const cellY = y + row * 50;
+    doc.font('Helvetica-Bold').fontSize(8).fillColor(COLOR.muted).text(label, x, cellY + 10, { characterSpacing: 1 });
+    doc.font('Helvetica-Bold').fontSize(12.5).fillColor(valueColor).text(value, x, cellY + 22, { width: colW - 12 });
+  }
+  doc.moveTo(PAD_X, y).lineTo(PAD_X + CONTENT_W, y).strokeColor(COLOR.border).lineWidth(1).stroke();
+  doc.moveTo(PAD_X, y + 50).lineTo(PAD_X + CONTENT_W, y + 50).strokeColor(COLOR.border).stroke();
+  doc.moveTo(PAD_X, y + 100).lineTo(PAD_X + CONTENT_W, y + 100).strokeColor(COLOR.border).stroke();
+  doc.moveTo(PAD_X + colW, y).lineTo(PAD_X + colW, y + 100).strokeColor(COLOR.border).stroke();
+  gridCell('TICKET TYPE', input.ticketPlanName ?? 'General', 0, 0);
+  gridCell('AMOUNT PAID', input.amountLabel, 1, 0, COLOR.success);
+  gridCell('PHONE', input.phone ?? '—', 0, 1);
+  gridCell('ISSUED ON', formatDateTime(input.issuedAt), 1, 1);
+  y += 100 + 26;
+
+  // --- The essentials -------------------------------------------------
+  function sectionHeader(label: string): void {
+    doc.font('Helvetica-Bold').fontSize(8.5).fillColor(COLOR.primary).text(label, PAD_X, y, { characterSpacing: 1.5 });
+    doc.rect(PAD_X, y + 13, 32, 2).fill(COLOR.masthead);
+    y += 26;
+  }
+  sectionHeader('THE ESSENTIALS');
+  const labelW = 64;
+  function essentialRow(label: string, value: string, valueLines = 1): void {
+    doc.font('Helvetica-Bold').fontSize(8.5).fillColor(COLOR.muted).text(label, PAD_X, y + 2, {
+      width: labelW,
+      characterSpacing: 1,
     });
+    doc.font('Helvetica-Bold').fontSize(11.5).fillColor(COLOR.foreground).text(value, PAD_X + labelW + 12, y, {
+      width: CONTENT_W - labelW - 12,
+    });
+    y += 16 * valueLines + 10;
+  }
+  essentialRow('DATE', formatDate(input.eventDate));
+  essentialRow(
+    'TIME',
+    input.startTime ? `${input.startTime}${input.endTime ? ` – ${input.endTime}` : ''} IST` : 'To be announced',
+  );
+  essentialRow('VENUE', input.venue ?? 'To be announced', 2);
+  essentialRow('ENTRY', 'Ticket PDF + college ID card');
+  y += 8;
+
+  // --- Scan codes ---------------------------------------------------------
+  sectionHeader('YOUR SCAN CODES');
+  const boxGap = 12;
+  const scanBoxW = (CONTENT_W - boxGap) / 2;
+  const stripH = 20;
+  const qrSize = 128;
+  const scanBoxH = stripH + 16 + qrSize + 26;
+
+  function scanBox(x: number, stripColor: string, stripTextColor: string, label: string, qr: Buffer): void {
+    doc.roundedRect(x, y, scanBoxW, scanBoxH, 4).lineWidth(1.5).strokeColor(stripColor).stroke();
+    doc.rect(x, y, scanBoxW, stripH).fill(stripColor);
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(8)
+      .fillColor(stripTextColor)
+      .text(label, x, y + 6.5, { width: scanBoxW, align: 'center', characterSpacing: 0.8 });
+    doc.image(qr, x + (scanBoxW - qrSize) / 2, y + stripH + 12, { width: qrSize });
+  }
+  scanBox(PAD_X, COLOR.masthead, COLOR.white, 'REGISTRATION — ENTRY', registrationQr);
+  scanBox(PAD_X + scanBoxW + boxGap, COLOR.accent, COLOR.accentText, 'GOODIES — COLLECTION', goodieQr);
+  y += scanBoxH + 10;
+  doc
+    .font('Helvetica')
+    .fontSize(9.5)
+    .fillColor(COLOR.muted)
+    .text("If a code won't scan, a volunteer can verify you by name or registration number instead.", PAD_X, y, {
+      width: CONTENT_W,
+    });
+  y += 28;
+
+  // --- Footer -------------------------------------------------------------
+  doc.moveTo(PAD_X, y).lineTo(PAD_X + CONTENT_W, y).strokeColor(COLOR.border).lineWidth(1).stroke();
+  y += 12;
+  doc
+    .font('Helvetica')
+    .fontSize(9.5)
+    .fillColor('#565d68')
+    .text(
+      `Non-transferable, admits one named attendee, void if altered or resold. Queries: quote ${input.registrationNumber}.`,
+      PAD_X,
+      y,
+      { width: CONTENT_W, lineGap: 2 },
+    );
+  y += 44;
+
+  doc.rect(0, y, PAGE_W, 34).fill(COLOR.masthead);
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(8)
+    .fillColor(COLOR.lavender)
+    .text('LIVE COPY IN YOUR DASHBOARD', PAD_X, y + 12, { characterSpacing: 1.2 });
+  doc
+    .font('Courier-Bold')
+    .fontSize(12)
+    .fillColor(COLOR.accent)
+    .text(input.registrationNumber, PAD_X, y + 10, { width: CONTENT_W, align: 'right' });
 
   doc.end();
   return done;

@@ -4,13 +4,25 @@ import { toTicket, type TicketRow } from './tickets.types.js';
 import { qrTokensService } from '../qr-tokens/qr-tokens.service.js';
 import { buildTicketPdf } from './ticket-pdf.js';
 import { registrationsRepository } from '../registrations/registrations.repository.js';
+import type { RegistrationRow } from '../registrations/registrations.types.js';
 import { attendeesRepository } from '../attendees/attendees.repository.js';
+import type { EventConfig } from '@scd/types';
 import { eventService } from '../event/event.service.js';
 import { emailsService } from '../emails/emails.service.js';
 import { usersService } from '../users/users.service.js';
 import { documentsRepository } from '../documents/documents.repository.js';
 import { AppError } from '../../utils/errors.js';
 import { logger } from '../../utils/logger.js';
+
+/** Ticket-plan price minus any coupon discount, falling back to the
+ * event's flat registration fee for pre-ticket-plan-era registrations
+ * (same computation as the dashboard's own requiresPayment display). */
+export function formatAmountPaid(registration: RegistrationRow, event: EventConfig): string {
+  const price = registration.tp_price != null ? Number(registration.tp_price) : Number(event.registrationFee);
+  const currency = registration.tp_currency ?? event.currency;
+  const final = Math.max(price - Number(registration.discount_amount || '0'), 0);
+  return final === 0 ? 'Free' : `${currency} ${final.toFixed(2)}`;
+}
 
 async function renderAndStorePdf(
   ticket: TicketRow,
@@ -27,8 +39,15 @@ async function renderAndStorePdf(
 
   const pdf = await buildTicketPdf({
     ticketNumber: ticket.ticket_number,
+    registrationNumber: registration.registration_number,
+    issuedAt: ticket.issued_at,
     attendeeName: attendee.full_name,
     university: attendee.university,
+    department: attendee.department,
+    year: attendee.year,
+    phone: attendee.phone,
+    ticketPlanName: registration.tp_name,
+    amountLabel: formatAmountPaid(registration, event),
     eventName: event.name,
     eventDate: event.eventDate,
     startTime: event.startTime,
@@ -94,6 +113,7 @@ export const ticketsService = {
     if (!attendee) throw AppError.notFound('Attendee');
     const user = await usersService.getPublicUserById(attendee.user_id);
     if (!user) throw AppError.notFound('User');
+    const event = await eventService.getCurrent();
 
     await emailsService.enqueue(
       user.id,
@@ -105,6 +125,15 @@ export const ticketsService = {
         registrationNumber: registration.registration_number,
         ticketNumber: ticket.ticket_number,
         ticketId: ticket.id,
+        ticketPlanName: registration.tp_name,
+        amountLabel: formatAmountPaid(registration, event),
+        phone: attendee.phone,
+        issuedAt: ticket.issued_at,
+        eventDate: event.eventDate,
+        startTime: event.startTime,
+        endTime: event.endTime,
+        venue: event.venue,
+        supportEmail: event.contactEmail,
       },
     );
   },
