@@ -65,6 +65,22 @@ export const ticketsService = {
     return row ? toTicket(row) : null;
   },
 
+  /**
+   * Like getByRegistrationId, but self-heals a CONFIRMED registration
+   * that somehow ended up without a ticket. issueIfNeeded is normally
+   * called synchronously the moment a registration is confirmed (see
+   * registrations.service.ts updateStatus), but that call sits after the
+   * status row is already committed — a failure partway through ticket
+   * issuance leaves the registration CONFIRMED with no ticket and nothing
+   * ever retries it. issueIfNeeded is idempotent, so it is safe to run
+   * here on every read that finds the gap.
+   */
+  async getOrIssueByRegistrationId(registrationId: string, registrationStatus: string): Promise<Ticket | null> {
+    const ticket = await this.getByRegistrationId(registrationId);
+    if (ticket || registrationStatus !== 'CONFIRMED') return ticket;
+    return this.issueIfNeeded(registrationId);
+  },
+
   async getPdfBuffer(ticketId: string): Promise<Buffer> {
     const pdf = await ticketsRepository.findPdfData(ticketId);
     if (!pdf) throw AppError.notFound('Ticket PDF', 'This ticket has no generated PDF yet.');
