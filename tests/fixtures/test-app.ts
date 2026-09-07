@@ -28,6 +28,12 @@ export async function registerTestAttendee(label: string) {
     password: VALID_TEST_PASSWORD,
     fullName: `Test Attendee ${label}`,
     registrationType: 'STUDENT',
+    phone: '9876543210',
+    dateOfBirth: '2000-01-01',
+    university: 'Test University',
+    department: 'Computer Science',
+    branch: 'CSE',
+    year: '2026',
     consent: true,
   });
   return { email, response: res };

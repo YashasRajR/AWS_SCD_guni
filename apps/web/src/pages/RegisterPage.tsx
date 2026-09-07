@@ -6,12 +6,17 @@ import { useDocumentHead } from '../lib/seo.js';
 interface FormState {
   email: string;
   password: string;
+  confirmPassword: string;
   fullName: string;
   phone: string;
+  registrationType: 'STUDENT' | 'PROFESSIONAL' | '';
+  dateOfBirth: string;
   university: string;
   department: string;
+  branch: string;
   year: string;
-  registrationType: 'STUDENT' | 'PROFESSIONAL' | '';
+  companyName: string;
+  designation: string;
   linkedinUrl: string;
   consent: boolean;
 }
@@ -19,12 +24,17 @@ interface FormState {
 const INITIAL_STATE: FormState = {
   email: '',
   password: '',
+  confirmPassword: '',
   fullName: '',
   phone: '',
+  registrationType: '',
+  dateOfBirth: '',
   university: '',
   department: '',
+  branch: '',
   year: '',
-  registrationType: '',
+  companyName: '',
+  designation: '',
   linkedinUrl: '',
   consent: false,
 };
@@ -44,7 +54,11 @@ export function RegisterPage() {
     e.preventDefault();
     setError(null);
     if (!form.registrationType) {
-      setError('Select whether you are a student or a professional.');
+      setError('Select whether you are a student or an employee.');
+      return;
+    }
+    if (form.password !== form.confirmPassword) {
+      setError('Passwords do not match.');
       return;
     }
     if (!form.consent) {
@@ -57,11 +71,15 @@ export function RegisterPage() {
         email: form.email,
         password: form.password,
         fullName: form.fullName,
-        phone: form.phone.trim() || undefined,
+        phone: form.phone.trim(),
+        registrationType: form.registrationType as 'STUDENT' | 'PROFESSIONAL',
+        dateOfBirth: form.dateOfBirth,
         university: form.university.trim() || undefined,
         department: form.department.trim() || undefined,
+        branch: form.branch.trim() || undefined,
         year: form.year.trim() || undefined,
-        registrationType: form.registrationType as 'STUDENT' | 'PROFESSIONAL',
+        companyName: form.companyName.trim() || undefined,
+        designation: form.designation.trim() || undefined,
         linkedinUrl: form.linkedinUrl.trim() || undefined,
         consent: true,
       });
@@ -72,6 +90,9 @@ export function RegisterPage() {
       setSubmitting(false);
     }
   };
+
+  const isStudent = form.registrationType === 'STUDENT';
+  const isEmployee = form.registrationType === 'PROFESSIONAL';
 
   return (
     <div className="auth-page">
@@ -118,43 +139,35 @@ export function RegisterPage() {
             <span className="form-help">At least 8 characters, with a letter and a number.</span>
           </label>
           <label className="form-field">
-            <span>Phone</span>
+            <span>Confirm password *</span>
+            <input
+              type="password"
+              required
+              minLength={8}
+              value={form.confirmPassword}
+              onChange={(e) => setField('confirmPassword', e.target.value)}
+              autoComplete="new-password"
+            />
+          </label>
+          <label className="form-field">
+            <span>Mobile number *</span>
             <input
               type="tel"
+              required
               value={form.phone}
               onChange={(e) => setField('phone', e.target.value)}
               autoComplete="tel"
             />
           </label>
-          <label className="form-field">
-            <span>University</span>
-            <input
-              type="text"
-              value={form.university}
-              onChange={(e) => setField('university', e.target.value)}
-            />
-          </label>
-          <label className="form-field">
-            <span>Department</span>
-            <input
-              type="text"
-              value={form.department}
-              onChange={(e) => setField('department', e.target.value)}
-            />
-          </label>
-          <label className="form-field">
-            <span>Year</span>
-            <input type="text" value={form.year} onChange={(e) => setField('year', e.target.value)} />
-          </label>
 
           <fieldset className="form-field form-field-span" style={{ border: 'none', padding: 0, margin: 0 }}>
-            <span>I am registering as *</span>
+            <span>Profession *</span>
             <div className="dashboard-card-row">
               <label className="form-field-checkbox">
                 <input
                   type="radio"
                   name="registrationType"
-                  checked={form.registrationType === 'STUDENT'}
+                  checked={isStudent}
                   onChange={() => setField('registrationType', 'STUDENT')}
                 />
                 <span>Student</span>
@@ -163,23 +176,114 @@ export function RegisterPage() {
                 <input
                   type="radio"
                   name="registrationType"
-                  checked={form.registrationType === 'PROFESSIONAL'}
+                  checked={isEmployee}
                   onChange={() => setField('registrationType', 'PROFESSIONAL')}
                 />
-                <span>Professional</span>
+                <span>Employee</span>
               </label>
             </div>
           </fieldset>
 
-          <label className="form-field form-field-span">
-            <span>LinkedIn profile</span>
-            <input
-              type="url"
-              value={form.linkedinUrl}
-              onChange={(e) => setField('linkedinUrl', e.target.value)}
-              placeholder="https://linkedin.com/in/yourname"
-            />
-          </label>
+          {isStudent && (
+            <>
+              <label className="form-field">
+                <span>College/university name *</span>
+                <input
+                  type="text"
+                  required
+                  value={form.university}
+                  onChange={(e) => setField('university', e.target.value)}
+                />
+              </label>
+              <label className="form-field">
+                <span>Department *</span>
+                <input
+                  type="text"
+                  required
+                  value={form.department}
+                  onChange={(e) => setField('department', e.target.value)}
+                />
+              </label>
+              <label className="form-field">
+                <span>Branch *</span>
+                <input
+                  type="text"
+                  required
+                  value={form.branch}
+                  onChange={(e) => setField('branch', e.target.value)}
+                />
+              </label>
+              <label className="form-field">
+                <span>Date of birth *</span>
+                <input
+                  type="date"
+                  required
+                  value={form.dateOfBirth}
+                  onChange={(e) => setField('dateOfBirth', e.target.value)}
+                />
+              </label>
+              <label className="form-field">
+                <span>Year of passout *</span>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. 2027"
+                  value={form.year}
+                  onChange={(e) => setField('year', e.target.value)}
+                />
+              </label>
+              <label className="form-field">
+                <span>LinkedIn profile</span>
+                <input
+                  type="url"
+                  value={form.linkedinUrl}
+                  onChange={(e) => setField('linkedinUrl', e.target.value)}
+                  placeholder="https://linkedin.com/in/yourname"
+                />
+              </label>
+            </>
+          )}
+
+          {isEmployee && (
+            <>
+              <label className="form-field">
+                <span>Company name *</span>
+                <input
+                  type="text"
+                  required
+                  value={form.companyName}
+                  onChange={(e) => setField('companyName', e.target.value)}
+                />
+              </label>
+              <label className="form-field">
+                <span>Designation *</span>
+                <input
+                  type="text"
+                  required
+                  value={form.designation}
+                  onChange={(e) => setField('designation', e.target.value)}
+                />
+              </label>
+              <label className="form-field">
+                <span>Date of birth *</span>
+                <input
+                  type="date"
+                  required
+                  value={form.dateOfBirth}
+                  onChange={(e) => setField('dateOfBirth', e.target.value)}
+                />
+              </label>
+              <label className="form-field">
+                <span>LinkedIn profile</span>
+                <input
+                  type="url"
+                  value={form.linkedinUrl}
+                  onChange={(e) => setField('linkedinUrl', e.target.value)}
+                  placeholder="https://linkedin.com/in/yourname"
+                />
+              </label>
+            </>
+          )}
 
           <label className="form-field form-field-checkbox form-field-span">
             <input

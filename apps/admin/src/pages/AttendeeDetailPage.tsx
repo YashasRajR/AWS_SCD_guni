@@ -62,14 +62,18 @@ function DocumentVersionHistory({ kind, id }: { kind: 'tickets' | 'invoices'; id
   );
 }
 
-const EDITABLE_FIELDS = ['fullName', 'phone', 'university', 'department', 'year', 'registrationType', 'linkedinUrl'] as const;
+const EDITABLE_FIELDS = ['fullName', 'phone', 'university', 'department', 'branch', 'year', 'dateOfBirth', 'companyName', 'designation', 'registrationType', 'linkedinUrl'] as const;
 type EditableField = (typeof EDITABLE_FIELDS)[number];
 const FIELD_LABELS: Record<EditableField, string> = {
   fullName: 'Full name',
   phone: 'Phone',
   university: 'University',
   department: 'Department',
-  year: 'Year',
+  branch: 'Branch',
+  year: 'Year of passout',
+  dateOfBirth: 'Date of birth',
+  companyName: 'Company name',
+  designation: 'Designation',
   registrationType: 'Registration type',
   linkedinUrl: 'LinkedIn',
 };
@@ -84,7 +88,11 @@ export function AttendeeDetailPage() {
     phone: '',
     university: '',
     department: '',
+    branch: '',
     year: '',
+    dateOfBirth: '',
+    companyName: '',
+    designation: '',
     registrationType: '',
     linkedinUrl: '',
   });
@@ -115,7 +123,11 @@ export function AttendeeDetailPage() {
       phone: attendee.phone ?? '',
       university: attendee.university ?? '',
       department: attendee.department ?? '',
+      branch: attendee.branch ?? '',
       year: attendee.year ?? '',
+      dateOfBirth: attendee.dateOfBirth ?? '',
+      companyName: attendee.companyName ?? '',
+      designation: attendee.designation ?? '',
       registrationType: attendee.registrationType ?? '',
       linkedinUrl: attendee.linkedinUrl ?? '',
     });
@@ -248,8 +260,16 @@ export function AttendeeDetailPage() {
             <dd>{attendee.university ?? '—'}</dd>
             <dt>Department</dt>
             <dd>{attendee.department ?? '—'}</dd>
-            <dt>Year</dt>
+            <dt>Branch</dt>
+            <dd>{attendee.branch ?? '—'}</dd>
+            <dt>Year of passout</dt>
             <dd>{attendee.year ?? '—'}</dd>
+            <dt>Company name</dt>
+            <dd>{attendee.companyName ?? '—'}</dd>
+            <dt>Designation</dt>
+            <dd>{attendee.designation ?? '—'}</dd>
+            <dt>Date of birth</dt>
+            <dd>{attendee.dateOfBirth ?? '—'}</dd>
             <dt>Registration type</dt>
             <dd>{attendee.registrationType ?? '—'}</dd>
             <dt>LinkedIn</dt>

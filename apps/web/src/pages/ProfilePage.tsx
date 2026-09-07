@@ -67,16 +67,40 @@ export function ProfilePage() {
                     <dd>{data.attendee.department}</dd>
                   </>
                 )}
+                {data.attendee.branch && (
+                  <>
+                    <dt>Branch</dt>
+                    <dd>{data.attendee.branch}</dd>
+                  </>
+                )}
                 {data.attendee.year && (
                   <>
-                    <dt>Year</dt>
+                    <dt>Year of passout</dt>
                     <dd>{data.attendee.year}</dd>
+                  </>
+                )}
+                {data.attendee.companyName && (
+                  <>
+                    <dt>Company</dt>
+                    <dd>{data.attendee.companyName}</dd>
+                  </>
+                )}
+                {data.attendee.designation && (
+                  <>
+                    <dt>Designation</dt>
+                    <dd>{data.attendee.designation}</dd>
+                  </>
+                )}
+                {data.attendee.dateOfBirth && (
+                  <>
+                    <dt>Date of birth</dt>
+                    <dd>{data.attendee.dateOfBirth}</dd>
                   </>
                 )}
                 {data.attendee.registrationType && (
                   <>
                     <dt>Registration type</dt>
-                    <dd>{data.attendee.registrationType}</dd>
+                    <dd>{data.attendee.registrationType === 'STUDENT' ? 'Student' : 'Employee'}</dd>
                   </>
                 )}
                 {data.attendee.linkedinUrl && (

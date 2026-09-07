@@ -26,6 +26,12 @@ describe('POST /api/v1/auth/register', () => {
       password: VALID_TEST_PASSWORD,
       fullName: 'Duplicate Test',
       registrationType: 'STUDENT',
+      phone: '9876543210',
+      dateOfBirth: '2000-01-01',
+      university: 'Test University',
+      department: 'Computer Science',
+      branch: 'CSE',
+      year: '2026',
       consent: true,
     };
     const first = await agent.post('/api/v1/auth/register').send(payload);

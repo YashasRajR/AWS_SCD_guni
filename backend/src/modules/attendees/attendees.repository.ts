@@ -15,8 +15,8 @@ type Queryable = Pool | PoolClient;
 export const attendeesRepository = {
   async create(input: CreateAttendeeInput, db: Queryable = getPool()): Promise<AttendeeRow> {
     const { rows } = await db.query<AttendeeRow>(
-      `INSERT INTO attendees (user_id, full_name, phone, university, department, year, registration_type, linkedin_url)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO attendees (user_id, full_name, phone, university, department, branch, year, date_of_birth, company_name, designation, registration_type, linkedin_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
       [
         input.userId,
@@ -24,7 +24,11 @@ export const attendeesRepository = {
         input.phone ?? null,
         input.university ?? null,
         input.department ?? null,
+        input.branch ?? null,
         input.year ?? null,
+        input.dateOfBirth ?? null,
+        input.companyName ?? null,
+        input.designation ?? null,
         input.registrationType ?? null,
         input.linkedinUrl ?? null,
       ],
@@ -133,7 +137,11 @@ export const attendeesRepository = {
       phone: patch.phone,
       university: patch.university,
       department: patch.department,
+      branch: patch.branch,
       year: patch.year,
+      date_of_birth: patch.dateOfBirth,
+      company_name: patch.companyName,
+      designation: patch.designation,
       registration_type: patch.registrationType,
       linkedin_url: patch.linkedinUrl,
     });

@@ -16,6 +16,12 @@ beforeAll(async () => {
     password: 'TestPassw0rd!',
     fullName: 'Content Test Attendee',
     registrationType: 'STUDENT',
+    phone: '9876543210',
+    dateOfBirth: '2000-01-01',
+    university: 'Test University',
+    department: 'Computer Science',
+    branch: 'CSE',
+    year: '2026',
     consent: true,
   });
   attendeeToken = attendeeRegister.body.data.accessToken as string;

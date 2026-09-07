@@ -13,7 +13,11 @@ export interface Attendee {
   phone: string | null;
   university: string | null;
   department: string | null;
+  branch: string | null;
   year: string | null;
+  dateOfBirth: string | null;
+  companyName: string | null;
+  designation: string | null;
   profileImage: string | null;
   registrationType: string | null;
   linkedinUrl: string | null;

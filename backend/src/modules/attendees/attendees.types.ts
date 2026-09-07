@@ -7,7 +7,11 @@ export interface AttendeeRow {
   phone: string | null;
   university: string | null;
   department: string | null;
+  branch: string | null;
   year: string | null;
+  date_of_birth: string | null;
+  company_name: string | null;
+  designation: string | null;
   profile_image: string | null;
   registration_type: string | null;
   linkedin_url: string | null;
@@ -21,7 +25,11 @@ export interface UpdateAttendeeInput {
   phone?: string;
   university?: string;
   department?: string;
+  branch?: string;
   year?: string;
+  dateOfBirth?: string;
+  companyName?: string;
+  designation?: string;
   registrationType?: string;
   linkedinUrl?: string;
 }
@@ -32,7 +40,11 @@ export interface CreateAttendeeInput {
   phone?: string;
   university?: string;
   department?: string;
+  branch?: string;
   year?: string;
+  dateOfBirth?: string;
+  companyName?: string;
+  designation?: string;
   registrationType?: string;
   linkedinUrl?: string;
 }
@@ -58,7 +70,11 @@ export function toAttendee(row: AttendeeRow): Attendee {
     phone: row.phone,
     university: row.university,
     department: row.department,
+    branch: row.branch,
     year: row.year,
+    dateOfBirth: row.date_of_birth,
+    companyName: row.company_name,
+    designation: row.designation,
     profileImage: row.profile_image,
     registrationType: row.registration_type,
     linkedinUrl: row.linkedin_url,
