@@ -72,6 +72,8 @@ export const authService = {
           university: input.university,
           department: input.department,
           year: input.year,
+          registrationType: input.registrationType,
+          linkedinUrl: input.linkedinUrl || undefined,
         },
         client,
       );

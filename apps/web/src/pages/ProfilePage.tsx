@@ -79,6 +79,16 @@ export function ProfilePage() {
                     <dd>{data.attendee.registrationType}</dd>
                   </>
                 )}
+                {data.attendee.linkedinUrl && (
+                  <>
+                    <dt>LinkedIn</dt>
+                    <dd>
+                      <a href={data.attendee.linkedinUrl} target="_blank" rel="noreferrer">
+                        {data.attendee.linkedinUrl}
+                      </a>
+                    </dd>
+                  </>
+                )}
               </dl>
             ) : (
               <p className="status-line">No attendee profile found.</p>

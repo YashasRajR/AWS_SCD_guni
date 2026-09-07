@@ -11,6 +11,8 @@ interface FormState {
   university: string;
   department: string;
   year: string;
+  registrationType: 'STUDENT' | 'PROFESSIONAL' | '';
+  linkedinUrl: string;
   consent: boolean;
 }
 
@@ -22,6 +24,8 @@ const INITIAL_STATE: FormState = {
   university: '',
   department: '',
   year: '',
+  registrationType: '',
+  linkedinUrl: '',
   consent: false,
 };
 
@@ -39,6 +43,10 @@ export function RegisterPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!form.registrationType) {
+      setError('Select whether you are a student or a professional.');
+      return;
+    }
     if (!form.consent) {
       setError('You must accept the terms to register.');
       return;
@@ -53,6 +61,8 @@ export function RegisterPage() {
         university: form.university.trim() || undefined,
         department: form.department.trim() || undefined,
         year: form.year.trim() || undefined,
+        registrationType: form.registrationType as 'STUDENT' | 'PROFESSIONAL',
+        linkedinUrl: form.linkedinUrl.trim() || undefined,
         consent: true,
       });
       navigate('/dashboard', { replace: true });
@@ -135,6 +145,40 @@ export function RegisterPage() {
           <label className="form-field">
             <span>Year</span>
             <input type="text" value={form.year} onChange={(e) => setField('year', e.target.value)} />
+          </label>
+
+          <fieldset className="form-field form-field-span" style={{ border: 'none', padding: 0, margin: 0 }}>
+            <span>I am registering as *</span>
+            <div className="dashboard-card-row">
+              <label className="form-field-checkbox">
+                <input
+                  type="radio"
+                  name="registrationType"
+                  checked={form.registrationType === 'STUDENT'}
+                  onChange={() => setField('registrationType', 'STUDENT')}
+                />
+                <span>Student</span>
+              </label>
+              <label className="form-field-checkbox">
+                <input
+                  type="radio"
+                  name="registrationType"
+                  checked={form.registrationType === 'PROFESSIONAL'}
+                  onChange={() => setField('registrationType', 'PROFESSIONAL')}
+                />
+                <span>Professional</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <label className="form-field form-field-span">
+            <span>LinkedIn profile</span>
+            <input
+              type="url"
+              value={form.linkedinUrl}
+              onChange={(e) => setField('linkedinUrl', e.target.value)}
+              placeholder="https://linkedin.com/in/yourname"
+            />
           </label>
 
           <label className="form-field form-field-checkbox form-field-span">

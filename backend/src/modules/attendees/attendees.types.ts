@@ -10,6 +10,7 @@ export interface AttendeeRow {
   year: string | null;
   profile_image: string | null;
   registration_type: string | null;
+  linkedin_url: string | null;
   deleted_at: string | null;
   created_at: string;
   updated_at: string;
@@ -22,6 +23,7 @@ export interface UpdateAttendeeInput {
   department?: string;
   year?: string;
   registrationType?: string;
+  linkedinUrl?: string;
 }
 
 export interface CreateAttendeeInput {
@@ -32,6 +34,7 @@ export interface CreateAttendeeInput {
   department?: string;
   year?: string;
   registrationType?: string;
+  linkedinUrl?: string;
 }
 
 export interface AttendeeExportRow {
@@ -58,6 +61,7 @@ export function toAttendee(row: AttendeeRow): Attendee {
     year: row.year,
     profileImage: row.profile_image,
     registrationType: row.registration_type,
+    linkedinUrl: row.linkedin_url,
     deletedAt: row.deleted_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

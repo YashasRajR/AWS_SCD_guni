@@ -70,6 +70,12 @@ export type QrScanResult = (typeof QR_SCAN_RESULTS)[number];
 export const EVENT_STATUSES = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
 export type EventStatus = (typeof EVENT_STATUSES)[number];
 
+// Spec #17's mutually-exclusive registration-type selection. attendees.registration_type
+// itself stays free text (admin edits already write arbitrary values there) --
+// this enum only constrains what the registration FORM itself can submit.
+export const REGISTRATION_TYPES = ['STUDENT', 'PROFESSIONAL'] as const;
+export type RegistrationType = (typeof REGISTRATION_TYPES)[number];
+
 export const CONTENT_STATUSES = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
 export type ContentStatus = (typeof CONTENT_STATUSES)[number];
 

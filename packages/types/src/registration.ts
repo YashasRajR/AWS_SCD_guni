@@ -16,6 +16,7 @@ export interface Attendee {
   year: string | null;
   profileImage: string | null;
   registrationType: string | null;
+  linkedinUrl: string | null;
   /** Soft-delete marker (spec #34/#55) -- non-null means archived, excluded
    * from normal listings/search/export. */
   deletedAt: string | null;

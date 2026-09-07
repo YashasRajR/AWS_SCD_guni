@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { REGISTRATION_TYPES } from '@scd/types';
 
 export const emailSchema = z.string().trim().toLowerCase().email().max(254);
 
@@ -21,6 +22,10 @@ export const registerSchema = z.object({
   university: z.string().trim().max(200).optional(),
   department: z.string().trim().max(200).optional(),
   year: z.string().trim().max(50).optional(),
+  registrationType: z.enum(REGISTRATION_TYPES, {
+    errorMap: () => ({ message: 'Select whether you are a student or a professional' }),
+  }),
+  linkedinUrl: z.string().trim().url().max(300).optional().or(z.literal('')),
   consent: z.literal(true, {
     errorMap: () => ({ message: 'You must accept the terms to register' }),
   }),

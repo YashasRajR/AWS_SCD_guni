@@ -9,6 +9,7 @@ export const updateAttendeeSchema = z.object({
   department: z.string().trim().min(1).max(200).optional(),
   year: z.string().trim().min(1).max(20).optional(),
   registrationType: z.string().trim().min(1).max(50).optional(),
+  linkedinUrl: z.string().trim().url().max(300).optional(),
 });
 export type UpdateAttendeeInput = z.infer<typeof updateAttendeeSchema>;
 

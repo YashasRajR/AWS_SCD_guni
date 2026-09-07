@@ -62,7 +62,7 @@ function DocumentVersionHistory({ kind, id }: { kind: 'tickets' | 'invoices'; id
   );
 }
 
-const EDITABLE_FIELDS = ['fullName', 'phone', 'university', 'department', 'year', 'registrationType'] as const;
+const EDITABLE_FIELDS = ['fullName', 'phone', 'university', 'department', 'year', 'registrationType', 'linkedinUrl'] as const;
 type EditableField = (typeof EDITABLE_FIELDS)[number];
 const FIELD_LABELS: Record<EditableField, string> = {
   fullName: 'Full name',
@@ -71,6 +71,7 @@ const FIELD_LABELS: Record<EditableField, string> = {
   department: 'Department',
   year: 'Year',
   registrationType: 'Registration type',
+  linkedinUrl: 'LinkedIn',
 };
 
 export function AttendeeDetailPage() {
@@ -85,6 +86,7 @@ export function AttendeeDetailPage() {
     department: '',
     year: '',
     registrationType: '',
+    linkedinUrl: '',
   });
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -115,6 +117,7 @@ export function AttendeeDetailPage() {
       department: attendee.department ?? '',
       year: attendee.year ?? '',
       registrationType: attendee.registrationType ?? '',
+      linkedinUrl: attendee.linkedinUrl ?? '',
     });
     setEditing(true);
   };
@@ -249,6 +252,8 @@ export function AttendeeDetailPage() {
             <dd>{attendee.year ?? '—'}</dd>
             <dt>Registration type</dt>
             <dd>{attendee.registrationType ?? '—'}</dd>
+            <dt>LinkedIn</dt>
+            <dd>{attendee.linkedinUrl ?? '—'}</dd>
             <dt>Phone</dt>
             <dd>{attendee.phone ?? '—'}</dd>
             <dt>Registered</dt>
