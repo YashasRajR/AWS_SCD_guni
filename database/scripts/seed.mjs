@@ -159,10 +159,10 @@ async function main() {
     );
     const eventId = eventRes.rows[0].id;
 
-    // --- Ticket plans (spec: Student ₹200 / Professional ₹350) -------------
+    // --- Ticket plans (Student ₹200 / Professional ₹300) -------------
     const TICKET_PLANS = [
       { code: 'STUDENT', name: 'Student', price: 200, displayOrder: 0 },
-      { code: 'PROFESSIONAL', name: 'Professional', price: 350, displayOrder: 1 },
+      { code: 'PROFESSIONAL', name: 'Professional', price: 300, displayOrder: 1 },
     ];
     for (const plan of TICKET_PLANS) {
       await client.query(
