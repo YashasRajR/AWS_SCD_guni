@@ -108,6 +108,7 @@ export function DashboardPage() {
 
   const [registering, setRegistering] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
+  const [reviewing, setReviewing] = useState(false);
   const [selectedPlanCode, setSelectedPlanCode] = useState('');
   const [couponCode, setCouponCode] = useState('');
   const [couponPricing, setCouponPricing] = useState<CouponPricing | null>(null);
@@ -247,67 +248,108 @@ export function DashboardPage() {
               ) : (
                 <>
               <p className="status-line">You haven&apos;t registered for the event yet.</p>
-              {ticketPlans.length > 0 && (
-                <label className="form-field">
-                  <span>Ticket type</span>
-                  <select
-                    value={selectedPlanCode}
-                    onChange={(e) => {
-                      setSelectedPlanCode(e.target.value);
-                      setCouponPricing(null);
-                      setCouponError(null);
-                    }}
-                  >
-                    <option value="">Select a ticket type…</option>
-                    {ticketPlans.map((plan) => (
-                      <option key={plan.code} value={plan.code}>
-                        {plan.name} — {plan.currency} {plan.price}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              )}
-              {selectedPlanCode && (
-                <div className="dashboard-card-row">
-                  <label className="form-field" style={{ flex: 1 }}>
-                    <span>Coupon code (optional)</span>
-                    <input
-                      type="text"
-                      value={couponCode}
-                      onChange={(e) => {
-                        setCouponCode(e.target.value);
-                        setCouponPricing(null);
-                        setCouponError(null);
-                      }}
-                      placeholder="e.g. AWSGUNI25"
-                    />
-                  </label>
+              {!reviewing ? (
+                <>
+                  {ticketPlans.length > 0 && (
+                    <label className="form-field">
+                      <span>Ticket type</span>
+                      <select
+                        value={selectedPlanCode}
+                        onChange={(e) => {
+                          setSelectedPlanCode(e.target.value);
+                          setCouponPricing(null);
+                          setCouponError(null);
+                          setReviewing(false);
+                        }}
+                      >
+                        <option value="">Select a ticket type…</option>
+                        {ticketPlans.map((plan) => (
+                          <option key={plan.code} value={plan.code}>
+                            {plan.name} — {plan.currency} {plan.price}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
+                  {selectedPlanCode && (
+                    <div className="dashboard-card-row">
+                      <label className="form-field" style={{ flex: 1 }}>
+                        <span>Coupon code (optional)</span>
+                        <input
+                          type="text"
+                          value={couponCode}
+                          onChange={(e) => {
+                            setCouponCode(e.target.value);
+                            setCouponPricing(null);
+                            setCouponError(null);
+                            setReviewing(false);
+                          }}
+                          placeholder="e.g. AWSGUNI25"
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={handleApplyCoupon}
+                        disabled={applyingCoupon || !couponCode.trim()}
+                      >
+                        {applyingCoupon ? 'Applying…' : 'Apply'}
+                      </button>
+                    </div>
+                  )}
+                  {couponError && <p className="form-error">{couponError}</p>}
+                  {couponPricing && (
+                    <p className="status-line">
+                      {couponPricing.currency} {couponPricing.originalAmount} − {couponPricing.currency}{' '}
+                      {couponPricing.discountAmount} = <strong>{couponPricing.currency} {couponPricing.finalAmount}</strong>
+                    </p>
+                  )}
                   <button
                     type="button"
-                    className="btn btn-secondary"
-                    onClick={handleApplyCoupon}
-                    disabled={applyingCoupon || !couponCode.trim()}
+                    className="btn btn-primary"
+                    onClick={() => setReviewing(true)}
+                    disabled={ticketPlans.length > 0 && !selectedPlanCode}
                   >
-                    {applyingCoupon ? 'Applying…' : 'Apply'}
+                    Review order
                   </button>
-                </div>
+                </>
+              ) : (
+                (() => {
+                  const plan = ticketPlans.find((p) => p.code === selectedPlanCode);
+                  const currency = plan?.currency ?? event?.currency ?? '';
+                  const originalAmount = couponPricing ? couponPricing.originalAmount : plan?.price ?? event?.registrationFee;
+                  const discountAmount = couponPricing?.discountAmount ?? 0;
+                  const finalAmount = couponPricing ? couponPricing.finalAmount : originalAmount;
+                  return (
+                    <div className="dashboard-card-review">
+                      <p className="status-line">Review your order before confirming:</p>
+                      <p className="dashboard-card-row">
+                        <span>{plan?.name ?? 'Registration'}</span>
+                        <span className="dashboard-card-meta">{currency} {originalAmount}</span>
+                      </p>
+                      {Number(discountAmount) > 0 && (
+                        <p className="dashboard-card-row">
+                          <span>Coupon discount ({couponCode.trim()})</span>
+                          <span className="dashboard-card-meta">− {currency} {discountAmount}</span>
+                        </p>
+                      )}
+                      <p className="dashboard-card-row">
+                        <strong>Total due</strong>
+                        <strong>{currency} {finalAmount}</strong>
+                      </p>
+                      {registerError && <p className="form-error">{registerError}</p>}
+                      <div className="dashboard-card-row">
+                        <button type="button" className="btn btn-secondary" onClick={() => setReviewing(false)} disabled={registering}>
+                          Back
+                        </button>
+                        <button type="button" className="btn btn-primary" onClick={handleRegister} disabled={registering}>
+                          {registering ? 'Confirming…' : 'Confirm & Pay'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()
               )}
-              {couponError && <p className="form-error">{couponError}</p>}
-              {couponPricing && (
-                <p className="status-line">
-                  {couponPricing.currency} {couponPricing.originalAmount} − {couponPricing.currency}{' '}
-                  {couponPricing.discountAmount} = <strong>{couponPricing.currency} {couponPricing.finalAmount}</strong>
-                </p>
-              )}
-              {registerError && <p className="form-error">{registerError}</p>}
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={handleRegister}
-                disabled={registering || (ticketPlans.length > 0 && !selectedPlanCode)}
-              >
-                {registering ? 'Registering…' : 'Register for the event'}
-              </button>
                 </>
               )}
             </>
