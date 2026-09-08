@@ -43,6 +43,20 @@ describe('achievementsService.evaluateCondition', () => {
     expect(eligible).toBe(true);
   });
 
+  it('CHECKPOINT_COUNT: with no eventId in config, checks completions across all events (passes null, not empty string)', async () => {
+    vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([
+      { checkpoint_id: 'a' },
+    ] as CheckpointAttendanceRow[]);
+    const eligible = await achievementsService.evaluateCondition('attendee-1', {
+      condition_type: 'CHECKPOINT_COUNT',
+      condition_config: { minCount: 1 },
+    });
+    expect(eligible).toBe(true);
+    // Regression check: eventId must be null, never '' -- event_id is a
+    // NOT NULL uuid column and '' fails to parse there.
+    expect(checkpointsRepository.getAttendeeCompletions).toHaveBeenCalledWith('attendee-1', null);
+  });
+
   it('CHECKPOINT_COUNT: stays locked below the configured minimum', async () => {
     vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([
       { checkpoint_id: 'a' },
