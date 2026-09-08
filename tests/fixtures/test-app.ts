@@ -28,7 +28,7 @@ export async function registerTestAttendee(label: string) {
     password: VALID_TEST_PASSWORD,
     fullName: `Test Attendee ${label}`,
     registrationType: 'STUDENT',
-    phone: '9876543210',
+    phone: '+919876543210',
     dateOfBirth: '2000-01-01',
     university: 'Test University',
     department: 'Computer Science',

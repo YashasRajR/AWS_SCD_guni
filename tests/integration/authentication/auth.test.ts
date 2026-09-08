@@ -26,7 +26,7 @@ describe('POST /api/v1/auth/register', () => {
       password: VALID_TEST_PASSWORD,
       fullName: 'Duplicate Test',
       registrationType: 'STUDENT',
-      phone: '9876543210',
+      phone: '+919876543210',
       dateOfBirth: '2000-01-01',
       university: 'Test University',
       department: 'Computer Science',

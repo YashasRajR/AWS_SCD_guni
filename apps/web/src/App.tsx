@@ -1,6 +1,8 @@
 import type { ReactElement } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import type { Registration } from '@scd/types';
 import { AuthProvider, useAuth } from './lib/auth.js';
+import { useResource } from './lib/hooks.js';
 import { Layout } from './components/Layout.js';
 import { ErrorBoundary } from './components/ui/ErrorBoundary.js';
 import { HomePage } from './pages/HomePage.js';
@@ -20,6 +22,7 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage.js';
 import { ResetPasswordPage } from './pages/ResetPasswordPage.js';
 import { VerifyEmailPage } from './pages/VerifyEmailPage.js';
 import { DashboardPage } from './pages/DashboardPage.js';
+import { CompletePaymentPage } from './pages/CompletePaymentPage.js';
 import { ProfilePage } from './pages/ProfilePage.js';
 import { MyAchievementsPage } from './pages/MyAchievementsPage.js';
 import { MyCertificatePage } from './pages/MyCertificatePage.js';
@@ -39,6 +42,37 @@ function RequireAttendee({ children }: { children: ReactElement }) {
   }
   if (status === 'signed-out') {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
+  return children;
+}
+
+/**
+ * The dashboard is unreachable until the attendee's registration is
+ * CONFIRMED (set only by a successful payment webhook, or an admin
+ * override) -- registering an account no longer grants dashboard access
+ * on its own. Anyone else gets sent to /complete-payment, which creates
+ * the registration if needed and walks them through checkout.
+ */
+function RequirePaidRegistration({ children }: { children: ReactElement }) {
+  return (
+    <RequireAttendee>
+      <PaidRegistrationGate>{children}</PaidRegistrationGate>
+    </RequireAttendee>
+  );
+}
+
+function PaidRegistrationGate({ children }: { children: ReactElement }) {
+  const location = useLocation();
+  const { data: registration, loading, notFound } = useResource<Registration>('/me/registration');
+  if (loading) {
+    return (
+      <div className="full-page-status">
+        <p>Loading…</p>
+      </div>
+    );
+  }
+  if (notFound || !registration || registration.status !== 'CONFIRMED') {
+    return <Navigate to="/complete-payment" replace state={{ from: location.pathname }} />;
   }
   return children;
 }
@@ -67,51 +101,59 @@ function AppRoutes() {
         <Route path="reset-password" element={<ResetPasswordPage />} />
         <Route path="verify-email" element={<VerifyEmailPage />} />
         <Route
-          path="dashboard"
+          path="complete-payment"
           element={
             <RequireAttendee>
-              <DashboardPage />
+              <CompletePaymentPage />
             </RequireAttendee>
+          }
+        />
+        <Route
+          path="dashboard"
+          element={
+            <RequirePaidRegistration>
+              <DashboardPage />
+            </RequirePaidRegistration>
           }
         />
         <Route
           path="dashboard/profile"
           element={
-            <RequireAttendee>
+            <RequirePaidRegistration>
               <ProfilePage />
-            </RequireAttendee>
+            </RequirePaidRegistration>
           }
         />
         <Route
           path="dashboard/achievements"
           element={
-            <RequireAttendee>
+            <RequirePaidRegistration>
               <MyAchievementsPage />
-            </RequireAttendee>
+            </RequirePaidRegistration>
           }
         />
         <Route
           path="dashboard/certificates"
           element={
-            <RequireAttendee>
+            <RequirePaidRegistration>
               <MyCertificatePage />
-            </RequireAttendee>
+            </RequirePaidRegistration>
           }
         />
         <Route
           path="dashboard/social-post"
           element={
-            <RequireAttendee>
+            <RequirePaidRegistration>
               <SocialPostPage />
-            </RequireAttendee>
+            </RequirePaidRegistration>
           }
         />
         <Route
           path="dashboard/wrapped"
           element={
-            <RequireAttendee>
+            <RequirePaidRegistration>
               <EventWrappedPage />
-            </RequireAttendee>
+            </RequirePaidRegistration>
           }
         />
         <Route path="*" element={<NotFoundPage />} />

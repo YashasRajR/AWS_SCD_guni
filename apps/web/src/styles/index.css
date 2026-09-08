@@ -2184,11 +2184,78 @@ img.speaker-photo {
   text-align: center;
 }
 
-.register-stepper {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+.plan-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
   margin: 0 0 var(--space-5);
+}
+
+.plan-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  cursor: pointer;
+  transition: border-color var(--duration-base) var(--ease-standard), box-shadow var(--duration-base) var(--ease-standard);
+  font: inherit;
+  color: inherit;
+}
+
+.plan-card:hover:not(:disabled) {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.plan-card:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.plan-card-label {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-tight);
+  color: var(--primary);
+  font-size: var(--text-h4);
+}
+
+.plan-card-price {
+  font-weight: var(--fw-semibold);
+  font-size: var(--text-lg);
+}
+
+.plan-card-desc {
+  color: var(--muted);
+  font-size: var(--text-small);
+  margin-bottom: var(--space-2);
+}
+
+@media (max-width: 520px) {
+  .plan-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.register-section {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin: 0 0 var(--space-4);
+}
+
+.register-section legend {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-tight);
+  color: var(--primary);
+  font-size: var(--text-small);
+  padding: 0 0.4rem;
 }
 
 .register-step-actions {

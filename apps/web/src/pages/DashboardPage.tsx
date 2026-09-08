@@ -4,21 +4,15 @@ import type {
   Attendee,
   Certificate,
   Checkpoint,
-  CouponPricing,
   EventConfig,
   Invoice,
-  Payment,
   PublicUser,
   Registration,
   Ticket,
-  TicketPlan,
 } from '@scd/types';
-import { ApiClientError } from '@scd/api-client';
 import { useResource } from '../lib/hooks.js';
-import { apiClient } from '../lib/api.js';
 import { getStoredToken } from '../lib/auth-storage.js';
-import { formatDateTime, statusTone, getRegistrationPhase, formatDate } from '../lib/format.js';
-import { openRazorpayCheckout } from '../lib/razorpay.js';
+import { formatDateTime, statusTone } from '../lib/format.js';
 import { Badge } from '../components/ui/Badge.js';
 import { useDocumentHead } from '../lib/seo.js';
 
@@ -99,103 +93,14 @@ export function DashboardPage() {
     reload: reloadAchievements,
   } = useResource<unknown>('/me/achievements');
   const { data: event } = useResource<EventConfig>('/event');
-  const { items: ticketPlans } = useResource<TicketPlan>('/ticket-plans');
-  const {
-    data: payment,
-    error: paymentError,
-    reload: reloadPayment,
-  } = useResource<Payment>('/me/payment', Boolean(registration));
 
-  const [registering, setRegistering] = useState(false);
-  const [registerError, setRegisterError] = useState<string | null>(null);
-  const [reviewing, setReviewing] = useState(false);
-  const [selectedPlanCode, setSelectedPlanCode] = useState('');
-  const [couponCode, setCouponCode] = useState('');
-  const [couponPricing, setCouponPricing] = useState<CouponPricing | null>(null);
-  const [couponError, setCouponError] = useState<string | null>(null);
-  const [applyingCoupon, setApplyingCoupon] = useState(false);
-  const [paying, setPaying] = useState(false);
-  const [payError, setPayError] = useState<string | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
-  const [checkoutPending, setCheckoutPending] = useState(false);
-
-  const handleApplyCoupon = async () => {
-    if (!selectedPlanCode || !couponCode.trim()) return;
-    setApplyingCoupon(true);
-    setCouponError(null);
-    setCouponPricing(null);
-    try {
-      const pricing = await apiClient.post<CouponPricing>('/me/coupons/preview', {
-        ticketPlanCode: selectedPlanCode,
-        couponCode: couponCode.trim(),
-      });
-      setCouponPricing(pricing);
-    } catch (err) {
-      setCouponError(err instanceof ApiClientError ? err.message : 'Could not apply that coupon.');
-    } finally {
-      setApplyingCoupon(false);
-    }
-  };
-
-  const handleRegister = async () => {
-    if (!selectedPlanCode) {
-      setRegisterError('Pick a ticket type first.');
-      return;
-    }
-    setRegistering(true);
-    setRegisterError(null);
-    try {
-      await apiClient.post('/me/registration', {
-        ticketPlanCode: selectedPlanCode,
-        couponCode: couponPricing ? couponCode.trim() : undefined,
-      });
-      reloadRegistration();
-    } catch (err) {
-      setRegisterError(err instanceof ApiClientError ? err.message : 'Failed to register.');
-    } finally {
-      setRegistering(false);
-    }
-  };
-
-  const handlePay = async () => {
-    setPaying(true);
-    setPayError(null);
-    try {
-      const result = await apiClient.post<{ payment: Payment; providerOrderId: string; providerKey: string }>(
-        '/me/payment/initiate',
-        {},
-      );
-      await openRazorpayCheckout({
-        keyId: result.providerKey,
-        orderId: result.providerOrderId,
-        amount: result.payment.amount,
-        currency: result.payment.currency,
-        onSuccess: () => {
-          // The checkout UI reported success, but only the backend webhook
-          // confirms a payment — reload from the API rather than assume.
-          setCheckoutPending(true);
-          reloadPayment();
-        },
-        onDismiss: () => setPaying(false),
-      });
-    } catch (err) {
-      setPayError(err instanceof ApiClientError ? err.message : 'Could not start payment.');
-      setPaying(false);
-    }
-  };
-
-  const registrationPhase = getRegistrationPhase(event);
 
   // Wireframe 1h "Hey Riya. / 18 days to go." greeting -- real event date,
   // never shown once the event has already happened.
   const firstName = me?.attendee?.fullName.split(' ')[0];
   const daysToGo = event ? Math.ceil((new Date(event.eventDate).getTime() - Date.now()) / 86400000) : null;
 
-  const requiresPayment = registration?.ticketPlan
-    ? Number(registration.ticketPlan.price) > 0
-    : event
-      ? Number(event.registrationFee) > 0
-      : false;
   const completedCount = progress.filter((p) => p.completed).length;
 
   useDocumentHead({ title: 'My Dashboard' });
@@ -227,184 +132,21 @@ export function DashboardPage() {
                 <Badge tone={statusTone(registration.status)}>{registration.status}</Badge>
                 <span className="dashboard-card-meta">#{registration.registrationNumber}</span>
               </p>
-              {registration.status === 'PENDING' && (
-                <p className="status-line">Your registration is awaiting confirmation from the organizing team.</p>
+              {registration.ticketPlan && (
+                <p className="dashboard-card-meta">{registration.ticketPlan.name}</p>
               )}
-              {registration.status === 'CONFIRMED' && registration.confirmedAt && (
+              {registration.confirmedAt && (
                 <p className="status-line">Confirmed {formatDateTime(registration.confirmedAt)}.</p>
-              )}
-              {registration.status === 'WAITLISTED' && (
-                <p className="status-line">You&apos;re on the waitlist — we&apos;ll notify you if a spot opens up.</p>
-              )}
-              {(registration.status === 'CANCELLED' || registration.status === 'REJECTED') && (
-                <p className="status-line">
-                  This registration was {registration.status.toLowerCase()}. Contact the organizing team with any
-                  questions.
-                </p>
               )}
             </>
           ) : (
-            <>
-              {registrationPhase === 'not-open' ? (
-                <p className="status-line">
-                  Registration hasn&apos;t opened yet. It opens {formatDate(event?.registrationOpen)}.
-                </p>
-              ) : registrationPhase === 'closed' ? (
-                <p className="status-line">Registration is closed.</p>
-              ) : (
-                <>
-              <p className="status-line">You haven&apos;t registered for the event yet.</p>
-              {!reviewing ? (
-                <>
-                  {ticketPlans.length > 0 && (
-                    <label className="form-field">
-                      <span>Ticket type</span>
-                      <select
-                        value={selectedPlanCode}
-                        onChange={(e) => {
-                          setSelectedPlanCode(e.target.value);
-                          setCouponPricing(null);
-                          setCouponError(null);
-                          setReviewing(false);
-                        }}
-                      >
-                        <option value="">Select a ticket type…</option>
-                        {ticketPlans.map((plan) => (
-                          <option key={plan.code} value={plan.code}>
-                            {plan.name} — {plan.currency} {plan.price}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  )}
-                  {selectedPlanCode && (
-                    <div className="dashboard-card-row">
-                      <label className="form-field" style={{ flex: 1 }}>
-                        <span>Coupon code (optional)</span>
-                        <input
-                          type="text"
-                          value={couponCode}
-                          onChange={(e) => {
-                            setCouponCode(e.target.value);
-                            setCouponPricing(null);
-                            setCouponError(null);
-                            setReviewing(false);
-                          }}
-                          placeholder="e.g. AWSGUNI25"
-                        />
-                      </label>
-                      <button
-                        type="button"
-                        className="btn btn-secondary"
-                        onClick={handleApplyCoupon}
-                        disabled={applyingCoupon || !couponCode.trim()}
-                      >
-                        {applyingCoupon ? 'Applying…' : 'Apply'}
-                      </button>
-                    </div>
-                  )}
-                  {couponError && <p className="form-error">{couponError}</p>}
-                  {couponPricing && (
-                    <p className="status-line">
-                      {couponPricing.currency} {couponPricing.originalAmount} − {couponPricing.currency}{' '}
-                      {couponPricing.discountAmount} = <strong>{couponPricing.currency} {couponPricing.finalAmount}</strong>
-                    </p>
-                  )}
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => setReviewing(true)}
-                    disabled={ticketPlans.length > 0 && !selectedPlanCode}
-                  >
-                    Review order
-                  </button>
-                </>
-              ) : (
-                (() => {
-                  const plan = ticketPlans.find((p) => p.code === selectedPlanCode);
-                  const currency = plan?.currency ?? event?.currency ?? '';
-                  const originalAmount = couponPricing ? couponPricing.originalAmount : plan?.price ?? event?.registrationFee;
-                  const discountAmount = couponPricing?.discountAmount ?? 0;
-                  const finalAmount = couponPricing ? couponPricing.finalAmount : originalAmount;
-                  return (
-                    <div className="dashboard-card-review">
-                      <p className="status-line">Review your order before confirming:</p>
-                      <p className="dashboard-card-row">
-                        <span>{plan?.name ?? 'Registration'}</span>
-                        <span className="dashboard-card-meta">{currency} {originalAmount}</span>
-                      </p>
-                      {Number(discountAmount) > 0 && (
-                        <p className="dashboard-card-row">
-                          <span>Coupon discount ({couponCode.trim()})</span>
-                          <span className="dashboard-card-meta">− {currency} {discountAmount}</span>
-                        </p>
-                      )}
-                      <p className="dashboard-card-row">
-                        <strong>Total due</strong>
-                        <strong>{currency} {finalAmount}</strong>
-                      </p>
-                      {registerError && <p className="form-error">{registerError}</p>}
-                      <div className="dashboard-card-row">
-                        <button type="button" className="btn btn-secondary" onClick={() => setReviewing(false)} disabled={registering}>
-                          Back
-                        </button>
-                        <button type="button" className="btn btn-primary" onClick={handleRegister} disabled={registering}>
-                          {registering ? 'Confirming…' : 'Confirm & Pay'}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })()
-              )}
-                </>
-              )}
-            </>
+            // The dashboard route guard (App.tsx's RequirePaidRegistration)
+            // only lets a CONFIRMED registration through, so this is
+            // unreachable in practice -- kept as an honest fallback rather
+            // than assuming the guard can never change.
+            <p className="status-line">No confirmed registration found.</p>
           )}
         </section>
-
-        {requiresPayment && registration && registration.status === 'PENDING' && (
-          <section className="dashboard-card">
-            <h2>Payment</h2>
-            {paymentError ? (
-              <SectionError message={paymentError} onRetry={reloadPayment} />
-            ) : payment?.status === 'PAID' ? (
-              <>
-                <Badge tone="success">PAID</Badge>
-                <p className="status-line">
-                  Paid {payment.paidAt ? formatDateTime(payment.paidAt) : ''}. Your registration will be confirmed
-                  shortly.
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="dashboard-card-row">
-                  <Badge tone={statusTone(payment?.status ?? 'PENDING')}>{payment?.status ?? 'PENDING'}</Badge>
-                  <span className="dashboard-card-meta">
-                    {registration?.ticketPlan
-                      ? `${registration.ticketPlan.currency} ${(
-                          Number(registration.ticketPlan.price) - Number(registration.discountAmount)
-                        ).toFixed(2)}${
-                          Number(registration.discountAmount) > 0
-                            ? ` (${registration.coupon?.code} applied)`
-                            : ''
-                        }`
-                      : `${event?.currency} ${event?.registrationFee}`}
-                  </span>
-                </p>
-                {checkoutPending && (
-                  <p className="status-line">
-                    Payment submitted — confirming with the payment provider. This can take a minute; refresh to
-                    check.
-                  </p>
-                )}
-                {payError && <p className="form-error">{payError}</p>}
-                <button type="button" className="btn btn-primary" onClick={handlePay} disabled={paying}>
-                  {paying ? 'Opening checkout…' : 'Pay now'}
-                </button>
-              </>
-            )}
-          </section>
-        )}
 
         <section className="dashboard-card">
           <h2>Ticket</h2>

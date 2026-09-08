@@ -9,7 +9,7 @@ describe('role spoofing via request body is ignored', () => {
       password: VALID_TEST_PASSWORD,
       fullName: 'Role Spoof Attempt',
       registrationType: 'STUDENT',
-      phone: '9876543210',
+      phone: '+919876543210',
       dateOfBirth: '2000-01-01',
       university: 'Test University',
       department: 'Computer Science',

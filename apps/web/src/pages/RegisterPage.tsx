@@ -1,6 +1,9 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { emailSchema, passwordSchema, phoneSchema } from '@scd/validation';
+import type { TicketPlan } from '@scd/types';
 import { useAuth } from '../lib/auth.js';
+import { useResource } from '../lib/hooks.js';
 import { useDocumentHead } from '../lib/seo.js';
 
 interface FormState {
@@ -26,7 +29,7 @@ const INITIAL_STATE: FormState = {
   password: '',
   confirmPassword: '',
   fullName: '',
-  phone: '',
+  phone: '+91',
   registrationType: '',
   dateOfBirth: '',
   university: '',
@@ -39,70 +42,136 @@ const INITIAL_STATE: FormState = {
   consent: false,
 };
 
-// Wireframe 1g "/register": a 3-step stepper (Account -> Profile details ->
-// Confirm) instead of one long form, with a read-back summary before the
-// final submit.
-const STEPS = ['Account', 'Profile details', 'Confirm'] as const;
+type Phase = 'plan' | 'form' | 'summary';
+type FieldKey = keyof FormState;
+
+const today = new Date().toISOString().slice(0, 10);
+
+// Every validator returns null when the value is fine, or the exact
+// message to show — same rules as the backend's registerSchema (@scd/validation),
+// so a value that passes here never gets rejected by the API afterwards.
+function validateEmail(v: string): string | null {
+  if (!v.trim()) return 'Enter your email address.';
+  return emailSchema.safeParse(v).success ? null : 'Enter a valid email address, e.g. name@example.com.';
+}
+function validatePassword(v: string): string | null {
+  if (!v) return 'Enter a password.';
+  const result = passwordSchema.safeParse(v);
+  return result.success ? null : (result.error.issues[0]?.message ?? 'Enter a valid password.');
+}
+function validateConfirmPassword(password: string, confirm: string): string | null {
+  if (!confirm) return 'Re-enter your password.';
+  return password === confirm ? null : 'Passwords do not match.';
+}
+function validatePhone(v: string): string | null {
+  if (!v.trim() || v.trim() === '+91') return 'Enter your mobile number.';
+  return phoneSchema.safeParse(v.trim()).success
+    ? null
+    : 'Enter a valid Indian mobile number, e.g. +919876543210.';
+}
+function validateFullName(v: string): string | null {
+  return v.trim().length >= 2 ? null : 'Enter your full name.';
+}
+function validateDob(v: string): string | null {
+  if (!v) return 'Enter your date of birth.';
+  return v <= today ? null : 'Date of birth cannot be in the future.';
+}
+function validateRequiredText(v: string, label: string): string | null {
+  return v.trim() ? null : `Enter your ${label}.`;
+}
+function validateLinkedin(v: string): string | null {
+  if (!v.trim()) return null; // optional
+  return /^https?:\/\/.+/i.test(v.trim()) ? null : 'Enter a valid URL, starting with https://.';
+}
 
 export function RegisterPage() {
   useDocumentHead({ title: 'Register' });
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { items: ticketPlans, loading: plansLoading, error: plansError } = useResource<TicketPlan>('/ticket-plans');
+
+  const [phase, setPhase] = useState<Phase>('plan');
   const [form, setForm] = useState<FormState>(INITIAL_STATE);
-  const [step, setStep] = useState(0);
+  const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>({});
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const setField = <K extends keyof FormState>(key: K, value: FormState[K]) =>
+  const setField = <K extends FieldKey>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
+  const markTouched = (key: FieldKey) => setTouched((prev) => ({ ...prev, [key]: true }));
 
   const isStudent = form.registrationType === 'STUDENT';
   const isEmployee = form.registrationType === 'PROFESSIONAL';
-  const today = new Date().toISOString().slice(0, 10);
 
-  function stepError(n: number): string | null {
-    if (n === 0) {
-      if (form.fullName.trim().length < 2) return 'Enter your full name.';
-      if (!form.email) return 'Enter your email.';
-      if (form.password.length < 8) return 'Password must be at least 8 characters.';
-      if (form.password !== form.confirmPassword) return 'Passwords do not match.';
-      if (!form.phone.trim()) return 'Enter your mobile number.';
-      return null;
-    }
-    if (n === 1) {
-      if (!form.registrationType) return 'Select whether you are a student or an employee.';
-      if (isStudent && (!form.university || !form.department || !form.branch || !form.year)) {
-        return 'Fill in your college, department, branch, and year of passout.';
-      }
-      if (isEmployee && (!form.companyName || !form.designation)) {
-        return 'Fill in your company name and designation.';
-      }
-      if (!form.dateOfBirth) return 'Enter your date of birth.';
-      return null;
-    }
-    return null;
+  const studentPlan = ticketPlans.find((p) => p.code === 'STUDENT');
+  const employeePlan = ticketPlans.find((p) => p.code === 'PROFESSIONAL');
+  const selectedPlan = ticketPlans.find((p) => p.code === form.registrationType);
+
+  // Every field's current error, computed fresh from form state -- also
+  // doubles as the "is this section complete" check (no key -> no errors).
+  const fieldErrors: Partial<Record<FieldKey, string>> = {};
+  const setIfError = (key: FieldKey, message: string | null) => {
+    if (message) fieldErrors[key] = message;
+  };
+  setIfError('fullName', validateFullName(form.fullName));
+  setIfError('email', validateEmail(form.email));
+  setIfError('password', validatePassword(form.password));
+  setIfError('confirmPassword', validateConfirmPassword(form.password, form.confirmPassword));
+  setIfError('phone', validatePhone(form.phone));
+  setIfError('dateOfBirth', validateDob(form.dateOfBirth));
+  setIfError('linkedinUrl', validateLinkedin(form.linkedinUrl));
+  if (isStudent) {
+    setIfError('university', validateRequiredText(form.university, 'college/university name'));
+    setIfError('department', validateRequiredText(form.department, 'department'));
+    setIfError('branch', validateRequiredText(form.branch, 'branch'));
+    setIfError('year', validateRequiredText(form.year, 'year of passout'));
+  }
+  if (isEmployee) {
+    setIfError('companyName', validateRequiredText(form.companyName, 'company name'));
+    setIfError('designation', validateRequiredText(form.designation, 'designation'));
   }
 
-  const goToStep = (n: number) => {
-    setError(null);
-    setStep(n);
+  const formIsValid = Object.keys(fieldErrors).length === 0;
+
+  const showError = (key: FieldKey) => (touched[key] ? fieldErrors[key] : undefined);
+
+  const touchAllFormFields = () => {
+    setTouched((prev) => ({
+      ...prev,
+      fullName: true,
+      email: true,
+      password: true,
+      confirmPassword: true,
+      phone: true,
+      dateOfBirth: true,
+      linkedinUrl: true,
+      university: true,
+      department: true,
+      branch: true,
+      year: true,
+      companyName: true,
+      designation: true,
+    }));
   };
 
-  const continueFrom = (n: number) => {
-    const message = stepError(n);
-    if (message) {
-      setError(message);
+  const choosePlan = (type: 'STUDENT' | 'PROFESSIONAL') => {
+    setField('registrationType', type);
+    setPhase('form');
+  };
+
+  const continueToSummary = () => {
+    if (!formIsValid) {
+      touchAllFormFields();
       return;
     }
-    setError(null);
-    setStep(n + 1);
+    setPhase('summary');
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     if (!form.consent) {
-      setError('You must accept the terms to register.');
+      setError('You must accept the terms to continue.');
       return;
     }
     setSubmitting(true);
@@ -123,7 +192,11 @@ export function RegisterPage() {
         linkedinUrl: form.linkedinUrl.trim() || undefined,
         consent: true,
       });
-      navigate('/dashboard', { replace: true });
+      // Account created — but no dashboard access yet. /complete-payment
+      // creates the actual event registration for this plan and takes the
+      // attendee through checkout; only a confirmed payment unlocks the
+      // dashboard (see App.tsx's RequirePaidRegistration).
+      navigate('/complete-payment', { replace: true, state: { ticketPlanCode: form.registrationType } });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create account.');
     } finally {
@@ -134,271 +207,312 @@ export function RegisterPage() {
   return (
     <div className="auth-page">
       <div className="auth-card auth-card-wide">
-        <h1>Create your account</h1>
+        <h1>Register for AWS Student Community Day 2026</h1>
         <p className="auth-subtitle">
-          This creates your attendee profile. You&apos;ll register for the event itself from your dashboard.
+          {phase === 'plan'
+            ? 'First, tell us which ticket applies to you — the form after this only asks what that ticket needs.'
+            : phase === 'form'
+              ? 'Fill in your details below. You can review everything before it’s submitted.'
+              : 'Check everything below, then continue to payment.'}
         </p>
 
-        <div className="register-stepper" role="tablist" aria-label="Registration steps">
-          {STEPS.map((label, i) => (
-            <span
-              key={label}
-              className={i === step ? 'filter-chip filter-chip-active' : 'filter-chip'}
-              aria-current={i === step ? 'step' : undefined}
-            >
-              {i + 1} {label}
-            </span>
-          ))}
-        </div>
-
-        {error && <p className="form-error">{error}</p>}
-
-        <form className="auth-form auth-form-grid" onSubmit={handleSubmit}>
-          {step === 0 && (
-            <>
-              <label className="form-field">
-                <span>Full name *</span>
-                <input
-                  type="text"
-                  required
-                  minLength={2}
-                  value={form.fullName}
-                  onChange={(e) => setField('fullName', e.target.value)}
-                  autoComplete="name"
-                />
-              </label>
-              <label className="form-field">
-                <span>Email *</span>
-                <input
-                  type="email"
-                  required
-                  value={form.email}
-                  onChange={(e) => setField('email', e.target.value)}
-                  autoComplete="email"
-                />
-              </label>
-              <label className="form-field">
-                <span>Password *</span>
-                <input
-                  type="password"
-                  required
-                  minLength={8}
-                  value={form.password}
-                  onChange={(e) => setField('password', e.target.value)}
-                  autoComplete="new-password"
-                />
-                <span className="form-help">At least 8 characters, with a letter and a number.</span>
-              </label>
-              <label className="form-field">
-                <span>Confirm password *</span>
-                <input
-                  type="password"
-                  required
-                  minLength={8}
-                  value={form.confirmPassword}
-                  onChange={(e) => setField('confirmPassword', e.target.value)}
-                  autoComplete="new-password"
-                />
-              </label>
-              <label className="form-field">
-                <span>Mobile number *</span>
-                <input
-                  type="tel"
-                  required
-                  inputMode="tel"
-                  pattern="[0-9+ ]{7,20}"
-                  title="Digits only, optionally starting with +"
-                  value={form.phone}
-                  onChange={(e) => setField('phone', e.target.value)}
-                  autoComplete="tel"
-                />
-              </label>
-
-              <div className="form-field-span register-step-actions">
-                <button type="button" className="btn btn-primary" onClick={() => continueFrom(0)}>
-                  Continue →
+        {phase === 'plan' && (
+          <div className="register-plan-step">
+            {plansError && <p className="form-error">{plansError}</p>}
+            {plansLoading ? (
+              <p className="status-line">Loading ticket types…</p>
+            ) : (
+              <div className="plan-card-grid">
+                <button
+                  type="button"
+                  className="plan-card"
+                  disabled={!studentPlan}
+                  onClick={() => choosePlan('STUDENT')}
+                >
+                  <span className="plan-card-label">Student</span>
+                  <span className="plan-card-price">
+                    {studentPlan ? `${studentPlan.currency} ${studentPlan.price}` : 'Unavailable'}
+                  </span>
+                  <span className="plan-card-desc">
+                    {studentPlan?.description ?? 'For currently enrolled college/university students.'}
+                  </span>
+                  <span className="btn-link">Choose Student →</span>
                 </button>
-                <p className="auth-switch">
-                  Already have an account? <Link to="/login">Log in</Link>
-                </p>
-              </div>
-            </>
-          )}
-
-          {step === 1 && (
-            <>
-              <fieldset className="form-field form-field-span" style={{ border: 'none', padding: 0, margin: 0 }}>
-                <span>Profession *</span>
-                <div className="dashboard-card-row">
-                  <label className="form-field-checkbox">
-                    <input
-                      type="radio"
-                      name="registrationType"
-                      checked={isStudent}
-                      onChange={() => setField('registrationType', 'STUDENT')}
-                    />
-                    <span>Student</span>
-                  </label>
-                  <label className="form-field-checkbox">
-                    <input
-                      type="radio"
-                      name="registrationType"
-                      checked={isEmployee}
-                      onChange={() => setField('registrationType', 'PROFESSIONAL')}
-                    />
-                    <span>Employee</span>
-                  </label>
-                </div>
-              </fieldset>
-
-              {isStudent && (
-                <>
-                  <label className="form-field">
-                    <span>College/university name *</span>
-                    <input
-                      type="text"
-                      required
-                      value={form.university}
-                      onChange={(e) => setField('university', e.target.value)}
-                    />
-                  </label>
-                  <label className="form-field">
-                    <span>Department *</span>
-                    <input
-                      type="text"
-                      required
-                      value={form.department}
-                      onChange={(e) => setField('department', e.target.value)}
-                    />
-                  </label>
-                  <label className="form-field">
-                    <span>Branch *</span>
-                    <input
-                      type="text"
-                      required
-                      value={form.branch}
-                      onChange={(e) => setField('branch', e.target.value)}
-                    />
-                  </label>
-                  <label className="form-field">
-                    <span>Year of passout *</span>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. 2027"
-                      value={form.year}
-                      onChange={(e) => setField('year', e.target.value)}
-                    />
-                  </label>
-                </>
-              )}
-
-              {isEmployee && (
-                <>
-                  <label className="form-field">
-                    <span>Company name *</span>
-                    <input
-                      type="text"
-                      required
-                      value={form.companyName}
-                      onChange={(e) => setField('companyName', e.target.value)}
-                    />
-                  </label>
-                  <label className="form-field">
-                    <span>Designation *</span>
-                    <input
-                      type="text"
-                      required
-                      value={form.designation}
-                      onChange={(e) => setField('designation', e.target.value)}
-                    />
-                  </label>
-                </>
-              )}
-
-              {(isStudent || isEmployee) && (
-                <>
-                  <label className="form-field">
-                    <span>Date of birth *</span>
-                    <input
-                      type="date"
-                      required
-                      max={today}
-                      value={form.dateOfBirth}
-                      onChange={(e) => setField('dateOfBirth', e.target.value)}
-                      autoComplete="bday"
-                    />
-                  </label>
-                  <label className="form-field">
-                    <span>LinkedIn profile</span>
-                    <input
-                      type="url"
-                      value={form.linkedinUrl}
-                      onChange={(e) => setField('linkedinUrl', e.target.value)}
-                      placeholder="https://linkedin.com/in/yourname"
-                    />
-                  </label>
-                </>
-              )}
-
-              <div className="form-field-span register-step-actions">
-                <button type="button" className="btn-link" onClick={() => goToStep(0)}>
-                  ← Back
-                </button>
-                <button type="button" className="btn btn-primary" onClick={() => continueFrom(1)}>
-                  Continue →
+                <button
+                  type="button"
+                  className="plan-card"
+                  disabled={!employeePlan}
+                  onClick={() => choosePlan('PROFESSIONAL')}
+                >
+                  <span className="plan-card-label">Employee</span>
+                  <span className="plan-card-price">
+                    {employeePlan ? `${employeePlan.currency} ${employeePlan.price}` : 'Unavailable'}
+                  </span>
+                  <span className="plan-card-desc">
+                    {employeePlan?.description ?? 'For working professionals.'}
+                  </span>
+                  <span className="btn-link">Choose Employee →</span>
                 </button>
               </div>
-            </>
-          )}
+            )}
+            <p className="auth-switch">
+              Already have an account? <Link to="/login">Log in</Link>
+            </p>
+          </div>
+        )}
 
-          {step === 2 && (
-            <>
-              <dl className="register-summary form-field-span">
-                <div>
-                  <dt>Name</dt>
-                  <dd>{form.fullName}</dd>
-                </div>
-                <div>
-                  <dt>Email</dt>
-                  <dd>{form.email}</dd>
-                </div>
-                <div>
-                  <dt>Mobile</dt>
-                  <dd>{form.phone}</dd>
-                </div>
-                <div>
-                  <dt>Profession</dt>
-                  <dd>
-                    {isStudent
-                      ? `Student — ${form.university}, ${form.department}${form.branch ? `, ${form.branch}` : ''}`
-                      : isEmployee
-                        ? `${form.designation} at ${form.companyName}`
-                        : '—'}
-                  </dd>
-                </div>
-              </dl>
-              <div className="form-field-span register-step-actions">
-                <button type="button" className="btn-link" onClick={() => goToStep(1)}>
-                  Edit details
-                </button>
+        {phase === 'form' && (
+          <form
+            className="auth-form auth-form-grid"
+            onSubmit={(e) => {
+              e.preventDefault();
+              continueToSummary();
+            }}
+          >
+            <fieldset className="form-field-span register-section">
+              <legend>Account details</legend>
+              <div className="auth-form-grid">
+                <label className="form-field">
+                  <span>Full name *</span>
+                  <input
+                    type="text"
+                    value={form.fullName}
+                    onChange={(e) => setField('fullName', e.target.value)}
+                    onBlur={() => markTouched('fullName')}
+                    autoComplete="name"
+                    aria-invalid={Boolean(showError('fullName'))}
+                  />
+                  {showError('fullName') && <span className="form-error">{showError('fullName')}</span>}
+                </label>
+                <label className="form-field">
+                  <span>Email *</span>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setField('email', e.target.value)}
+                    onBlur={() => markTouched('email')}
+                    autoComplete="email"
+                    aria-invalid={Boolean(showError('email'))}
+                  />
+                  {showError('email') && <span className="form-error">{showError('email')}</span>}
+                </label>
+                <label className="form-field">
+                  <span>Password *</span>
+                  <input
+                    type="password"
+                    value={form.password}
+                    onChange={(e) => setField('password', e.target.value)}
+                    onBlur={() => markTouched('password')}
+                    autoComplete="new-password"
+                    aria-invalid={Boolean(showError('password'))}
+                  />
+                  {showError('password') ? (
+                    <span className="form-error">{showError('password')}</span>
+                  ) : (
+                    <span className="form-help">At least 8 characters, with a letter and a number.</span>
+                  )}
+                </label>
+                <label className="form-field">
+                  <span>Confirm password *</span>
+                  <input
+                    type="password"
+                    value={form.confirmPassword}
+                    onChange={(e) => setField('confirmPassword', e.target.value)}
+                    onBlur={() => markTouched('confirmPassword')}
+                    autoComplete="new-password"
+                    aria-invalid={Boolean(showError('confirmPassword'))}
+                  />
+                  {showError('confirmPassword') && (
+                    <span className="form-error">{showError('confirmPassword')}</span>
+                  )}
+                </label>
+                <label className="form-field">
+                  <span>Mobile number *</span>
+                  <input
+                    type="tel"
+                    inputMode="tel"
+                    value={form.phone}
+                    onChange={(e) => setField('phone', e.target.value)}
+                    onBlur={() => markTouched('phone')}
+                    autoComplete="tel"
+                    placeholder="+919876543210"
+                    aria-invalid={Boolean(showError('phone'))}
+                  />
+                  {showError('phone') ? (
+                    <span className="form-error">{showError('phone')}</span>
+                  ) : (
+                    <span className="form-help">Must start with +91, e.g. +919876543210.</span>
+                  )}
+                </label>
               </div>
+            </fieldset>
 
-              <label className="form-field form-field-checkbox form-field-span">
-                <input
-                  type="checkbox"
-                  checked={form.consent}
-                  onChange={(e) => setField('consent', e.target.checked)}
-                />
-                <span>I agree to the event terms and to being contacted about this event.</span>
-              </label>
+            <fieldset className="form-field-span register-section">
+              <legend>{isStudent ? 'Student details' : 'Employee details'}</legend>
+              <div className="auth-form-grid">
+                {isStudent && (
+                  <>
+                    <label className="form-field">
+                      <span>College/university name *</span>
+                      <input
+                        type="text"
+                        value={form.university}
+                        onChange={(e) => setField('university', e.target.value)}
+                        onBlur={() => markTouched('university')}
+                        aria-invalid={Boolean(showError('university'))}
+                      />
+                      {showError('university') && <span className="form-error">{showError('university')}</span>}
+                    </label>
+                    <label className="form-field">
+                      <span>Department *</span>
+                      <input
+                        type="text"
+                        value={form.department}
+                        onChange={(e) => setField('department', e.target.value)}
+                        onBlur={() => markTouched('department')}
+                        aria-invalid={Boolean(showError('department'))}
+                      />
+                      {showError('department') && <span className="form-error">{showError('department')}</span>}
+                    </label>
+                    <label className="form-field">
+                      <span>Branch *</span>
+                      <input
+                        type="text"
+                        value={form.branch}
+                        onChange={(e) => setField('branch', e.target.value)}
+                        onBlur={() => markTouched('branch')}
+                        aria-invalid={Boolean(showError('branch'))}
+                      />
+                      {showError('branch') && <span className="form-error">{showError('branch')}</span>}
+                    </label>
+                    <label className="form-field">
+                      <span>Year of passout *</span>
+                      <input
+                        type="text"
+                        placeholder="e.g. 2027"
+                        value={form.year}
+                        onChange={(e) => setField('year', e.target.value)}
+                        onBlur={() => markTouched('year')}
+                        aria-invalid={Boolean(showError('year'))}
+                      />
+                      {showError('year') && <span className="form-error">{showError('year')}</span>}
+                    </label>
+                  </>
+                )}
+                {isEmployee && (
+                  <>
+                    <label className="form-field">
+                      <span>Company name *</span>
+                      <input
+                        type="text"
+                        value={form.companyName}
+                        onChange={(e) => setField('companyName', e.target.value)}
+                        onBlur={() => markTouched('companyName')}
+                        aria-invalid={Boolean(showError('companyName'))}
+                      />
+                      {showError('companyName') && <span className="form-error">{showError('companyName')}</span>}
+                    </label>
+                    <label className="form-field">
+                      <span>Designation *</span>
+                      <input
+                        type="text"
+                        value={form.designation}
+                        onChange={(e) => setField('designation', e.target.value)}
+                        onBlur={() => markTouched('designation')}
+                        aria-invalid={Boolean(showError('designation'))}
+                      />
+                      {showError('designation') && <span className="form-error">{showError('designation')}</span>}
+                    </label>
+                  </>
+                )}
+                <label className="form-field">
+                  <span>Date of birth *</span>
+                  <input
+                    type="date"
+                    max={today}
+                    value={form.dateOfBirth}
+                    onChange={(e) => setField('dateOfBirth', e.target.value)}
+                    onBlur={() => markTouched('dateOfBirth')}
+                    autoComplete="bday"
+                    aria-invalid={Boolean(showError('dateOfBirth'))}
+                  />
+                  {showError('dateOfBirth') && <span className="form-error">{showError('dateOfBirth')}</span>}
+                </label>
+                <label className="form-field">
+                  <span>LinkedIn profile</span>
+                  <input
+                    type="url"
+                    value={form.linkedinUrl}
+                    onChange={(e) => setField('linkedinUrl', e.target.value)}
+                    onBlur={() => markTouched('linkedinUrl')}
+                    placeholder="https://linkedin.com/in/yourname"
+                    aria-invalid={Boolean(showError('linkedinUrl'))}
+                  />
+                  {showError('linkedinUrl') && <span className="form-error">{showError('linkedinUrl')}</span>}
+                </label>
+              </div>
+            </fieldset>
 
-              <button type="submit" className="btn btn-primary btn-block form-field-span" disabled={submitting}>
-                {submitting ? 'Creating account…' : 'Confirm registration'}
+            <div className="form-field-span register-step-actions">
+              <button type="button" className="btn-link" onClick={() => setPhase('plan')}>
+                ← Change plan
               </button>
-            </>
-          )}
-        </form>
+              <button type="submit" className="btn btn-primary" disabled={!formIsValid}>
+                Continue →
+              </button>
+            </div>
+          </form>
+        )}
+
+        {phase === 'summary' && (
+          <form className="auth-form" onSubmit={handleSubmit}>
+            {error && <p className="form-error">{error}</p>}
+            <dl className="register-summary">
+              <div>
+                <dt>Plan</dt>
+                <dd>
+                  {selectedPlan ? `${selectedPlan.name} — ${selectedPlan.currency} ${selectedPlan.price}` : '—'}
+                </dd>
+              </div>
+              <div>
+                <dt>Name</dt>
+                <dd>{form.fullName}</dd>
+              </div>
+              <div>
+                <dt>Email</dt>
+                <dd>{form.email}</dd>
+              </div>
+              <div>
+                <dt>Mobile</dt>
+                <dd>{form.phone}</dd>
+              </div>
+              <div>
+                <dt>Profession</dt>
+                <dd>
+                  {isStudent
+                    ? `Student — ${form.university}, ${form.department}${form.branch ? `, ${form.branch}` : ''}`
+                    : `${form.designation} at ${form.companyName}`}
+                </dd>
+              </div>
+            </dl>
+            <button type="button" className="btn-link" onClick={() => setPhase('form')}>
+              Edit details
+            </button>
+
+            <label className="form-field form-field-checkbox">
+              <input
+                type="checkbox"
+                checked={form.consent}
+                onChange={(e) => setField('consent', e.target.checked)}
+              />
+              <span>I agree to the event terms and to being contacted about this event.</span>
+            </label>
+
+            <button type="submit" className="btn btn-primary btn-block" disabled={submitting || !form.consent}>
+              {submitting ? 'Creating account…' : 'Continue to payment →'}
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

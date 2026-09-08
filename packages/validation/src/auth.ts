@@ -22,6 +22,14 @@ const dateOfBirthSchema = z
   .trim()
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'Enter a valid date of birth');
 
+// Indian mobile number: +91 followed by a 10-digit number starting 6-9
+// (the event is India-based -- Ganpat University). Shared by the register
+// form's live validation on the frontend.
+export const phoneSchema = z
+  .string()
+  .trim()
+  .regex(/^\+91[6-9]\d{9}$/, 'Enter a valid mobile number, e.g. +919876543210');
+
 // Base shape is deliberately permissive (everything but the profession-
 // agnostic fields optional) -- superRefine below enforces which fields are
 // required per registrationType (spec #17: student vs. employee profiles
@@ -31,7 +39,7 @@ export const registerSchema = z
     email: emailSchema,
     password: passwordSchema,
     fullName: z.string().trim().min(2).max(120),
-    phone: z.string().trim().min(7).max(20, 'Enter a valid mobile number'),
+    phone: phoneSchema,
     registrationType: z.enum(REGISTRATION_TYPES, {
       errorMap: () => ({ message: 'Select whether you are a student or an employee' }),
     }),

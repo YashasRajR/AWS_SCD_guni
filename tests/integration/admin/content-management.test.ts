@@ -16,7 +16,7 @@ beforeAll(async () => {
     password: 'TestPassw0rd!',
     fullName: 'Content Test Attendee',
     registrationType: 'STUDENT',
-    phone: '9876543210',
+    phone: '+919876543210',
     dateOfBirth: '2000-01-01',
     university: 'Test University',
     department: 'Computer Science',
