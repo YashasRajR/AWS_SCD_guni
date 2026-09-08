@@ -2688,3 +2688,61 @@ img.speaker-photo {
   opacity: 0.3;
   cursor: default;
 }
+
+/* ============================================================
+   SESSION / SPEAKER DETAIL PAGES
+   ============================================================ */
+
+.session-card > .btn-link {
+  align-self: flex-start;
+  margin-top: 0.2rem;
+}
+
+.session-detail h1 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-tight);
+  margin: var(--space-2) 0 0.3rem;
+}
+
+.session-detail-speakers,
+.session-detail-related {
+  margin-top: var(--space-6);
+}
+
+.session-detail-speakers h2,
+.session-detail-related h2 {
+  font-size: var(--text-h4);
+  margin: 0 0 var(--space-2);
+}
+
+.speaker-card > .btn-link {
+  margin-top: var(--space-2);
+}
+
+.speaker-detail-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+}
+
+@media (min-width: 768px) {
+  .speaker-detail-layout {
+    grid-template-columns: 180px 1fr;
+    align-items: start;
+  }
+}
+
+.speaker-detail-photo {
+  width: 100%;
+  max-width: 180px;
+  height: 180px;
+  border-radius: var(--radius-lg);
+}
+
+.speaker-detail h1 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-tight);
+  margin: 0 0 0.2rem;
+}

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import type { Session } from '@scd/types';
 
 const TYPE_LABELS: Record<string, string> = {
@@ -21,6 +22,9 @@ export function SessionCard({ session }: { session: Session }) {
       {session.speakers && session.speakers.length > 0 && (
         <p className="session-speakers">{session.speakers.map((sp) => sp.name).join(', ')}</p>
       )}
+      <Link to={`/sessions/${session.id}`} className="btn-link">
+        Open full page →
+      </Link>
     </article>
   );
 }

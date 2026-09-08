@@ -5,7 +5,9 @@ import { Layout } from './components/Layout.js';
 import { ErrorBoundary } from './components/ui/ErrorBoundary.js';
 import { HomePage } from './pages/HomePage.js';
 import { SpeakersPage } from './pages/SpeakersPage.js';
+import { SpeakerDetailPage } from './pages/SpeakerDetailPage.js';
 import { SessionsPage } from './pages/SessionsPage.js';
+import { SessionDetailPage } from './pages/SessionDetailPage.js';
 import { AgendaPage } from './pages/AgendaPage.js';
 import { TimelinePage } from './pages/TimelinePage.js';
 import { VenuePage } from './pages/VenuePage.js';
@@ -47,7 +49,9 @@ function AppRoutes() {
       <Route element={<Layout />}>
         <Route index element={<HomePage />} />
         <Route path="speakers" element={<SpeakersPage />} />
+        <Route path="speakers/:id" element={<SpeakerDetailPage />} />
         <Route path="sessions" element={<SessionsPage />} />
+        <Route path="sessions/:id" element={<SessionDetailPage />} />
         <Route path="agenda" element={<AgendaPage />} />
         {/* Kept for anyone with the old link bookmarked/shared. */}
         <Route path="schedule" element={<Navigate to="/agenda" replace />} />

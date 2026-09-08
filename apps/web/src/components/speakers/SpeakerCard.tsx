@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import type { Speaker } from '@scd/types';
 import { ExternalLinkIcon } from '../ui/Icon.js';
 
@@ -34,6 +35,9 @@ export function SpeakerCard({ speaker }: { speaker: Speaker }) {
           )}
         </div>
       )}
+      <Link to={`/speakers/${speaker.id}`} className="btn-link">
+        View profile →
+      </Link>
     </div>
   );
 }
