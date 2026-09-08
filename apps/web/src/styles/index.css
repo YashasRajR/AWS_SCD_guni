@@ -1724,6 +1724,12 @@ ol {
   font-weight: var(--fw-semibold);
 }
 
+.venue-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
 /* ============================================================
    FAQ ACCORDION
    ============================================================ */

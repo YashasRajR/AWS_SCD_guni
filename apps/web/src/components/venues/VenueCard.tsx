@@ -1,7 +1,18 @@
+import { useState } from 'react';
 import type { Venue } from '@scd/types';
 import { VenueMap } from './VenueMap.js';
 
 export function VenueCard({ venue }: { venue: Venue }) {
+  const [copied, setCopied] = useState(false);
+
+  const copyAddress = () => {
+    if (!venue.location) return;
+    void navigator.clipboard.writeText(venue.location).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  };
+
   return (
     <div className="venue-card">
       <h3>{venue.name}</h3>
@@ -21,7 +32,14 @@ export function VenueCard({ venue }: { venue: Venue }) {
           </div>
         )}
       </dl>
-      {venue.mapUrl && <VenueMap mapUrl={venue.mapUrl} />}
+      <div className="venue-actions">
+        {venue.location && (
+          <button type="button" className="btn-link" onClick={copyAddress}>
+            {copied ? 'Copied!' : 'Copy address'}
+          </button>
+        )}
+        {venue.mapUrl && <VenueMap mapUrl={venue.mapUrl} />}
+      </div>
     </div>
   );
 }
