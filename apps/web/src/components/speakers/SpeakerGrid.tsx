@@ -25,6 +25,27 @@ export function SpeakerGrid({ limit }: SpeakerGridProps) {
 
   const shown = limit ? speakers.slice(0, limit) : speakers;
 
+  // Homepage teaser: wireframe 1a "03/Speakers" is editorial, not a grid —
+  // one big featured card carries the section, with the rest as smaller
+  // supporting cards beside it. The full /speakers directory (no limit)
+  // keeps the plain grid.
+  if (limit) {
+    const [featured, ...rest] = shown;
+    if (!featured) return null;
+    return (
+      <div className="speaker-teaser">
+        <SpeakerCard speaker={featured} />
+        {rest.length > 0 && (
+          <div className="speaker-teaser-list">
+            {rest.map((speaker: Speaker) => (
+              <SpeakerCard key={speaker.id} speaker={speaker} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="card-grid card-grid-3">
       {shown.map((speaker: Speaker) => (

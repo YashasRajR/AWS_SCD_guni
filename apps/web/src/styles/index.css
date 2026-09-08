@@ -1329,6 +1329,40 @@ ol {
   font-weight: var(--fw-medium);
 }
 
+/* Homepage teaser only: one big featured card + smaller supporting cards
+   beside it (wireframe 1a "03/Speakers" — editorial, not a grid). */
+.speaker-teaser {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .speaker-teaser {
+    grid-template-columns: 1.1fr 1fr;
+  }
+}
+
+.speaker-teaser-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.speaker-teaser-list .speaker-card {
+  padding: var(--space-3);
+}
+
+.speaker-teaser-list .speaker-photo {
+  width: 56px;
+  height: 56px;
+}
+
+.speaker-teaser-list .speaker-bio {
+  display: none;
+}
+
 /* ============================================================
    SESSIONS
    ============================================================ */
