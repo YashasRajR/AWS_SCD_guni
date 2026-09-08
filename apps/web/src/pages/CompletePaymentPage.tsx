@@ -11,24 +11,22 @@ import { useDocumentHead } from '../lib/seo.js';
 
 /**
  * The only path between account creation and the dashboard. Creates the
- * event registration for the plan chosen on /register (if one doesn't
- * exist yet), then walks the attendee through payment. The dashboard route
- * guard (App.tsx's RequirePaidRegistration) sends anyone without a
- * CONFIRMED registration back here — so this page is also where someone
- * lands if they closed the checkout window and come back later.
- *
- * No coupon field here on purpose: a coupon can only be redeemed at the
- * moment a registration is created (registrationsService.create prices and
- * locks it in before the row exists), and by the time this page can show
- * anything the registration already exists — so there's nothing left to
- * apply a coupon to. Discounts already on the registration (applied at
- * creation) still show below.
+ * event registration for the plan (and optional coupon) chosen on
+ * /register, if one doesn't exist yet, then walks the attendee through
+ * payment. The dashboard route guard (App.tsx's RequirePaidRegistration)
+ * sends anyone without a CONFIRMED registration back here — so this page
+ * is also where someone lands if they closed the checkout window and come
+ * back later (at which point the coupon question is already settled --
+ * a coupon can only be redeemed at the moment the registration is
+ * created, never after).
  */
 export function CompletePaymentPage() {
   useDocumentHead({ title: 'Complete your payment' });
   const navigate = useNavigate();
   const location = useLocation();
-  const ticketPlanCodeFromRegister = (location.state as { ticketPlanCode?: string } | null)?.ticketPlanCode;
+  const registerState = location.state as { ticketPlanCode?: string; couponCode?: string } | null;
+  const ticketPlanCodeFromRegister = registerState?.ticketPlanCode;
+  const couponCodeFromRegister = registerState?.couponCode;
 
   const {
     data: registration,
@@ -52,6 +50,10 @@ export function CompletePaymentPage() {
   // If that plan code isn't available (direct link, or the state was lost
   // on a refresh), there's nothing to create it from, so send them back
   // to pick a plan rather than guessing one.
+  // undefined = not attempted yet; '' = deliberately skip the coupon on a
+  // retry after it was rejected.
+  const [couponAttempt, setCouponAttempt] = useState<string | undefined>(couponCodeFromRegister);
+
   useEffect(() => {
     if (regLoading || registration || !regNotFound) return;
     if (!ticketPlanCodeFromRegister) {
@@ -61,13 +63,18 @@ export function CompletePaymentPage() {
     setCreating(true);
     setCreateError(null);
     apiClient
-      .post('/me/registration', { ticketPlanCode: ticketPlanCodeFromRegister })
+      .post('/me/registration', {
+        ticketPlanCode: ticketPlanCodeFromRegister,
+        couponCode: couponAttempt || undefined,
+      })
       .then(() => reloadRegistration())
       .catch((err) =>
-        setCreateError(err instanceof ApiClientError ? err.message : 'Failed to register for the event.'),
+        setCreateError(
+          err instanceof ApiClientError ? err.message : 'Failed to register for the event.',
+        ),
       )
       .finally(() => setCreating(false));
-  }, [regLoading, registration, regNotFound, ticketPlanCodeFromRegister, navigate, reloadRegistration]);
+  }, [regLoading, registration, regNotFound, ticketPlanCodeFromRegister, couponAttempt, navigate, reloadRegistration]);
 
   // Already paid -- nothing to do here, the dashboard is the right place.
   useEffect(() => {
@@ -120,9 +127,33 @@ export function CompletePaymentPage() {
         <div className="auth-card">
           <h1>Something went wrong</h1>
           <p className="form-error">{createError ?? regError}</p>
-          <button type="button" className="btn btn-primary" onClick={() => reloadRegistration()}>
-            Try again
-          </button>
+          <div className="register-step-actions">
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => {
+                setCreateError(null);
+                reloadRegistration();
+              }}
+            >
+              Try again
+            </button>
+            {createError && couponAttempt && (
+              <button
+                type="button"
+                className="btn-link"
+                onClick={() => {
+                  setCreateError(null);
+                  // Changing couponAttempt alone re-runs the create effect
+                  // below (registration is still null/not-found from the
+                  // failed attempt) -- no separate reload needed.
+                  setCouponAttempt('');
+                }}
+              >
+                Continue without coupon →
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );

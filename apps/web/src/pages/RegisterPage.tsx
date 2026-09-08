@@ -21,6 +21,7 @@ interface FormState {
   companyName: string;
   designation: string;
   linkedinUrl: string;
+  couponCode: string;
   consent: boolean;
 }
 
@@ -39,6 +40,7 @@ const INITIAL_STATE: FormState = {
   companyName: '',
   designation: '',
   linkedinUrl: '',
+  couponCode: '',
   consent: false,
 };
 
@@ -196,7 +198,10 @@ export function RegisterPage() {
       // creates the actual event registration for this plan and takes the
       // attendee through checkout; only a confirmed payment unlocks the
       // dashboard (see App.tsx's RequirePaidRegistration).
-      navigate('/complete-payment', { replace: true, state: { ticketPlanCode: form.registrationType } });
+      navigate('/complete-payment', {
+        replace: true,
+        state: { ticketPlanCode: form.registrationType, couponCode: form.couponCode.trim() || undefined },
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create account.');
     } finally {
@@ -498,6 +503,17 @@ export function RegisterPage() {
             <button type="button" className="btn-link" onClick={() => setPhase('form')}>
               Edit details
             </button>
+
+            <label className="form-field">
+              <span>Coupon code (optional)</span>
+              <input
+                type="text"
+                value={form.couponCode}
+                onChange={(e) => setField('couponCode', e.target.value)}
+                placeholder="e.g. AWSGUNI25"
+              />
+              <span className="form-help">Applied automatically at checkout if it's valid.</span>
+            </label>
 
             <label className="form-field form-field-checkbox">
               <input
