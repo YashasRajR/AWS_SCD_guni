@@ -1396,6 +1396,48 @@ ol {
   color: var(--primary-foreground);
 }
 
+/* Wireframe 1b "/sessions" sticky filter bar: muted shell around the type
+   chips, a search box, and a live count line. */
+.session-filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.session-filter-bar .session-filters {
+  margin-bottom: 0;
+}
+
+.session-filter-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.session-search {
+  flex: 1;
+  min-width: 200px;
+  min-height: 40px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: var(--text-small);
+}
+
+.session-count {
+  margin: 0;
+  font-size: var(--text-caption);
+  color: var(--muted);
+}
+
 .session-list {
   display: flex;
   flex-direction: column;
