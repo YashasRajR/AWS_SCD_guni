@@ -71,7 +71,18 @@ export function createApp(): Express {
   // reasoning as health/ready: this is static asset serving, not an API
   // call. Public and unauthenticated, matching every other image URL the
   // spec allows (speaker photos, etc. were always plain public URLs).
-  app.use('/uploads', express.static(resolveUploadDir()));
+  // helmet's default Cross-Origin-Resource-Policy: same-origin blocks the
+  // web/admin apps (different port = different origin) from loading these
+  // as <img> src -- relax it for this route only, everything else keeps
+  // helmet's default.
+  app.use(
+    '/uploads',
+    (req, res, next) => {
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      next();
+    },
+    express.static(resolveUploadDir()),
+  );
 
   app.use('/api/v1', createApiRateLimiter(), apiRouter);
 
