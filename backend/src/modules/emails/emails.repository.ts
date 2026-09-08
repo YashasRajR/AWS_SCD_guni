@@ -46,13 +46,31 @@ export const emailsRepository = {
     return rows;
   },
 
-  /** PENDING/RETRYING rows whose next_attempt_at has arrived, oldest first. */
+  /**
+   * PENDING/RETRYING rows whose next_attempt_at has arrived, oldest first --
+   * claimed via a short lease (next_attempt_at pushed forward) rather than
+   * a plain SELECT, so a second worker instance polling at the same moment
+   * (a normal horizontal-scaling deployment, not hypothetical) can't also
+   * pick up the same row and send a duplicate email before either side
+   * calls markSent. FOR UPDATE SKIP LOCKED also means two pollers hitting
+   * this at once split the batch instead of blocking on each other. If the
+   * worker crashes mid-send without reaching markSent/markFailedAttempt,
+   * the lease simply expires and the row becomes due again -- a bonus,
+   * not a requirement, of reusing next_attempt_at instead of adding a
+   * dedicated "claimed" status/column.
+   */
   async listDue(limit: number): Promise<EmailRecordRow[]> {
     const { rows } = await getPool().query<EmailRecordRow>(
-      `SELECT * FROM email_records
-       WHERE status IN ('PENDING', 'RETRYING') AND next_attempt_at <= now()
-       ORDER BY created_at ASC
-       LIMIT $1`,
+      `UPDATE email_records
+       SET next_attempt_at = now() + interval '2 minutes'
+       WHERE id IN (
+         SELECT id FROM email_records
+         WHERE status IN ('PENDING', 'RETRYING') AND next_attempt_at <= now()
+         ORDER BY created_at ASC
+         LIMIT $1
+         FOR UPDATE SKIP LOCKED
+       )
+       RETURNING *`,
       [limit],
     );
     return rows;

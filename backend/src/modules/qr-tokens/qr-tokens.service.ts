@@ -20,8 +20,11 @@ export const qrTokensService = {
     for (const type of QR_TOKEN_TYPES) {
       const existing = await qrTokensRepository.findActiveByTicketAndType(ticketId, type);
       if (existing) continue;
-      const { rawToken } = await qrTokensRepository.issue(ticketId, type);
-      issued.push({ type, rawToken });
+      // null = a concurrent issueForTicket() for this ticket won the race;
+      // that call already has the raw token, so there's nothing for this
+      // call to hand back -- same as the existing-token branch above.
+      const result = await qrTokensRepository.issue(ticketId, type);
+      if (result) issued.push({ type, rawToken: result.rawToken });
     }
     return issued;
   },
@@ -32,8 +35,9 @@ export const qrTokensService = {
 
   /** Admin action: revoke-and-reissue. Returns the new raw token once. */
   async rotate(ticketId: string, type: QrTokenType): Promise<{ token: QrToken; rawToken: string }> {
-    const { row, rawToken } = await qrTokensRepository.issue(ticketId, type);
-    return { token: toQrToken(row), rawToken };
+    const result = await qrTokensRepository.issue(ticketId, type);
+    if (!result) throw AppError.duplicate('This token was just rotated by another request. Try again.');
+    return { token: toQrToken(result.row), rawToken: result.rawToken };
   },
 
   /**
@@ -46,6 +50,9 @@ export const qrTokensService = {
       qrTokensRepository.issue(ticketId, 'REGISTRATION'),
       qrTokensRepository.issue(ticketId, 'GOODIE'),
     ]);
+    if (!registration || !goodie) {
+      throw AppError.duplicate('This ticket\'s tokens were just rotated by another request. Try again.');
+    }
     return { registrationToken: registration.rawToken, goodieToken: goodie.rawToken };
   },
 

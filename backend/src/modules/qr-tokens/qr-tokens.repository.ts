@@ -42,8 +42,17 @@ export const qrTokensRepository = {
    * transaction so a reader never observes a moment with zero active
    * tokens or two. Returns the raw token — the only time it ever exists
    * outside a hash.
+   *
+   * Two concurrent issue() calls for the same (ticketId, type) (e.g. a
+   * webhook and an admin retry both confirming the same payment) can both
+   * pass the UPDATE with no ACTIVE row left to revoke and then both try to
+   * INSERT one -- only one can win qr_tokens_unique_active. The losing
+   * INSERT relies on ON CONFLICT ... DO NOTHING instead of throwing a raw
+   * unique-violation; returns null so the caller (who has no way to learn
+   * the winner's raw token) can decide what "someone else already issued
+   * it" means for them.
    */
-  async issue(ticketId: string, type: QrTokenType): Promise<{ row: QrTokenRow; rawToken: string }> {
+  async issue(ticketId: string, type: QrTokenType): Promise<{ row: QrTokenRow; rawToken: string } | null> {
     const rawToken = generateRawToken();
     const tokenHash = hashToken(rawToken);
     const row = await withTransaction(async (client) => {
@@ -53,12 +62,14 @@ export const qrTokensRepository = {
         [ticketId, type],
       );
       const { rows } = await client.query<QrTokenRow>(
-        `INSERT INTO qr_tokens (ticket_id, type, token_hash) VALUES ($1, $2, $3) RETURNING *`,
+        `INSERT INTO qr_tokens (ticket_id, type, token_hash) VALUES ($1, $2, $3)
+         ON CONFLICT (ticket_id, type) WHERE status = 'ACTIVE' DO NOTHING
+         RETURNING *`,
         [ticketId, type, tokenHash],
       );
-      return rows[0]!;
+      return rows[0] ?? null;
     });
-    return { row, rawToken };
+    return row ? { row, rawToken } : null;
   },
 
   async revoke(id: string): Promise<QrTokenRow | null> {
