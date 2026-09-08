@@ -1775,6 +1775,31 @@ ol {
   opacity: 0.9;
 }
 
+.registration-cta-facts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.registration-cta-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 5.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px dashed rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius-sm);
+}
+
+.registration-cta-fact span {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
 .registration-cta .btn-primary {
   background: var(--secondary);
   color: var(--secondary-foreground);

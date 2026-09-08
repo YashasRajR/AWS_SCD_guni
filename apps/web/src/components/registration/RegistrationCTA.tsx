@@ -17,10 +17,31 @@ export function RegistrationCTA({
   const { data: event } = useEvent();
   const phase = getRegistrationPhase(event);
 
+  // Wireframe 1a "Ready to build the future?" fact-chip row — every value
+  // comes straight off the real event record, never invented.
+  const facts = event
+    ? [
+        { label: 'Date', value: formatDate(event.eventDate) },
+        { label: 'Where', value: event.venue ?? 'TBA' },
+        { label: 'Entry', value: event.registrationFee === '0.00' ? 'Free' : `${event.currency} ${event.registrationFee}` },
+        { label: 'Status', value: phase === 'open' ? 'Open' : phase === 'not-open' ? 'Opening soon' : 'Closed' },
+      ]
+    : [];
+
   return (
     <div className="registration-cta">
       <h2>{title}</h2>
       <p>{description}</p>
+      {facts.length > 0 && (
+        <div className="registration-cta-facts">
+          {facts.map((fact) => (
+            <div key={fact.label} className="registration-cta-fact">
+              <span>{fact.label}</span>
+              <strong>{fact.value}</strong>
+            </div>
+          ))}
+        </div>
+      )}
       {status === 'signed-in' ? (
         <Button to="/dashboard" size="large">
           Go to my dashboard
