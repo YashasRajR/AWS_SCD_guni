@@ -1157,6 +1157,62 @@ ol {
   margin: 0;
 }
 
+/* "02/Highlights" satellite layout: an intro card with a ring of smaller
+   cards overlapping its edge on wider screens. Single column on mobile. */
+.highlights-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .highlights-layout {
+    grid-template-columns: 1.3fr 1fr;
+  }
+
+  .highlights-satellites {
+    margin-left: calc(-1 * var(--space-6));
+  }
+}
+
+.highlights-intro {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.highlights-intro h3 {
+  font-size: var(--text-h4);
+  margin: 0 0 var(--space-2);
+}
+
+.highlights-intro p {
+  color: var(--muted);
+  margin: 0;
+}
+
+.highlights-satellites {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.highlights-satellites .highlight-card {
+  padding: var(--space-4);
+}
+
+.highlights-satellites:hover .highlight-card {
+  opacity: 0.88;
+}
+
+.highlights-satellites .highlight-card:hover {
+  opacity: 1;
+  z-index: 1;
+}
+
 .community-section {
   background: var(--secondary);
   color: var(--secondary-foreground);
