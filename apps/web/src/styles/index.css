@@ -2550,3 +2550,129 @@ ol {
     --container-pad: 1rem;
   }
 }
+
+/* ============================================================
+   WRAPPED STORY (wireframe 1i: 6-slide auto-advancing story)
+   ============================================================ */
+
+.wrapped-story {
+  position: relative;
+  max-width: 420px;
+  margin: 0 auto;
+  min-height: 70vh;
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.wrapped-story-bars {
+  display: flex;
+  gap: 4px;
+}
+
+.wrapped-story-bar {
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.wrapped-story-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width var(--duration-base) var(--ease-standard);
+}
+
+.wrapped-story-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 1;
+}
+.wrapped-story-zone:disabled {
+  cursor: default;
+}
+.wrapped-story-zone-left {
+  left: 0;
+}
+.wrapped-story-zone-right {
+  right: 0;
+}
+
+.wrapped-story-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-4);
+}
+
+.wrapped-story-index {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin: 0;
+}
+
+.wrapped-story-number {
+  font-family: var(--font-display);
+  font-size: 4.5rem;
+  line-height: 1;
+  margin: 0;
+  color: #fff;
+}
+
+.wrapped-story-number-text {
+  font-size: 1.8rem;
+  text-transform: none;
+  max-width: 30ch;
+}
+
+.wrapped-story-caption {
+  font-family: var(--font-mono);
+  font-size: var(--text-small);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  margin: 0;
+}
+
+.wrapped-story-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  position: relative;
+  z-index: 2;
+}
+
+.wrapped-story-controls {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  z-index: 2;
+}
+
+.wrapped-story-controls .btn-link {
+  color: var(--secondary-foreground);
+  opacity: 0.85;
+}
+.wrapped-story-controls .btn-link:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
