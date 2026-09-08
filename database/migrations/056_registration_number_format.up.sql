@@ -12,4 +12,9 @@
 -- that's ever built.
 CREATE SEQUENCE registration_number_seq AS INTEGER MAXVALUE 999 NO CYCLE START 1;
 
-ALTER TABLE registrations ADD CONSTRAINT registrations_registration_number_unique UNIQUE (registration_number);
+-- No uniqueness constraint added here: 007_registrations already created
+-- `registrations_registration_number_unique` as a UNIQUE INDEX at table
+-- creation, which enforces the exact same guarantee. Re-adding it under
+-- the same name here fails with "relation already exists" on any
+-- database that ran 007 (i.e. every one) -- this migration only needs
+-- the sequence.
