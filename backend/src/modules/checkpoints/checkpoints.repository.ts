@@ -88,11 +88,14 @@ export const checkpointsRepository = {
     return rows[0]!;
   },
 
-  async getAttendeeCompletions(attendeeId: string, eventId: string): Promise<CheckpointAttendanceRow[]> {
+  /** eventId: null means "across all events" (achievements.service's
+   * CHECKPOINT_COUNT case, when the achievement's condition_config has no
+   * eventId) -- every other caller passes a real id. */
+  async getAttendeeCompletions(attendeeId: string, eventId: string | null): Promise<CheckpointAttendanceRow[]> {
     const { rows } = await getPool().query<CheckpointAttendanceRow>(
       `SELECT ca.* FROM checkpoint_attendance ca
        JOIN checkpoints c ON c.id = ca.checkpoint_id
-       WHERE ca.attendee_id = $1 AND c.event_id = $2 AND ca.status = 'COMPLETED'`,
+       WHERE ca.attendee_id = $1 AND ($2::uuid IS NULL OR c.event_id = $2) AND ca.status = 'COMPLETED'`,
       [attendeeId, eventId],
     );
     return rows;

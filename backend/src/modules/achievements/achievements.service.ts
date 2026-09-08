@@ -121,7 +121,8 @@ export const achievementsService = {
         const completions = await checkpointsRepository.getAttendeeCompletions(
           attendeeId,
           // If config specifies an event_id, use it; otherwise check all
-          (config as { eventId?: string }).eventId ?? '',
+          // (null, not '' -- eventId is a uuid column and '' fails to parse).
+          (config as { eventId?: string }).eventId ?? null,
         );
         return completions.length >= minCount;
       }
