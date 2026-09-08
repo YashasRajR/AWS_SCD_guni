@@ -23,6 +23,7 @@ import { MyAchievementsPage } from './pages/MyAchievementsPage.js';
 import { MyCertificatePage } from './pages/MyCertificatePage.js';
 import { EventWrappedPage } from './pages/EventWrappedPage.js';
 import { SocialPostPage } from './pages/SocialPostPage.js';
+import { NotFoundPage } from './pages/NotFoundPage.js';
 
 function RequireAttendee({ children }: { children: ReactElement }) {
   const { status } = useAuth();
@@ -109,7 +110,7 @@ function AppRoutes() {
             </RequireAttendee>
           }
         />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );
