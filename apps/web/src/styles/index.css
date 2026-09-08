@@ -1537,6 +1537,20 @@ ol {
   box-shadow: var(--shadow-md);
 }
 
+.agenda-item-now {
+  border-color: var(--accent);
+  border-top: 2px solid var(--accent);
+}
+
+.agenda-item-now-marker {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
 /* Date/time block (spec section 32): a solid deep-purple rectangle,
    not inline muted text -- the same "editorial poster fragment" motif
    as the hero/section eyebrows, applied to schedule entries. */

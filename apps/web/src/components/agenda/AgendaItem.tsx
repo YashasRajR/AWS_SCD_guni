@@ -9,10 +9,17 @@ interface AgendaItemProps {
 }
 
 export function AgendaItem({ item, session, venue }: AgendaItemProps) {
+  // Wireframe 1c callout: "Happening now = orange top rule + mono marker
+  // on the live row" -- derived from the real start/end timestamps, not a
+  // guess, and simply never true outside the actual event window.
+  const now = Date.now();
+  const isNow = now >= new Date(item.startTime).getTime() && now < new Date(item.endTime).getTime();
+
   return (
-    <li className="agenda-item">
+    <li className={isNow ? 'agenda-item agenda-item-now' : 'agenda-item'}>
       <div className="agenda-item-time">
         {formatTime(item.startTime)} – {formatTime(item.endTime)}
+        {isNow && <span className="agenda-item-now-marker">Now</span>}
       </div>
       <div className="agenda-item-body">
         <span className="agenda-item-title">{item.title}</span>
