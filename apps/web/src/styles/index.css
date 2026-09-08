@@ -1350,6 +1350,18 @@ ol {
   margin-bottom: var(--space-3);
 }
 
+/* Wireframe 1d: "Portraits 4:5, purple duotone resolving to colour on
+   hover only." This app's speaker photos are circular avatars rather than
+   4:5 rectangles (a bigger layout change than this pass covers), but the
+   duotone-to-color treatment applies the same either way. */
+img.speaker-photo {
+  filter: grayscale(0.5) sepia(0.35) hue-rotate(215deg) saturate(2.1);
+  transition: filter var(--duration-base) var(--ease-standard);
+}
+.speaker-card:hover img.speaker-photo {
+  filter: none;
+}
+
 .speaker-photo-placeholder {
   display: flex;
   align-items: center;
