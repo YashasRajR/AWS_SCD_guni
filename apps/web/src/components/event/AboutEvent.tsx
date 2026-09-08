@@ -1,12 +1,6 @@
 import { useEvent, useAboutSections } from '../../lib/queries.js';
+import { formatDate, formatTime } from '../../lib/format.js';
 import { Section, SectionHeader, SectionEyebrow, SectionTitle } from '../layout/Section.js';
-
-const FALLBACK_POINTS = [
-  'A full day of AWS-focused talks, workshops, and hands-on sessions built for students.',
-  'Meet practitioners working with the cloud, and ask the questions a lecture hall never has time for.',
-  'Walk away with a clearer path into cloud, DevOps, and modern software careers.',
-  'Connect with other student builders from across the community — the kind of network that outlasts the day.',
-];
 
 /**
  * About Student Community Day (spec #6). CMS-driven: admin-authored,
@@ -45,36 +39,43 @@ export function AboutEvent() {
     );
   }
 
+  // Nested-card grammar (wireframe 1a "01/About"): a muted section shell
+  // holding What/Why/Who + Where/When as white fact cards. Where/When
+  // come straight from the event row; What falls back to a generic
+  // description only when the admin hasn't written one, and Why/Who are
+  // evergreen framing that stays true regardless of programming details.
+  const facts = [
+    {
+      label: 'What',
+      body:
+        event?.description ??
+        'A one-day, student-organized cloud conference bringing the AWS user-group model to campus.',
+    },
+    { label: 'Why', body: 'Learn AWS from people building on it, not just reading about it.' },
+    { label: 'Who', body: 'Any student, any college, any year. No cloud experience needed.' },
+    { label: 'Where', body: event?.venue ?? 'To be announced' },
+    {
+      label: 'When',
+      body:
+        event?.startTime && event.endTime
+          ? `${formatTime(event.startTime)} – ${formatTime(event.endTime)}, ${formatDate(event?.eventDate)}`
+          : formatDate(event?.eventDate),
+    },
+  ];
+
   return (
     <Section id="about" muted>
-      <div className="about-grid">
-        <div>
-          <SectionHeader>
-            <SectionEyebrow>About the event</SectionEyebrow>
-            <SectionTitle>Student Community Day, built for builders</SectionTitle>
-          </SectionHeader>
-          <div className="about-copy">
-            <p>
-              {event?.description ??
-                'AWS Student Community Day brings the AWS user-group model to campus — a student-organized, community-run day of learning, building, and connecting around the cloud.'}
-            </p>
-            <p>
-              It&apos;s for anyone curious about cloud computing, whether you&apos;ve deployed your first Lambda
-              function or you&apos;re still deciding what AWS stands for. No prerequisites, just curiosity.
-            </p>
+      <SectionHeader>
+        <SectionEyebrow>About the event</SectionEyebrow>
+        <SectionTitle>Student Community Day, built for builders</SectionTitle>
+      </SectionHeader>
+      <div className="about-fact-grid">
+        {facts.map((fact) => (
+          <div key={fact.label} className="about-fact-card">
+            <span className="about-fact-label">{fact.label}</span>
+            <p>{fact.body}</p>
           </div>
-        </div>
-
-        <ul className="about-points">
-          {FALLBACK_POINTS.map((point) => (
-            <li key={point}>
-              <span className="about-points-mark" aria-hidden="true">
-                →
-              </span>
-              <span>{point}</span>
-            </li>
-          ))}
-        </ul>
+        ))}
       </div>
     </Section>
   );
