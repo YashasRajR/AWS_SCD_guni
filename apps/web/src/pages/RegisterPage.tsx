@@ -39,28 +39,68 @@ const INITIAL_STATE: FormState = {
   consent: false,
 };
 
+// Wireframe 1g "/register": a 3-step stepper (Account -> Profile details ->
+// Confirm) instead of one long form, with a read-back summary before the
+// final submit.
+const STEPS = ['Account', 'Profile details', 'Confirm'] as const;
+
 export function RegisterPage() {
   useDocumentHead({ title: 'Register' });
   const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState<FormState>(INITIAL_STATE);
+  const [step, setStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const setField = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
+  const isStudent = form.registrationType === 'STUDENT';
+  const isEmployee = form.registrationType === 'PROFESSIONAL';
+  const today = new Date().toISOString().slice(0, 10);
+
+  function stepError(n: number): string | null {
+    if (n === 0) {
+      if (form.fullName.trim().length < 2) return 'Enter your full name.';
+      if (!form.email) return 'Enter your email.';
+      if (form.password.length < 8) return 'Password must be at least 8 characters.';
+      if (form.password !== form.confirmPassword) return 'Passwords do not match.';
+      if (!form.phone.trim()) return 'Enter your mobile number.';
+      return null;
+    }
+    if (n === 1) {
+      if (!form.registrationType) return 'Select whether you are a student or an employee.';
+      if (isStudent && (!form.university || !form.department || !form.branch || !form.year)) {
+        return 'Fill in your college, department, branch, and year of passout.';
+      }
+      if (isEmployee && (!form.companyName || !form.designation)) {
+        return 'Fill in your company name and designation.';
+      }
+      if (!form.dateOfBirth) return 'Enter your date of birth.';
+      return null;
+    }
+    return null;
+  }
+
+  const goToStep = (n: number) => {
+    setError(null);
+    setStep(n);
+  };
+
+  const continueFrom = (n: number) => {
+    const message = stepError(n);
+    if (message) {
+      setError(message);
+      return;
+    }
+    setError(null);
+    setStep(n + 1);
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!form.registrationType) {
-      setError('Select whether you are a student or an employee.');
-      return;
-    }
-    if (form.password !== form.confirmPassword) {
-      setError('Passwords do not match.');
-      return;
-    }
     if (!form.consent) {
       setError('You must accept the terms to register.');
       return;
@@ -91,10 +131,6 @@ export function RegisterPage() {
     }
   };
 
-  const isStudent = form.registrationType === 'STUDENT';
-  const isEmployee = form.registrationType === 'PROFESSIONAL';
-  const today = new Date().toISOString().slice(0, 10);
-
   return (
     <div className="auth-page">
       <div className="auth-card auth-card-wide">
@@ -103,94 +139,117 @@ export function RegisterPage() {
           This creates your attendee profile. You&apos;ll register for the event itself from your dashboard.
         </p>
 
+        <div className="register-stepper" role="tablist" aria-label="Registration steps">
+          {STEPS.map((label, i) => (
+            <span
+              key={label}
+              className={i === step ? 'filter-chip filter-chip-active' : 'filter-chip'}
+              aria-current={i === step ? 'step' : undefined}
+            >
+              {i + 1} {label}
+            </span>
+          ))}
+        </div>
+
         {error && <p className="form-error">{error}</p>}
 
         <form className="auth-form auth-form-grid" onSubmit={handleSubmit}>
-          <label className="form-field">
-            <span>Full name *</span>
-            <input
-              type="text"
-              required
-              minLength={2}
-              value={form.fullName}
-              onChange={(e) => setField('fullName', e.target.value)}
-              autoComplete="name"
-            />
-          </label>
-          <label className="form-field">
-            <span>Email *</span>
-            <input
-              type="email"
-              required
-              value={form.email}
-              onChange={(e) => setField('email', e.target.value)}
-              autoComplete="email"
-            />
-          </label>
-          <label className="form-field">
-            <span>Password *</span>
-            <input
-              type="password"
-              required
-              minLength={8}
-              value={form.password}
-              onChange={(e) => setField('password', e.target.value)}
-              autoComplete="new-password"
-            />
-            <span className="form-help">At least 8 characters, with a letter and a number.</span>
-          </label>
-          <label className="form-field">
-            <span>Confirm password *</span>
-            <input
-              type="password"
-              required
-              minLength={8}
-              value={form.confirmPassword}
-              onChange={(e) => setField('confirmPassword', e.target.value)}
-              autoComplete="new-password"
-            />
-          </label>
-          <label className="form-field">
-            <span>Mobile number *</span>
-            <input
-              type="tel"
-              required
-              inputMode="tel"
-              pattern="[0-9+ ]{7,20}"
-              title="Digits only, optionally starting with +"
-              value={form.phone}
-              onChange={(e) => setField('phone', e.target.value)}
-              autoComplete="tel"
-            />
-          </label>
-
-          <fieldset className="form-field form-field-span" style={{ border: 'none', padding: 0, margin: 0 }}>
-            <span>Profession *</span>
-            <div className="dashboard-card-row">
-              <label className="form-field-checkbox">
-                <input
-                  type="radio"
-                  name="registrationType"
-                  checked={isStudent}
-                  onChange={() => setField('registrationType', 'STUDENT')}
-                />
-                <span>Student</span>
-              </label>
-              <label className="form-field-checkbox">
-                <input
-                  type="radio"
-                  name="registrationType"
-                  checked={isEmployee}
-                  onChange={() => setField('registrationType', 'PROFESSIONAL')}
-                />
-                <span>Employee</span>
-              </label>
-            </div>
-          </fieldset>
-
-          {(isStudent || isEmployee) && (
+          {step === 0 && (
             <>
-              <p className="form-section-heading">{isStudent ? 'Student details' : 'Employment details'}</p>
+              <label className="form-field">
+                <span>Full name *</span>
+                <input
+                  type="text"
+                  required
+                  minLength={2}
+                  value={form.fullName}
+                  onChange={(e) => setField('fullName', e.target.value)}
+                  autoComplete="name"
+                />
+              </label>
+              <label className="form-field">
+                <span>Email *</span>
+                <input
+                  type="email"
+                  required
+                  value={form.email}
+                  onChange={(e) => setField('email', e.target.value)}
+                  autoComplete="email"
+                />
+              </label>
+              <label className="form-field">
+                <span>Password *</span>
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  value={form.password}
+                  onChange={(e) => setField('password', e.target.value)}
+                  autoComplete="new-password"
+                />
+                <span className="form-help">At least 8 characters, with a letter and a number.</span>
+              </label>
+              <label className="form-field">
+                <span>Confirm password *</span>
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  value={form.confirmPassword}
+                  onChange={(e) => setField('confirmPassword', e.target.value)}
+                  autoComplete="new-password"
+                />
+              </label>
+              <label className="form-field">
+                <span>Mobile number *</span>
+                <input
+                  type="tel"
+                  required
+                  inputMode="tel"
+                  pattern="[0-9+ ]{7,20}"
+                  title="Digits only, optionally starting with +"
+                  value={form.phone}
+                  onChange={(e) => setField('phone', e.target.value)}
+                  autoComplete="tel"
+                />
+              </label>
+
+              <div className="form-field-span register-step-actions">
+                <button type="button" className="btn btn-primary" onClick={() => continueFrom(0)}>
+                  Continue →
+                </button>
+                <p className="auth-switch">
+                  Already have an account? <Link to="/login">Log in</Link>
+                </p>
+              </div>
+            </>
+          )}
+
+          {step === 1 && (
+            <>
+              <fieldset className="form-field form-field-span" style={{ border: 'none', padding: 0, margin: 0 }}>
+                <span>Profession *</span>
+                <div className="dashboard-card-row">
+                  <label className="form-field-checkbox">
+                    <input
+                      type="radio"
+                      name="registrationType"
+                      checked={isStudent}
+                      onChange={() => setField('registrationType', 'STUDENT')}
+                    />
+                    <span>Student</span>
+                  </label>
+                  <label className="form-field-checkbox">
+                    <input
+                      type="radio"
+                      name="registrationType"
+                      checked={isEmployee}
+                      onChange={() => setField('registrationType', 'PROFESSIONAL')}
+                    />
+                    <span>Employee</span>
+                  </label>
+                </div>
+              </fieldset>
 
               {isStudent && (
                 <>
@@ -257,46 +316,89 @@ export function RegisterPage() {
                 </>
               )}
 
-              <label className="form-field">
-                <span>Date of birth *</span>
-                <input
-                  type="date"
-                  required
-                  max={today}
-                  value={form.dateOfBirth}
-                  onChange={(e) => setField('dateOfBirth', e.target.value)}
-                  autoComplete="bday"
-                />
-              </label>
-              <label className="form-field">
-                <span>LinkedIn profile</span>
-                <input
-                  type="url"
-                  value={form.linkedinUrl}
-                  onChange={(e) => setField('linkedinUrl', e.target.value)}
-                  placeholder="https://linkedin.com/in/yourname"
-                />
-              </label>
+              {(isStudent || isEmployee) && (
+                <>
+                  <label className="form-field">
+                    <span>Date of birth *</span>
+                    <input
+                      type="date"
+                      required
+                      max={today}
+                      value={form.dateOfBirth}
+                      onChange={(e) => setField('dateOfBirth', e.target.value)}
+                      autoComplete="bday"
+                    />
+                  </label>
+                  <label className="form-field">
+                    <span>LinkedIn profile</span>
+                    <input
+                      type="url"
+                      value={form.linkedinUrl}
+                      onChange={(e) => setField('linkedinUrl', e.target.value)}
+                      placeholder="https://linkedin.com/in/yourname"
+                    />
+                  </label>
+                </>
+              )}
+
+              <div className="form-field-span register-step-actions">
+                <button type="button" className="btn-link" onClick={() => goToStep(0)}>
+                  ← Back
+                </button>
+                <button type="button" className="btn btn-primary" onClick={() => continueFrom(1)}>
+                  Continue →
+                </button>
+              </div>
             </>
           )}
 
-          <label className="form-field form-field-checkbox form-field-span">
-            <input
-              type="checkbox"
-              checked={form.consent}
-              onChange={(e) => setField('consent', e.target.checked)}
-            />
-            <span>I agree to the event terms and to being contacted about this event.</span>
-          </label>
+          {step === 2 && (
+            <>
+              <dl className="register-summary form-field-span">
+                <div>
+                  <dt>Name</dt>
+                  <dd>{form.fullName}</dd>
+                </div>
+                <div>
+                  <dt>Email</dt>
+                  <dd>{form.email}</dd>
+                </div>
+                <div>
+                  <dt>Mobile</dt>
+                  <dd>{form.phone}</dd>
+                </div>
+                <div>
+                  <dt>Profession</dt>
+                  <dd>
+                    {isStudent
+                      ? `Student — ${form.university}, ${form.department}${form.branch ? `, ${form.branch}` : ''}`
+                      : isEmployee
+                        ? `${form.designation} at ${form.companyName}`
+                        : '—'}
+                  </dd>
+                </div>
+              </dl>
+              <div className="form-field-span register-step-actions">
+                <button type="button" className="btn-link" onClick={() => goToStep(1)}>
+                  Edit details
+                </button>
+              </div>
 
-          <button type="submit" className="btn btn-primary btn-block form-field-span" disabled={submitting}>
-            {submitting ? 'Creating account…' : 'Create account'}
-          </button>
+              <label className="form-field form-field-checkbox form-field-span">
+                <input
+                  type="checkbox"
+                  checked={form.consent}
+                  onChange={(e) => setField('consent', e.target.checked)}
+                />
+                <span>I agree to the event terms and to being contacted about this event.</span>
+              </label>
+
+              <button type="submit" className="btn btn-primary btn-block form-field-span" disabled={submitting}>
+                {submitting ? 'Creating account…' : 'Confirm registration'}
+              </button>
+            </>
+          )}
         </form>
-
-        <p className="auth-switch">
-          Already have an account? <Link to="/login">Log in</Link>
-        </p>
       </div>
     </div>
   );
