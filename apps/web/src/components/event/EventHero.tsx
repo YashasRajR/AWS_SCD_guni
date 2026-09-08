@@ -3,6 +3,7 @@ import { useEvent, useSessions, useSpeakers, useVenues } from '../../lib/queries
 import { formatDate } from '../../lib/format.js';
 import { Button } from '../ui/Button.js';
 import { Skeleton } from '../ui/Skeleton.js';
+import { CountdownTimer } from './CountdownTimer.js';
 
 /**
  * The high-impact hero. Event name/description/date/venue come from
@@ -66,6 +67,7 @@ export function EventHero() {
                 </div>
               )}
             </dl>
+            <CountdownTimer targetDate={event.eventDate} />
           </>
         )}
 
