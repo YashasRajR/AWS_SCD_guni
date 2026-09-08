@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import type { SiteLink } from '@scd/types';
 import { useAuth } from '../../lib/auth.js';
-import { useEvent, useNavLinks } from '../../lib/queries.js';
+import { useEvent, useNavLinks, useSocialLinks } from '../../lib/queries.js';
 import { Button } from '../ui/Button.js';
 
 interface NavLinkDef {
@@ -132,6 +132,8 @@ export function Header() {
   const toggleRef = useRef<HTMLButtonElement>(null);
   const { items: navLinks } = useNavLinks();
   const { data: event } = useEvent();
+  const { items: socialLinks } = useSocialLinks();
+  const primarySocial = socialLinks[0];
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -241,6 +243,17 @@ export function Header() {
               <NavLinks links={navLinks} onNavigate={closeMenu} />
               <div className="nav-auth">
                 <AuthLinks onNavigate={closeMenu} />
+                {primarySocial && (
+                  <a
+                    href={primarySocial.url}
+                    target={primarySocial.openNewTab ? '_blank' : undefined}
+                    rel="noopener noreferrer"
+                    className="mobile-nav-social"
+                    onClick={closeMenu}
+                  >
+                    {primarySocial.label}
+                  </a>
+                )}
               </div>
             </nav>
           </div>
