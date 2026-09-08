@@ -694,6 +694,16 @@ ol {
   font-weight: var(--fw-semibold);
 }
 
+.offline-banner {
+  background: var(--warning-bg);
+  color: var(--warning);
+  text-align: center;
+  padding: 0.5rem var(--container-pad);
+  font-size: var(--text-small);
+  font-weight: var(--fw-medium);
+  border-bottom: 1px solid var(--warning);
+}
+
 .announcement-list {
   display: flex;
   flex-direction: column;
