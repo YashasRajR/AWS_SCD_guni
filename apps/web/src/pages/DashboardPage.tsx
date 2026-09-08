@@ -186,6 +186,11 @@ export function DashboardPage() {
 
   const registrationPhase = getRegistrationPhase(event);
 
+  // Wireframe 1h "Hey Riya. / 18 days to go." greeting -- real event date,
+  // never shown once the event has already happened.
+  const firstName = me?.attendee?.fullName.split(' ')[0];
+  const daysToGo = event ? Math.ceil((new Date(event.eventDate).getTime() - Date.now()) / 86400000) : null;
+
   const requiresPayment = registration?.ticketPlan
     ? Number(registration.ticketPlan.price) > 0
     : event
@@ -198,9 +203,10 @@ export function DashboardPage() {
   return (
     <div className="page-section dashboard">
       <header className="page-section-header">
-        <h1>My dashboard</h1>
+        <h1>{firstName ? `Hey ${firstName}.` : 'My dashboard'}</h1>
         {!meLoading && !meError && me?.attendee && (
           <p className="page-section-lede">
+            {daysToGo !== null && daysToGo > 0 ? `${daysToGo} day${daysToGo === 1 ? '' : 's'} to go. ` : ''}
             {me.attendee.fullName}
             {me.attendee.university ? ` · ${me.attendee.university}` : ''}
           </p>
