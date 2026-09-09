@@ -10,4 +10,8 @@ export const reportsController = {
   async getTrends(_req: Request, res: Response): Promise<void> {
     sendSuccess(res, await reportsService.getTrends());
   },
+
+  async getRecentActivity(_req: Request, res: Response): Promise<void> {
+    sendSuccess(res, await reportsService.getRecentActivity());
+  },
 };

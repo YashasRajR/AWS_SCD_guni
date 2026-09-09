@@ -21,3 +21,10 @@ reportsRouter.get(
   requirePermission(PERMISSIONS.VIEW_REPORTS),
   asyncHandler(reportsController.getTrends),
 );
+
+reportsRouter.get(
+  '/recent-activity',
+  authenticate,
+  requirePermission(PERMISSIONS.VIEW_REPORTS),
+  asyncHandler(reportsController.getRecentActivity),
+);

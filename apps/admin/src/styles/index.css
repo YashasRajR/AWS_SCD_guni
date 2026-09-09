@@ -216,6 +216,91 @@ textarea {
   max-width: 640px;
 }
 
+/* --- Dashboard alerts ------------------------------------------------------ */
+
+.dashboard-alerts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+
+.dashboard-alert {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  border-radius: var(--radius);
+  padding: 0.6rem 0.9rem;
+  font-size: 0.9rem;
+}
+
+.dashboard-alert-info {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.dashboard-alert-danger {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.dashboard-alert-warning {
+  background: var(--amber-bg);
+  color: var(--amber-text);
+}
+
+/* --- Dashboard recent activity ---------------------------------------------- */
+
+.dashboard-recent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.dashboard-recent-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+}
+
+.dashboard-recent-section h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.dashboard-recent-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dashboard-recent-list li {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.dashboard-recent-list li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.dashboard-recent-meta {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-left: auto;
+}
+
 /* --- Stat grid ------------------------------------------------------------ */
 
 .stat-grid {
