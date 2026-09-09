@@ -55,6 +55,13 @@ export function PaymentDetailPage() {
     run('Verification retried.', () => apiClient.post(`/admin/payments/${id}/retry-verification`, {}));
 
   const refund = () => {
+    if (
+      !window.confirm(
+        `Refund ${payment.currency} ${payment.amount} paid by ${attendeeName ?? 'this attendee'} (registration ${registrationNumber ?? '—'})?`,
+      )
+    ) {
+      return;
+    }
     const reason = window.prompt('Reason for this refund (kept in the audit log):');
     if (reason === null) return;
     if (reason.trim().length < 3) {
@@ -65,6 +72,13 @@ export function PaymentDetailPage() {
   };
 
   const reconcile = (status: 'PAID' | 'FAILED' | 'REFUNDED') => {
+    if (
+      !window.confirm(
+        `Mark this ${payment.currency} ${payment.amount} payment for ${attendeeName ?? 'this attendee'} (registration ${registrationNumber ?? '—'}) as ${status}?`,
+      )
+    ) {
+      return;
+    }
     const reason = window.prompt(
       `Reason for manually marking this payment ${status} (kept in the audit log):`,
     );

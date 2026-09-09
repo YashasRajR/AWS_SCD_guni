@@ -49,7 +49,7 @@ export function CheckpointsPage() {
       rowToFormValues={(row) => ({ ...row })}
       createExtraValues={eventId ? { eventId } : undefined}
       extraToolbar={
-        <button type="button" onClick={handleExport} disabled={exporting}>
+        <button type="button" className="btn btn-secondary" onClick={handleExport} disabled={exporting}>
           {exporting ? 'Exporting…' : 'Export attendance CSV'}
         </button>
       }

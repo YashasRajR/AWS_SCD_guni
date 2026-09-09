@@ -155,7 +155,7 @@ export function RegistrationsPage() {
           <h1>Registrations</h1>
           <p className="page-description">Waitlisted registrations get quick Promote/Reject actions; any other transition is a plain status change from the dropdown.</p>
         </div>
-        <button type="button" onClick={handleExport} disabled={exporting}>
+        <button type="button" className="btn btn-secondary" onClick={handleExport} disabled={exporting}>
           {exporting ? 'Exporting…' : 'Export CSV'}
         </button>
       </div>

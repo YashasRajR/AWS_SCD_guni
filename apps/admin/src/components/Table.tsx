@@ -45,13 +45,18 @@ export function Table<T>({
 }: TableProps<T>) {
   const selectable = Boolean(selectedIds && onToggleRow && onToggleAll);
   const colSpan = columns.length + (selectable ? 1 : 0);
+  // The checkbox column (when present) and the first data column stay
+  // pinned while a wide table scrolls horizontally, so the row's label
+  // doesn't disappear off-screen along with it -- the checkbox column is
+  // a fixed 2.5rem, so the first data column picks up from there.
+  const firstColSticky = { position: 'sticky' as const, left: selectable ? '2.5rem' : 0 };
   return (
     <div className="table-wrap">
       <table className="table">
         <thead>
           <tr>
             {selectable && (
-              <th style={{ width: '2.5rem' }}>
+              <th className="table-sticky-cell" style={{ width: '2.5rem', left: 0 }}>
                 <input
                   type="checkbox"
                   aria-label="Select all rows"
@@ -60,9 +65,13 @@ export function Table<T>({
                 />
               </th>
             )}
-            {columns.map((col) =>
+            {columns.map((col, i) =>
               col.sortable && onSortChange ? (
-                <th key={col.key} style={col.width ? { width: col.width } : undefined}>
+                <th
+                  key={col.key}
+                  className={i === 0 ? 'table-sticky-cell' : undefined}
+                  style={{ ...(col.width ? { width: col.width } : undefined), ...(i === 0 ? firstColSticky : undefined) }}
+                >
                   <button
                     type="button"
                     className="table-sort-header"
@@ -74,7 +83,11 @@ export function Table<T>({
                   </button>
                 </th>
               ) : (
-                <th key={col.key} style={col.width ? { width: col.width } : undefined}>
+                <th
+                  key={col.key}
+                  className={i === 0 ? 'table-sticky-cell' : undefined}
+                  style={{ ...(col.width ? { width: col.width } : undefined), ...(i === 0 ? firstColSticky : undefined) }}
+                >
                   {col.label}
                 </th>
               ),
@@ -104,7 +117,7 @@ export function Table<T>({
             rows.map((row) => (
               <tr key={getRowId(row)}>
                 {selectable && (
-                  <td>
+                  <td className="table-sticky-cell" style={{ left: 0 }}>
                     <input
                       type="checkbox"
                       aria-label="Select row"
@@ -113,8 +126,10 @@ export function Table<T>({
                     />
                   </td>
                 )}
-                {columns.map((col) => (
-                  <td key={col.key}>{col.render(row)}</td>
+                {columns.map((col, i) => (
+                  <td key={col.key} className={i === 0 ? 'table-sticky-cell' : undefined} style={i === 0 ? firstColSticky : undefined}>
+                    {col.render(row)}
+                  </td>
                 ))}
               </tr>
             ))

@@ -277,6 +277,14 @@ textarea {
   border-bottom: none;
 }
 
+/* Pins the checkbox column and/or the first data column while a wide
+   table (e.g. Attendees) scrolls horizontally -- see Table.tsx. */
+.table-sticky-cell {
+  position: sticky;
+  z-index: 1;
+  background: var(--surface);
+}
+
 .table-status {
   text-align: center;
   color: var(--text-muted);
@@ -337,6 +345,10 @@ textarea {
 .badge-blue {
   background: var(--blue-bg);
   color: var(--blue-text);
+}
+.badge-red {
+  background: var(--danger-bg);
+  color: var(--danger);
 }
 
 /* --- Buttons ----------------------------------------------------------- */
@@ -682,8 +694,18 @@ textarea {
     white-space: nowrap;
   }
 
+  /* A visible divider between sections -- without it, the title labels
+     read as just another link crammed into one continuous scrolling
+     strip, and the grouping they're meant to convey is lost. */
+  .nav-section + .nav-section {
+    border-left: 1px solid var(--border);
+    padding-left: 0.75rem;
+  }
+
   .nav-section-title {
-    padding: 0;
+    padding: 0.15rem 0.4rem;
+    background: var(--bg);
+    border-radius: 4px;
   }
 }
 

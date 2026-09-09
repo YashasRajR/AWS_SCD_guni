@@ -4,12 +4,15 @@ export function StatusBadge({ status }: { status: string }) {
       ? 'badge-green'
       : status === 'DRAFT' || status === 'PENDING' || status === 'WAITLISTED'
         ? 'badge-amber'
-        : status === 'ARCHIVED' ||
-            status === 'CANCELLED' ||
-            status === 'REJECTED' ||
-            status === 'REVOKED' ||
-            status === 'INACTIVE'
-          ? 'badge-gray'
-          : 'badge-blue';
+        : status === 'FAILED'
+          ? 'badge-red'
+          : status === 'ARCHIVED' ||
+              status === 'CANCELLED' ||
+              status === 'REJECTED' ||
+              status === 'REVOKED' ||
+              status === 'INACTIVE' ||
+              status === 'REFUNDED'
+            ? 'badge-gray'
+            : 'badge-blue';
   return <span className={`badge ${tone}`}>{status}</span>;
 }

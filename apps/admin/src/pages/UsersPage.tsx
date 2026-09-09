@@ -46,6 +46,7 @@ export function UsersPage() {
   };
 
   const revokeRole = async (user: UserWithRoles, role: RoleName) => {
+    if (!window.confirm(`Revoke the ${role} role from ${user.email}?`)) return;
     setBusy(user.id);
     setRowError(null);
     try {

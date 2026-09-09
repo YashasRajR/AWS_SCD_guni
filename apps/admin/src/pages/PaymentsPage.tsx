@@ -57,7 +57,7 @@ export function PaymentsPage() {
             manual reconciliation.
           </p>
         </div>
-        <button type="button" onClick={handleExport} disabled={exporting}>
+        <button type="button" className="btn btn-secondary" onClick={handleExport} disabled={exporting}>
           {exporting ? 'Exporting…' : 'Export CSV'}
         </button>
       </div>
