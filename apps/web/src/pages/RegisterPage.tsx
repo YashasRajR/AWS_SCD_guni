@@ -331,20 +331,26 @@ export function RegisterPage() {
                 </label>
                 <label className="form-field">
                   <span>Mobile number *</span>
-                  <input
-                    type="tel"
-                    inputMode="tel"
-                    value={form.phone}
-                    onChange={(e) => setField('phone', e.target.value)}
-                    onBlur={() => markTouched('phone')}
-                    autoComplete="tel"
-                    placeholder="+919876543210"
-                    aria-invalid={Boolean(showError('phone'))}
-                  />
+                  <div className="phone-input-group">
+                    <span className="phone-prefix" aria-hidden="true">+91</span>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      value={form.phone.replace(/^\+91/, '')}
+                      onChange={(e) =>
+                        setField('phone', `+91${e.target.value.replace(/\D/g, '').slice(0, 10)}`)
+                      }
+                      onBlur={() => markTouched('phone')}
+                      autoComplete="tel-national"
+                      placeholder="9876543210"
+                      maxLength={10}
+                      aria-invalid={Boolean(showError('phone'))}
+                    />
+                  </div>
                   {showError('phone') ? (
                     <span className="form-error">{showError('phone')}</span>
                   ) : (
-                    <span className="form-help">Must start with +91, e.g. +919876543210.</span>
+                    <span className="form-help">10-digit mobile number, e.g. 9876543210.</span>
                   )}
                 </label>
               </div>

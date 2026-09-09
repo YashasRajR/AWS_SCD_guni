@@ -275,7 +275,7 @@ export function SocialPostPage() {
               <button
                 key={interest}
                 type="button"
-                className={interests.includes(interest) ? 'btn btn-secondary' : 'btn-link'}
+                className={interests.includes(interest) ? 'filter-chip filter-chip-active' : 'filter-chip'}
                 onClick={() => toggleInterest(interest)}
               >
                 {interest}

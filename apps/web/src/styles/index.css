@@ -2159,6 +2159,32 @@ img.speaker-photo {
   font-size: var(--text-caption);
 }
 
+/* Fixed +91 prefix next to the mobile number input (RegisterPage) --
+   keeps the country code from being accidentally edited or deleted. */
+.phone-input-group {
+  display: flex;
+  align-items: stretch;
+}
+
+.phone-input-group .phone-prefix {
+  display: flex;
+  align-items: center;
+  padding: 0.65rem 0.6rem;
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  background: var(--surface-muted);
+  color: var(--muted);
+  font-size: var(--text-body);
+  min-height: 44px;
+}
+
+.phone-input-group input[type='tel'] {
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  flex: 1;
+  min-width: 0;
+}
+
 .form-error {
   color: var(--error);
   background: var(--error-bg);
@@ -2481,13 +2507,17 @@ img.speaker-photo {
   position: fixed;
   top: var(--space-4);
   right: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
   color: #fff;
   font-size: 2rem;
   line-height: 1;
   cursor: pointer;
-  padding: 0.25rem 0.6rem;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .lightbox-nav {
@@ -2612,12 +2642,17 @@ img.speaker-photo {
   position: absolute;
   top: var(--space-3);
   right: var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
   color: var(--muted);
+  min-width: 44px;
+  min-height: 44px;
 }
 
 /* ============================================================

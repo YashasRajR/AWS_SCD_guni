@@ -79,16 +79,19 @@ export function DashboardPage() {
   } = useResource<Invoice>('/me/invoice', Boolean(registration));
   const {
     items: progress,
+    loading: progressLoading,
     error: progressError,
     reload: reloadProgress,
   } = useResource<ProgressItem>('/me/progress');
   const {
     items: certificates,
+    loading: certificatesLoading,
     error: certificatesError,
     reload: reloadCertificates,
   } = useResource<Certificate>('/me/certificates');
   const {
     items: achievements,
+    loading: achievementsLoading,
     error: achievementsError,
     reload: reloadAchievements,
   } = useResource<unknown>('/me/achievements');
@@ -218,7 +221,9 @@ export function DashboardPage() {
 
         <section className="dashboard-card">
           <h2>Checkpoint progress</h2>
-          {progressError ? (
+          {progressLoading ? (
+            <p className="status-line">Loading…</p>
+          ) : progressError ? (
             <SectionError message={progressError} onRetry={reloadProgress} />
           ) : progress.length === 0 ? (
             <p className="status-line">Checkpoints haven&apos;t been set up yet.</p>
@@ -246,7 +251,9 @@ export function DashboardPage() {
 
         <section className="dashboard-card">
           <h2>Certificates</h2>
-          {certificatesError ? (
+          {certificatesLoading ? (
+            <p className="status-line">Loading…</p>
+          ) : certificatesError ? (
             <SectionError message={certificatesError} onRetry={reloadCertificates} />
           ) : certificates.length === 0 ? (
             <p className="status-line">No certificates yet — these are issued after the event.</p>
@@ -263,7 +270,9 @@ export function DashboardPage() {
 
         <section className="dashboard-card">
           <h2>Achievements</h2>
-          {achievementsError ? (
+          {achievementsLoading ? (
+            <p className="status-line">Loading…</p>
+          ) : achievementsError ? (
             <SectionError message={achievementsError} onRetry={reloadAchievements} />
           ) : (
             <p className="status-line">
