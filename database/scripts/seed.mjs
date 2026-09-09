@@ -161,15 +161,27 @@ async function main() {
 
     // --- Ticket plans (Student ₹200 / Professional ₹300) -------------
     const TICKET_PLANS = [
-      { code: 'STUDENT', name: 'Student', price: 200, displayOrder: 0 },
-      { code: 'PROFESSIONAL', name: 'Professional', price: 300, displayOrder: 1 },
+      {
+        code: 'STUDENT',
+        name: 'Student',
+        description: 'For currently enrolled college/university students.',
+        price: 200,
+        displayOrder: 0,
+      },
+      {
+        code: 'PROFESSIONAL',
+        name: 'Professional / Adult',
+        description: 'For working professionals and other adult attendees.',
+        price: 300,
+        displayOrder: 1,
+      },
     ];
     for (const plan of TICKET_PLANS) {
       await client.query(
-        `INSERT INTO ticket_plans (code, name, price, currency, is_active, display_order)
-         VALUES ($1, $2, $3, 'INR', TRUE, $4)
-         ON CONFLICT (code) DO UPDATE SET price = EXCLUDED.price`,
-        [plan.code, plan.name, plan.price, plan.displayOrder],
+        `INSERT INTO ticket_plans (code, name, description, price, currency, is_active, display_order)
+         VALUES ($1, $2, $3, $4, 'INR', TRUE, $5)
+         ON CONFLICT (code) DO UPDATE SET price = EXCLUDED.price, name = EXCLUDED.name, description = EXCLUDED.description`,
+        [plan.code, plan.name, plan.description, plan.price, plan.displayOrder],
       );
     }
 
