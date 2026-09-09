@@ -29,6 +29,19 @@ const fields: FieldDef[] = [
   { name: 'price', label: 'Price', type: 'number', required: true },
   { name: 'currency', label: 'Currency', type: 'text', help: '3-letter code, e.g. INR.' },
   { name: 'displayOrder', label: 'Display order', type: 'number' },
+  {
+    name: 'capacity',
+    label: 'Capacity',
+    type: 'number',
+    nullable: true,
+    help: 'Optional seat cap. Leave blank for unlimited -- a "spots left" count only appears once this is set.',
+  },
+  {
+    name: 'benefits',
+    label: 'Included benefits',
+    type: 'textlist',
+    help: 'One item per line, e.g. what the registration includes.',
+  },
   { name: 'isActive', label: 'Active (selectable on the registration form)', type: 'checkbox' },
 ];
 

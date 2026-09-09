@@ -3,7 +3,17 @@ import type { FormEvent } from 'react';
 import { fromDateTimeLocalValue, toDateTimeLocalValue } from '../lib/format.js';
 import { uploadImage } from '../lib/uploads.js';
 
-export type FieldType = 'text' | 'textarea' | 'number' | 'checkbox' | 'select' | 'datetime' | 'date' | 'multiselect' | 'image';
+export type FieldType =
+  | 'text'
+  | 'textarea'
+  | 'textlist'
+  | 'number'
+  | 'checkbox'
+  | 'select'
+  | 'datetime'
+  | 'date'
+  | 'multiselect'
+  | 'image';
 
 export interface FieldOption {
   value: string;
@@ -18,6 +28,8 @@ export interface FieldDef {
   required?: boolean;
   placeholder?: string;
   help?: string;
+  /** number fields only: an empty input clears the value to null instead of leaving it unchanged. */
+  nullable?: boolean;
 }
 
 export type FormValues = Record<string, unknown>;
@@ -34,8 +46,14 @@ interface ResourceFormProps {
 function toApiValue(field: FieldDef, raw: unknown): unknown {
   if (field.type === 'checkbox') return Boolean(raw);
   if (field.type === 'multiselect') return Array.isArray(raw) ? raw : [];
+  if (field.type === 'textlist') {
+    return String(raw ?? '')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line !== '');
+  }
   if (field.type === 'number') {
-    if (raw === '' || raw === undefined || raw === null) return undefined;
+    if (raw === '' || raw === undefined || raw === null) return field.nullable ? null : undefined;
     const n = Number(raw);
     return Number.isNaN(n) ? undefined : n;
   }
@@ -52,6 +70,7 @@ function toApiValue(field: FieldDef, raw: unknown): unknown {
 function toInputValue(field: FieldDef, raw: unknown): string | boolean | string[] {
   if (field.type === 'checkbox') return Boolean(raw);
   if (field.type === 'multiselect') return Array.isArray(raw) ? (raw as string[]) : [];
+  if (field.type === 'textlist') return Array.isArray(raw) ? (raw as string[]).join('\n') : '';
   if (field.type === 'datetime') return toDateTimeLocalValue(raw as string | null | undefined);
   if (raw === null || raw === undefined) return '';
   return String(raw);
@@ -170,7 +189,7 @@ export function ResourceForm({ fields, initialValues, submitLabel, onSubmit, onC
             {field.label}
             {field.required ? ' *' : ''}
           </label>
-          {field.type === 'textarea' ? (
+          {field.type === 'textarea' || field.type === 'textlist' ? (
             <textarea
               id={field.name}
               value={values[field.name] as string}
