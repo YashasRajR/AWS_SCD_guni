@@ -12,6 +12,22 @@ export const ticketPlansRepository = {
     return rows;
   },
 
+  /**
+   * Live count of non-cancelled/non-rejected registrations per plan --
+   * never a stored/decrementing counter, so it can't drift out of sync.
+   * Keyed by ticket_plan_id; a plan with zero such registrations is
+   * simply absent from the result.
+   */
+  async soldCounts(): Promise<Record<string, number>> {
+    const { rows } = await getPool().query<{ ticket_plan_id: string; count: string }>(
+      `SELECT ticket_plan_id, COUNT(*) AS count
+       FROM registrations
+       WHERE ticket_plan_id IS NOT NULL AND status NOT IN ('CANCELLED', 'REJECTED')
+       GROUP BY ticket_plan_id`,
+    );
+    return Object.fromEntries(rows.map((r) => [r.ticket_plan_id, Number(r.count)]));
+  },
+
   async findById(id: string): Promise<TicketPlanRow | null> {
     const { rows } = await getPool().query<TicketPlanRow>('SELECT * FROM ticket_plans WHERE id = $1', [id]);
     return rows[0] ?? null;
@@ -38,8 +54,8 @@ export const ticketPlansRepository = {
 
   async create(input: CreateTicketPlanInput): Promise<TicketPlanRow> {
     const { rows } = await getPool().query<TicketPlanRow>(
-      `INSERT INTO ticket_plans (code, name, description, price, currency, is_active, display_order)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO ticket_plans (code, name, description, price, currency, is_active, display_order, benefits, capacity)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
       [
         input.code,
@@ -49,6 +65,8 @@ export const ticketPlansRepository = {
         input.currency ?? 'INR',
         input.isActive ?? true,
         input.displayOrder ?? 0,
+        input.benefits ?? [],
+        input.capacity ?? null,
       ],
     );
     return rows[0]!;
@@ -63,6 +81,8 @@ export const ticketPlansRepository = {
       currency: patch.currency,
       is_active: patch.isActive,
       display_order: patch.displayOrder,
+      benefits: patch.benefits,
+      capacity: patch.capacity,
     });
     if (values.length === 0) return this.findById(id);
     values.push(id);

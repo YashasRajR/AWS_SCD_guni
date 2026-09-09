@@ -15,6 +15,8 @@ const SELECT_WITH_TICKET_PLAN = `
     tp.currency AS tp_currency,
     tp.is_active AS tp_is_active,
     tp.display_order AS tp_display_order,
+    tp.benefits AS tp_benefits,
+    tp.capacity AS tp_capacity,
     tp.created_at AS tp_created_at,
     tp.updated_at AS tp_updated_at,
     c.id AS c_id,

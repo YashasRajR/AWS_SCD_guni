@@ -9,6 +9,8 @@ export interface TicketPlanRow {
   currency: string;
   is_active: boolean;
   display_order: number;
+  benefits: string[];
+  capacity: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -23,6 +25,8 @@ export function toTicketPlan(row: TicketPlanRow): TicketPlan {
     currency: row.currency,
     isActive: row.is_active,
     displayOrder: row.display_order,
+    benefits: row.benefits,
+    capacity: row.capacity,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

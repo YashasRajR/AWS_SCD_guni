@@ -189,6 +189,9 @@ export const createTicketPlanSchema = z.object({
   currency: z.string().trim().length(3).default('INR'),
   isActive: z.boolean().default(true),
   displayOrder: z.number().int().min(0).default(0),
+  benefits: z.array(z.string().trim().min(1).max(200)).max(20).default([]),
+  /** Admin-set seat cap; null/omitted means unlimited -- never defaulted to a fake number. */
+  capacity: z.coerce.number().int().min(1).nullable().optional(),
 });
 export type CreateTicketPlanInput = z.infer<typeof createTicketPlanSchema>;
 export const updateTicketPlanSchema = createTicketPlanSchema.partial();

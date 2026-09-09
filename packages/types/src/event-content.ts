@@ -228,6 +228,16 @@ export interface TicketPlan {
   currency: string;
   isActive: boolean;
   displayOrder: number;
+  /** Included benefits/items shown on the pricing card, in display order. */
+  benefits: string[];
+  /** Admin-set seat cap, or null for unlimited (the default -- never a fake number). */
+  capacity: number | null;
+  /**
+   * Remaining seats, derived live from non-cancelled/non-rejected
+   * registrations against this plan. Only present when `capacity` is set
+   * (undefined otherwise) -- populated on the public listing only.
+   */
+  spotsLeft?: number | null;
   createdAt: string;
   updatedAt: string;
 }

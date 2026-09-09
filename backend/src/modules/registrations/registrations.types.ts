@@ -23,6 +23,8 @@ export interface RegistrationRow {
   tp_currency: string | null;
   tp_is_active: boolean | null;
   tp_display_order: number | null;
+  tp_benefits: string[] | null;
+  tp_capacity: number | null;
   tp_created_at: string | null;
   tp_updated_at: string | null;
   // Joined coupon columns -- all null when coupon_id is null.
@@ -80,6 +82,8 @@ export function toRegistration(row: RegistrationRow): Registration {
           currency: row.tp_currency!,
           isActive: row.tp_is_active!,
           displayOrder: row.tp_display_order!,
+          benefits: row.tp_benefits ?? [],
+          capacity: row.tp_capacity,
           createdAt: row.tp_created_at!,
           updatedAt: row.tp_updated_at!,
         }

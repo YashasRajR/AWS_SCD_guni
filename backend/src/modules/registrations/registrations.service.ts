@@ -98,6 +98,18 @@ export const registrationsService = {
 
     const plan = await ticketPlansService.requireActiveByCode(ticketPlanCode);
 
+    // Ticket plan codes (STUDENT/PROFESSIONAL) are also the attendee's
+    // registrationType values -- a Student plan can't be bought by someone
+    // who registered as Professional/Adult and vice versa. Attendees who
+    // never set a registrationType (older data, or a flow that skips it)
+    // aren't blocked -- there's nothing to mismatch against.
+    const attendee = await attendeesService.getById(attendeeId);
+    if (attendee?.registrationType && attendee.registrationType !== plan.code) {
+      throw AppError.validation(
+        `The ${plan.name} plan isn't available for your registration type.`,
+      );
+    }
+
     const event = await eventService.getCurrent().catch(() => null);
     if (event) {
       const now = Date.now();

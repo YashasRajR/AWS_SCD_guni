@@ -6,8 +6,17 @@ import { AppError } from '../../utils/errors.js';
 import type { ListQueryParams } from '../../utils/sql.js';
 
 export const ticketPlansService = {
+  /** Public listing -- active plans only, with a live spotsLeft for any plan that has a capacity set. */
   async list(): Promise<TicketPlan[]> {
-    return (await ticketPlansRepository.listActive()).map(toTicketPlan);
+    const [rows, soldCounts] = await Promise.all([
+      ticketPlansRepository.listActive(),
+      ticketPlansRepository.soldCounts(),
+    ]);
+    return rows.map((row) => {
+      const plan = toTicketPlan(row);
+      if (plan.capacity == null) return plan;
+      return { ...plan, spotsLeft: Math.max(0, plan.capacity - (soldCounts[plan.id] ?? 0)) };
+    });
   },
 
   /** Used by the registration flow to price the selected plan -- throws if
