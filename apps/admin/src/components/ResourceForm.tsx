@@ -150,7 +150,21 @@ export function ResourceForm({ fields, initialValues, submitLabel, onSubmit, onC
 
   return (
     <form className="resource-form" onSubmit={handleSubmit}>
-      {fields.map((field) => (
+      {fields.map((field) =>
+        field.type === 'checkbox' ? (
+          <div className="form-field form-field-checkbox" key={field.name}>
+            <input
+              id={field.name}
+              type="checkbox"
+              checked={Boolean(values[field.name])}
+              onChange={(e) => setField(field.name, e.target.checked)}
+            />
+            <label htmlFor={field.name}>
+              {field.label}
+              {field.required ? ' *' : ''}
+            </label>
+          </div>
+        ) : (
         <div className="form-field" key={field.name}>
           <label htmlFor={field.name}>
             {field.label}
@@ -164,13 +178,6 @@ export function ResourceForm({ fields, initialValues, submitLabel, onSubmit, onC
               required={field.required}
               rows={4}
               onChange={(e) => setField(field.name, e.target.value)}
-            />
-          ) : field.type === 'checkbox' ? (
-            <input
-              id={field.name}
-              type="checkbox"
-              checked={Boolean(values[field.name])}
-              onChange={(e) => setField(field.name, e.target.checked)}
             />
           ) : field.type === 'multiselect' ? (
             <div className="multiselect">
@@ -226,7 +233,8 @@ export function ResourceForm({ fields, initialValues, submitLabel, onSubmit, onC
           )}
           {field.help && <p className="form-help">{field.help}</p>}
         </div>
-      ))}
+        ),
+      )}
 
       {error && <p className="form-error">{error}</p>}
 

@@ -474,6 +474,16 @@ textarea {
   align-self: flex-start;
 }
 
+.form-field-checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-field-checkbox label {
+  font-weight: 400;
+}
+
 .image-field {
   display: flex;
   flex-direction: column;

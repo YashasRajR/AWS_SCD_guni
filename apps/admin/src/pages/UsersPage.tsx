@@ -66,22 +66,25 @@ export function UsersPage() {
       key: 'roles',
       label: 'Roles',
       render: (r) => (
-        <div className="row-actions">
-          {r.roles.length === 0 && <span className="dashboard-card-meta">none</span>}
-          {r.roles.map((role) => (
-            <span key={role} className="badge badge-blue">
-              {role}
-              <button
-                type="button"
-                className="btn-link"
-                disabled={busy === r.id}
-                onClick={() => revokeRole(r, role)}
-                title={`Revoke ${role}`}
-              >
-                ×
-              </button>
-            </span>
-          ))}
+        <div>
+          <div className="row-actions">
+            {r.roles.length === 0 && <span className="dashboard-card-meta">none</span>}
+            {r.roles.map((role) => (
+              <span key={role} className="badge badge-blue">
+                {role}
+                <button
+                  type="button"
+                  className="btn-link"
+                  disabled={busy === r.id}
+                  onClick={() => revokeRole(r, role)}
+                  title={`Revoke ${role}`}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+          {rowError?.id === r.id && <p className="form-error">{rowError.message}</p>}
         </div>
       ),
     },
@@ -125,8 +128,6 @@ export function UsersPage() {
           </p>
         </div>
       </div>
-
-      {rowError && <p className="form-error">{rowError.message}</p>}
 
       <Table columns={columns} rows={items} getRowId={(r) => r.id} loading={loading} error={error} />
       <Pagination page={page} totalPages={totalPages} totalItems={totalItems} onChange={setPage} />
