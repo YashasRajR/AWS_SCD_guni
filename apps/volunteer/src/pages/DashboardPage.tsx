@@ -13,7 +13,11 @@ interface VolunteerMe {
 export function DashboardPage() {
   const { data: me, loading: meLoading } = useResource<VolunteerMe>('/volunteer/me');
   const { items: checkpoints, loading: cpLoading } = useResource<Checkpoint>('/volunteer/checkpoints');
-  const { items: history } = useResource<CheckpointAttendance>('/volunteer/history');
+  const {
+    items: history,
+    error: historyError,
+    reload: reloadHistory,
+  } = useResource<CheckpointAttendance>('/volunteer/history');
 
   const recentHistory = history.slice(0, 5);
 
@@ -67,7 +71,14 @@ export function DashboardPage() {
 
         <section className="dashboard-card">
           <h2>Recent check-ins</h2>
-          {recentHistory.length === 0 ? (
+          {historyError ? (
+            <p className="form-error">
+              {historyError}{' '}
+              <button type="button" className="btn-link" onClick={reloadHistory}>
+                Retry
+              </button>
+            </p>
+          ) : recentHistory.length === 0 ? (
             <p className="status-line">No check-ins recorded yet.</p>
           ) : (
             <ul className="checkpoint-list">

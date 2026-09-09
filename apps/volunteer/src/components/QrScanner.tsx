@@ -34,6 +34,7 @@ interface QrScannerProps {
 export function QrScanner({ onDetect, paused, onStateChange }: QrScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [state, setState] = useState<CameraState>('starting');
+  const [fallbackMessage, setFallbackMessage] = useState<string | null>(null);
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
   const onDetectRef = useRef(onDetect);
@@ -41,6 +42,7 @@ export function QrScanner({ onDetect, paused, onStateChange }: QrScannerProps) {
 
   const updateState = (next: CameraState, message?: string) => {
     setState(next);
+    if (message) setFallbackMessage(message);
     onStateChange?.(next, message);
   };
 
@@ -102,7 +104,17 @@ export function QrScanner({ onDetect, paused, onStateChange }: QrScannerProps) {
     // the camera and re-request permission.
   }, []);
 
-  if (state === 'unsupported' || state === 'error') return null;
+  // Own fallback message even if the parent doesn't wire onStateChange --
+  // a blank box with no explanation is a dead end for whoever's holding
+  // the camera. Parents that do wire it up (see CheckInPage) can still
+  // show their own richer fallback (e.g. a manual-entry form) alongside.
+  if (state === 'unsupported' || state === 'error') {
+    return (
+      <p className="status-line scan-starting">
+        {fallbackMessage ?? 'The camera is unavailable — use manual entry below.'}
+      </p>
+    );
+  }
 
   return (
     <div className="scan-video-wrap">
