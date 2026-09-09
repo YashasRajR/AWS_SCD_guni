@@ -121,18 +121,25 @@ export function CheckInPage() {
         <h1>{checkpoint?.name ?? 'Check in'}</h1>
       </div>
 
-      <div className="mode-toggle">
+      <div className="mode-toggle" role="tablist" aria-label="Check-in method">
         <button
           type="button"
-          className={`btn-link${mode === 'scan' ? ' mode-toggle-active' : ''}`}
+          role="tab"
+          id="scan-tab"
+          aria-selected={mode === 'scan'}
+          aria-controls="scan-panel"
+          className={`mode-toggle-tab${mode === 'scan' ? ' mode-toggle-active' : ''}`}
           onClick={() => setMode('scan')}
         >
           Scan QR
         </button>
-        <span aria-hidden="true"> · </span>
         <button
           type="button"
-          className={`btn-link${mode === 'search' ? ' mode-toggle-active' : ''}`}
+          role="tab"
+          id="search-tab"
+          aria-selected={mode === 'search'}
+          aria-controls="search-panel"
+          className={`mode-toggle-tab${mode === 'search' ? ' mode-toggle-active' : ''}`}
           onClick={() => setMode('search')}
         >
           Search instead
@@ -140,7 +147,7 @@ export function CheckInPage() {
       </div>
 
       {mode === 'scan' && (
-        <>
+        <div id="scan-panel" role="tabpanel" aria-labelledby="scan-tab">
           <QrScanner
             onDetect={(value) => void handleScan(value)}
             paused={scanBusy}
@@ -175,11 +182,11 @@ export function CheckInPage() {
               </form>
             </div>
           )}
-        </>
+        </div>
       )}
 
       {mode === 'search' && (
-        <>
+        <div id="search-panel" role="tabpanel" aria-labelledby="search-tab">
           <label htmlFor="attendee-search" className="visually-hidden">
             Search attendees by name, email, or registration number
           </label>
@@ -229,7 +236,7 @@ export function CheckInPage() {
               );
             })}
           </ul>
-        </>
+        </div>
       )}
     </div>
   );
