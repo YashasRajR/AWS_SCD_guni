@@ -6,6 +6,7 @@ import { useAuth } from '../lib/auth.js';
 import { useResource } from '../lib/hooks.js';
 import { useDocumentHead } from '../lib/seo.js';
 import { PasswordInput } from '../components/ui/PasswordInput.js';
+import { PlanCard } from '../components/PlanCard.js';
 
 // A student registering could be starting out or already graduated but
 // still finishing up -- a few years back and several ahead covers the
@@ -111,8 +112,6 @@ export function RegisterPage() {
   const isStudent = form.registrationType === 'STUDENT';
   const isEmployee = form.registrationType === 'PROFESSIONAL';
 
-  const studentPlan = ticketPlans.find((p) => p.code === 'STUDENT');
-  const employeePlan = ticketPlans.find((p) => p.code === 'PROFESSIONAL');
   const selectedPlan = ticketPlans.find((p) => p.code === form.registrationType);
 
   // Every field's current error, computed fresh from form state -- also
@@ -234,36 +233,14 @@ export function RegisterPage() {
               <p className="status-line">Loading ticket types…</p>
             ) : (
               <div className="plan-card-grid">
-                <button
-                  type="button"
-                  className="plan-card"
-                  disabled={!studentPlan}
-                  onClick={() => choosePlan('STUDENT')}
-                >
-                  <span className="plan-card-label">Student</span>
-                  <span className="plan-card-price">
-                    {studentPlan ? `${studentPlan.currency} ${studentPlan.price}` : 'Unavailable'}
-                  </span>
-                  <span className="plan-card-desc">
-                    {studentPlan?.description ?? 'For currently enrolled college/university students.'}
-                  </span>
-                  <span className="btn-link">Choose Student →</span>
-                </button>
-                <button
-                  type="button"
-                  className="plan-card"
-                  disabled={!employeePlan}
-                  onClick={() => choosePlan('PROFESSIONAL')}
-                >
-                  <span className="plan-card-label">Employee</span>
-                  <span className="plan-card-price">
-                    {employeePlan ? `${employeePlan.currency} ${employeePlan.price}` : 'Unavailable'}
-                  </span>
-                  <span className="plan-card-desc">
-                    {employeePlan?.description ?? 'For working professionals.'}
-                  </span>
-                  <span className="btn-link">Choose Employee →</span>
-                </button>
+                {ticketPlans.map((plan) => (
+                  <PlanCard
+                    key={plan.id}
+                    plan={plan}
+                    onClick={() => choosePlan(plan.code as 'STUDENT' | 'PROFESSIONAL')}
+                    cta={<span className="btn-link">Choose {plan.name} →</span>}
+                  />
+                ))}
               </div>
             )}
             <p className="auth-switch">

@@ -136,7 +136,9 @@ export function DashboardPage() {
                 <span className="dashboard-card-meta">#{registration.registrationNumber}</span>
               </p>
               {registration.ticketPlan && (
-                <p className="dashboard-card-meta">{registration.ticketPlan.name}</p>
+                <p className="dashboard-card-meta">
+                  {registration.ticketPlan.name} — {registration.ticketPlan.currency} {registration.ticketPlan.price}
+                </p>
               )}
               {registration.confirmedAt && (
                 <p className="status-line">Confirmed {formatDateTime(registration.confirmedAt)}.</p>

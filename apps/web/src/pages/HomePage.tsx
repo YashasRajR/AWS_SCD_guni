@@ -11,6 +11,7 @@ import { EventTimeline } from '../components/timeline/EventTimeline.js';
 import { VenueGrid } from '../components/venues/VenueGrid.js';
 import { FAQAccordion } from '../components/faq/FAQAccordion.js';
 import { RegistrationCTA } from '../components/registration/RegistrationCTA.js';
+import { PricingGrid } from '../components/pricing/PricingGrid.js';
 import { Section, SectionHeader, SectionEyebrow, SectionTitle } from '../components/layout/Section.js';
 import { useDocumentHead } from '../lib/seo.js';
 
@@ -108,6 +109,14 @@ export function HomePage() {
       </Section>
 
       <CommunitySection />
+
+      <Section id="pricing">
+        <SectionHeader>
+          <SectionEyebrow>Pricing</SectionEyebrow>
+          <SectionTitle>Ticket plans</SectionTitle>
+        </SectionHeader>
+        <PricingGrid />
+      </Section>
 
       <Section id="faq" muted>
         <SectionHeader
