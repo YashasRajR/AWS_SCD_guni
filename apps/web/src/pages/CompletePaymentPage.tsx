@@ -215,6 +215,17 @@ export function CompletePaymentPage() {
               <p className="dashboard-card-row">
                 <span>Coupon discount ({couponCode.trim()})</span>
                 <span className="dashboard-card-meta">− {currency} {discountAmount}</span>
+                <button
+                  type="button"
+                  className="btn-link"
+                  onClick={() => {
+                    setCouponCode('');
+                    setCouponPricing(null);
+                    setCouponError(null);
+                  }}
+                >
+                  Remove
+                </button>
               </p>
             )}
             <p className="dashboard-card-row">

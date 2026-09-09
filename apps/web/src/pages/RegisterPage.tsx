@@ -5,6 +5,14 @@ import type { TicketPlan } from '@scd/types';
 import { useAuth } from '../lib/auth.js';
 import { useResource } from '../lib/hooks.js';
 import { useDocumentHead } from '../lib/seo.js';
+import { PasswordInput } from '../components/ui/PasswordInput.js';
+
+// A student registering could be starting out or already graduated but
+// still finishing up -- a few years back and several ahead covers the
+// realistic range without letting someone type garbage into a free-text
+// field.
+const CURRENT_YEAR = new Date().getFullYear();
+const PASSOUT_YEAR_OPTIONS = Array.from({ length: 8 }, (_, i) => String(CURRENT_YEAR - 1 + i));
 
 interface FormState {
   email: string;
@@ -301,8 +309,7 @@ export function RegisterPage() {
                 </label>
                 <label className="form-field">
                   <span>Password *</span>
-                  <input
-                    type="password"
+                  <PasswordInput
                     value={form.password}
                     onChange={(e) => setField('password', e.target.value)}
                     onBlur={() => markTouched('password')}
@@ -317,8 +324,7 @@ export function RegisterPage() {
                 </label>
                 <label className="form-field">
                   <span>Confirm password *</span>
-                  <input
-                    type="password"
+                  <PasswordInput
                     value={form.confirmPassword}
                     onChange={(e) => setField('confirmPassword', e.target.value)}
                     onBlur={() => markTouched('confirmPassword')}
@@ -396,14 +402,19 @@ export function RegisterPage() {
                     </label>
                     <label className="form-field">
                       <span>Year of passout *</span>
-                      <input
-                        type="text"
-                        placeholder="e.g. 2027"
+                      <select
                         value={form.year}
                         onChange={(e) => setField('year', e.target.value)}
                         onBlur={() => markTouched('year')}
                         aria-invalid={Boolean(showError('year'))}
-                      />
+                      >
+                        <option value="">Select a year</option>
+                        {PASSOUT_YEAR_OPTIONS.map((y) => (
+                          <option key={y} value={y}>
+                            {y}
+                          </option>
+                        ))}
+                      </select>
                       {showError('year') && <span className="form-error">{showError('year')}</span>}
                     </label>
                   </>

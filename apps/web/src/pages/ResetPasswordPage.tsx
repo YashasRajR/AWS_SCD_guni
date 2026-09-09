@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ApiClientError } from '@scd/api-client';
 import { apiClient } from '../lib/api.js';
 import { useDocumentHead } from '../lib/seo.js';
+import { PasswordInput } from '../components/ui/PasswordInput.js';
 
 export function ResetPasswordPage() {
   useDocumentHead({ title: 'Reset Password' });
@@ -58,8 +59,7 @@ export function ResetPasswordPage() {
             <form className="auth-form" onSubmit={handleSubmit}>
               <label className="form-field">
                 <span>New password</span>
-                <input
-                  type="password"
+                <PasswordInput
                   required
                   minLength={8}
                   value={password}

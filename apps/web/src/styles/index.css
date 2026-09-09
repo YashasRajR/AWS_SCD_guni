@@ -2142,7 +2142,8 @@ img.speaker-photo {
 .form-field input[type='password'],
 .form-field input[type='tel'],
 .form-field input[type='url'],
-.form-field input[type='date'] {
+.form-field input[type='date'],
+.form-field select {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 0.65rem 0.75rem;
@@ -2183,6 +2184,31 @@ img.speaker-photo {
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   flex: 1;
   min-width: 0;
+}
+
+/* Password field with a show/hide toggle (PasswordInput component). */
+.password-input-group {
+  display: flex;
+  align-items: stretch;
+}
+
+.password-input-group input {
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  flex: 1;
+  min-width: 0;
+}
+
+.password-input-group .password-toggle {
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border);
+  border-left: none;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--surface-muted);
+  color: var(--muted);
+  font-size: var(--text-small);
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
 }
 
 .form-error {
