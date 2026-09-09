@@ -87,8 +87,14 @@ export const registrationsService = {
    * registration window when one is configured.
    */
   async create(attendeeId: string, ticketPlanCode: string, couponCode?: string): Promise<Registration> {
+    // A CANCELLED registration doesn't block a fresh one -- see migration
+    // 060, which narrowed the DB's uniqueness guarantee to match: the
+    // unique index only covers non-cancelled rows, so the INSERT below
+    // succeeds even though an old cancelled row for this attendee exists.
     const existing = await registrationsRepository.findByAttendeeId(attendeeId);
-    if (existing) throw AppError.duplicate('You are already registered for this event.');
+    if (existing && existing.status !== 'CANCELLED') {
+      throw AppError.duplicate('You are already registered for this event.');
+    }
 
     const plan = await ticketPlansService.requireActiveByCode(ticketPlanCode);
 
