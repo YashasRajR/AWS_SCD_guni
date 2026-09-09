@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import type { CouponPricing, Payment, Registration, TicketPlan } from '@scd/types';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import type { Attendee, CouponPricing, Payment, PublicUser, Registration, Ticket, TicketPlan } from '@scd/types';
 import { ApiClientError } from '@scd/api-client';
 import { useResource } from '../lib/hooks.js';
 import { apiClient } from '../lib/api.js';
@@ -8,6 +8,11 @@ import { openRazorpayCheckout } from '../lib/razorpay.js';
 import { Badge } from '../components/ui/Badge.js';
 import { statusTone } from '../lib/format.js';
 import { useDocumentHead } from '../lib/seo.js';
+
+interface MeData {
+  user: PublicUser;
+  attendee: Attendee | null;
+}
 
 /**
  * The only path between account creation and the dashboard. For a brand
@@ -35,12 +40,17 @@ export function CompletePaymentPage() {
     reload: reloadRegistration,
   } = useResource<Registration>('/me/registration');
   const {
+    data: payment,
     error: paymentError,
     reload: reloadPayment,
   } = useResource<Payment>('/me/payment', Boolean(registration));
   // Only needed before a registration exists, to show the chosen plan's
   // name/price on the checkout screen -- real data, not fabricated.
   const { items: ticketPlans } = useResource<TicketPlan>('/ticket-plans', regNotFound);
+  // Only needed once paid, for the success screen below.
+  const isConfirmed = registration?.status === 'CONFIRMED';
+  const { data: me } = useResource<MeData>('/me', isConfirmed);
+  const { data: ticket } = useResource<Ticket>('/me/ticket', isConfirmed);
 
   const [couponCode, setCouponCode] = useState('');
   const [couponPricing, setCouponPricing] = useState<CouponPricing | null>(null);
@@ -62,12 +72,41 @@ export function CompletePaymentPage() {
     }
   }, [regLoading, registration, regNotFound, ticketPlanCodeFromRegister, navigate]);
 
-  // Already paid -- nothing to do here, the dashboard is the right place.
+  // Distinguishes "just paid, show the success screen" from "landed here
+  // already confirmed" (e.g. a stale bookmark) -- only the latter should
+  // bounce straight to the dashboard with no confirmation shown at all.
+  const sawUnconfirmed = useRef(false);
   useEffect(() => {
-    if (registration?.status === 'CONFIRMED') {
+    if (registration && registration.status !== 'CONFIRMED') {
+      sawUnconfirmed.current = true;
+    }
+  }, [registration]);
+
+  useEffect(() => {
+    if (registration?.status === 'CONFIRMED' && !sawUnconfirmed.current) {
       navigate('/dashboard', { replace: true });
     }
   }, [registration, navigate]);
+
+  const [resendingTicket, setResendingTicket] = useState(false);
+  const [resendingInvoice, setResendingInvoice] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
+  const [resendError, setResendError] = useState<string | null>(null);
+
+  const handleResend = async (kind: 'ticket' | 'invoice') => {
+    const setBusy = kind === 'ticket' ? setResendingTicket : setResendingInvoice;
+    setBusy(true);
+    setResendError(null);
+    setResendMessage(null);
+    try {
+      await apiClient.post(`/me/${kind}/resend-email`, {});
+      setResendMessage(kind === 'ticket' ? 'Ticket email resent.' : 'Receipt email resent.');
+    } catch (err) {
+      setResendError(err instanceof ApiClientError ? err.message : 'Could not resend that email.');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const plan = ticketPlans.find((p) => p.code === ticketPlanCodeFromRegister);
 
@@ -154,6 +193,89 @@ export function CompletePaymentPage() {
           <button type="button" className="btn btn-primary" onClick={() => reloadRegistration()}>
             Try again
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Just paid this session -- show the confirmation screen instead of
+  // silently landing on the dashboard (spec #04A step 3).
+  if (registration?.status === 'CONFIRMED') {
+    return (
+      <div className="auth-page">
+        <div className="auth-card">
+          <h1>Payment successful!</h1>
+          <p className="auth-subtitle">Your registration is confirmed.</p>
+
+          <div className="dashboard-card-review">
+            {me?.attendee && (
+              <p className="dashboard-card-row">
+                <span>Name</span>
+                <span className="dashboard-card-meta">{me.attendee.fullName}</span>
+              </p>
+            )}
+            <p className="dashboard-card-row">
+              <span>Registration #</span>
+              <span className="dashboard-card-meta">{registration.registrationNumber}</span>
+            </p>
+            {ticket && (
+              <p className="dashboard-card-row">
+                <span>Ticket ID</span>
+                <span className="dashboard-card-meta">{ticket.ticketNumber}</span>
+              </p>
+            )}
+            {payment?.providerPaymentId && (
+              <p className="dashboard-card-row">
+                <span>Payment reference</span>
+                <span className="dashboard-card-meta">{payment.providerPaymentId}</span>
+              </p>
+            )}
+            {payment && (
+              <p className="dashboard-card-row">
+                <span>Amount paid</span>
+                <span className="dashboard-card-meta">
+                  {payment.currency} {payment.amount}
+                </span>
+              </p>
+            )}
+            {me?.user && (
+              <p className="dashboard-card-row">
+                <span>Sent to</span>
+                <span className="dashboard-card-meta">{me.user.email}</span>
+              </p>
+            )}
+          </div>
+
+          <p className="status-line">
+            Your ticket (with both QR codes) and fee receipt are being emailed to the address above. This can take a
+            few minutes.
+          </p>
+
+          {resendMessage && <p className="status-line">{resendMessage}</p>}
+          {resendError && <p className="form-error">{resendError}</p>}
+
+          <div className="dashboard-card-row">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => handleResend('ticket')}
+              disabled={resendingTicket || !ticket?.pdfAvailable}
+            >
+              {resendingTicket ? 'Resending…' : "Didn't get it? Resend ticket email"}
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => handleResend('invoice')}
+              disabled={resendingInvoice}
+            >
+              {resendingInvoice ? 'Resending…' : 'Resend receipt email'}
+            </button>
+          </div>
+
+          <Link to="/dashboard" className="btn btn-primary btn-block" style={{ marginTop: '1rem' }}>
+            Go to dashboard →
+          </Link>
         </div>
       </div>
     );

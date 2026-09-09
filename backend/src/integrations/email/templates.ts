@@ -210,7 +210,7 @@ function renderTicketEmail(data: Record<string, unknown>, isResend: boolean): Re
   <tr><td class="pad-x" style="padding:30px 32px 0 32px;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#332052;"><tr><td style="padding:22px 24px;">
       <div style="font-family:Arial,Helvetica,sans-serif;font-size:10px;letter-spacing:2.4px;color:#f28a45;text-transform:uppercase;font-weight:bold;">Included with your pass</div>
-      <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#e8e2f2;padding-top:10px;">Five checkpoints, all covered by this ticket. A volunteer marks each one off against your name &mdash; no code to scan.</div>
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#e8e2f2;padding-top:10px;">Five checkpoints, all covered by this ticket. Your pass has two QR codes &mdash; <strong>Registration</strong> for entry check-in and <strong>Goodies</strong> for your goodie bag &mdash; each labeled on the PDF. Scan the matching one at each of those two checkpoints; for Breakfast, Lunch, and High Tea, a volunteer just marks you off by name, no code needed.</div>
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="padding-top:16px;"><tr>${checkpointChips}</tr></table>
     </td></tr></table>
   </td></tr>
@@ -251,6 +251,7 @@ Venue: ${venue}
 Entry: Ticket PDF + college ID card
 
 Included with your pass: ${checkpoints.join(', ')}.
+Your ticket PDF has two QR codes, clearly labeled: Registration (for entry check-in) and Goodies (for your goodie bag). Scan the matching code at each of those two checkpoints. Breakfast, Lunch, and High Tea don't need a code -- a volunteer marks you off by name.
 
 Something wrong on your ticket? Reply to this email or write to ${supportEmail} with your registration number.
 

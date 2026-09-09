@@ -33,8 +33,10 @@ userDashboardRouter.post(
 );
 userDashboardRouter.get('/ticket', asyncHandler(userDashboardController.getTicket));
 userDashboardRouter.get('/ticket/pdf', asyncHandler(userDashboardController.getTicketPdf));
+userDashboardRouter.post('/ticket/resend-email', asyncHandler(userDashboardController.resendTicketEmail));
 userDashboardRouter.get('/invoice', asyncHandler(userDashboardController.getInvoice));
 userDashboardRouter.get('/invoice/pdf', asyncHandler(userDashboardController.getInvoicePdf));
+userDashboardRouter.post('/invoice/resend-email', asyncHandler(userDashboardController.resendInvoiceEmail));
 userDashboardRouter.get('/payment', asyncHandler(userDashboardController.getPayment));
 userDashboardRouter.post('/payment/initiate', asyncHandler(userDashboardController.initiatePayment));
 userDashboardRouter.get('/progress', asyncHandler(userDashboardController.getProgress));

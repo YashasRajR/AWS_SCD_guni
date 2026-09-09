@@ -19,6 +19,7 @@ import { eventWrappedService } from '../event-wrapped/event-wrapped.service.js';
 import { eventService } from '../event/event.service.js';
 import { usersService } from '../users/users.service.js';
 import { socialPostsService } from '../social-posts/social-posts.service.js';
+import { socialPostSettingsService } from '../social-post-settings/social-post-settings.service.js';
 import { socialSharingService } from '../social-sharing/social-sharing.service.js';
 import { uploadsService } from '../uploads/uploads.service.js';
 import { auditLogsService } from '../audit-logs/audit-logs.service.js';
@@ -114,6 +115,37 @@ export const userDashboardController = {
     res.type('application/pdf').send(pdf);
   },
 
+  /** Self-service fallback (spec #04A step 3) -- lets an attendee re-trigger
+   * their own ticket email if delivery failed, without needing an admin.
+   * Only works once the PDF already exists; if generation is still pending
+   * there's nothing to resend yet. */
+  async resendTicketEmail(req: Request, res: Response): Promise<void> {
+    const attendee = await attendeesService.requireByUserId(req.identity!.userId);
+    const registration = await registrationsService.getByAttendeeId(attendee.id);
+    if (!registration) throw AppError.notFound('Ticket');
+    const ticket = await ticketsService.getOrIssueByRegistrationId(registration.id, registration.status);
+    if (!ticket || !ticket.pdfAvailable) {
+      throw AppError.validation("Your ticket hasn't been generated yet -- please try again shortly.");
+    }
+    await ticketsService.resendEmail(ticket.id);
+    await auditLogsService.log(req, 'TICKET_EMAIL_RESENT', 'ticket', ticket.id, { selfService: true });
+    sendSuccess(res, { resent: true });
+  },
+
+  /** Self-service fallback (spec #04A step 3) -- same as resendTicketEmail but for the fee receipt/invoice. */
+  async resendInvoiceEmail(req: Request, res: Response): Promise<void> {
+    const attendee = await attendeesService.requireByUserId(req.identity!.userId);
+    const registration = await registrationsService.getByAttendeeId(attendee.id);
+    if (!registration) throw AppError.notFound('Invoice');
+    const invoice = await invoicesService.getByRegistrationId(registration.id);
+    if (!invoice) {
+      throw AppError.validation("Your receipt hasn't been generated yet -- please try again shortly.");
+    }
+    await invoicesService.resendEmail(invoice.id);
+    await auditLogsService.log(req, 'INVOICE_EMAIL_RESENT', 'invoice', invoice.id, { selfService: true });
+    sendSuccess(res, { resent: true });
+  },
+
   async getPayment(req: Request, res: Response): Promise<void> {
     const attendee = await attendeesService.requireByUserId(req.identity!.userId);
     const registration = await registrationsService.getByAttendeeId(attendee.id);
@@ -174,7 +206,14 @@ export const userDashboardController = {
   // --- "Create My SCD Post" (spec #28) ------------------------------------
   async getSocialPost(req: Request, res: Response): Promise<void> {
     const attendee = await attendeesService.requireByUserId(req.identity!.userId);
-    sendSuccess(res, await socialPostsService.get(attendee.id));
+    const [post, settings] = await Promise.all([
+      socialPostsService.get(attendee.id),
+      socialPostSettingsService.get(),
+    ]);
+    sendSuccess(res, {
+      post,
+      settings: { linkedinEnabled: settings.linkedinEnabled, instagramEnabled: settings.instagramEnabled },
+    });
   },
 
   /** Also used for "Regenerate" -- same endpoint, it always rebuilds the copy. */
