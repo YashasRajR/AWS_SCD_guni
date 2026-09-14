@@ -4,13 +4,6 @@ export interface AdminDashboardSummary {
   registrationsToday: number;
   registrationsThisWeek: number;
   registrationsThisMonth: number;
-  pendingPayments: number;
-  paidPayments: number;
-  failedPayments: number;
-  refundedPayments: number;
-  /** Sum of all PAID payments, as a decimal string (see EventConfig.registrationFee for why). */
-  revenueTotal: string;
-  revenueByPlan: RevenueByPlan[];
   checkpointCompletions: number;
   /** Distinct attendees who've completed at least one required checkpoint (i.e. actually checked in). */
   checkInCount: number;
@@ -24,13 +17,6 @@ export interface AdminDashboardSummary {
   eventName: string | null;
   eventStatus: string | null;
   eventDate: string | null;
-}
-
-export interface RevenueByPlan {
-  planCode: string;
-  planName: string;
-  currency: string;
-  total: string;
 }
 
 export interface DailyCount {
@@ -57,16 +43,6 @@ export interface RecentRegistration {
   createdAt: string;
 }
 
-export interface RecentPayment {
-  id: string;
-  registrationNumber: string;
-  fullName: string;
-  amount: string;
-  currency: string;
-  status: string;
-  createdAt: string;
-}
-
 export interface RecentCheckIn {
   id: string;
   attendeeName: string;
@@ -77,6 +53,5 @@ export interface RecentCheckIn {
 
 export interface AdminDashboardRecentActivity {
   recentRegistrations: RecentRegistration[];
-  recentPayments: RecentPayment[];
   recentCheckIns: RecentCheckIn[];
 }

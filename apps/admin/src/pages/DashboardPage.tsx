@@ -34,25 +34,12 @@ const STATUS_COLORS: Record<string, string> = {
   REJECTED: 'var(--danger)',
 };
 
-interface RevenueByPlan {
-  planCode: string;
-  planName: string;
-  currency: string;
-  total: string;
-}
-
 interface AdminDashboardSummary {
   totalRegistrations: number;
   confirmedRegistrations: number;
   registrationsToday: number;
   registrationsThisWeek: number;
   registrationsThisMonth: number;
-  pendingPayments: number;
-  paidPayments: number;
-  failedPayments: number;
-  refundedPayments: number;
-  revenueTotal: string;
-  revenueByPlan: RevenueByPlan[];
   checkpointCompletions: number;
   checkInCount: number;
   checkInPercentage: number;
@@ -74,16 +61,6 @@ interface RecentRegistration {
   createdAt: string;
 }
 
-interface RecentPayment {
-  id: string;
-  registrationNumber: string;
-  fullName: string;
-  amount: string;
-  currency: string;
-  status: string;
-  createdAt: string;
-}
-
 interface RecentCheckIn {
   id: string;
   attendeeName: string;
@@ -94,7 +71,6 @@ interface RecentCheckIn {
 
 interface AdminDashboardRecentActivity {
   recentRegistrations: RecentRegistration[];
-  recentPayments: RecentPayment[];
   recentCheckIns: RecentCheckIn[];
 }
 
@@ -107,7 +83,6 @@ interface IntegrationStatus {
 
 interface SystemStatus {
   database: IntegrationStatus;
-  paymentGateway: IntegrationStatus;
   email: IntegrationStatus & { queueDepth: number };
   storage: IntegrationStatus;
   sheetsSync: IntegrationStatus & { queueDepth: number };
@@ -123,10 +98,6 @@ const CARDS: { key: NumericSummaryKey; label: string }[] = [
   { key: 'registrationsThisWeek', label: 'Registrations this week' },
   { key: 'registrationsThisMonth', label: 'Registrations this month' },
   { key: 'confirmedRegistrations', label: 'Confirmed registrations' },
-  { key: 'pendingPayments', label: 'Pending payments' },
-  { key: 'paidPayments', label: 'Paid payments' },
-  { key: 'failedPayments', label: 'Failed payments' },
-  { key: 'refundedPayments', label: 'Refunded payments' },
   { key: 'checkInCount', label: 'Checked in' },
   { key: 'activeVolunteers', label: 'Active volunteers' },
   { key: 'certificatesIssued', label: 'Certificates issued' },
@@ -145,15 +116,12 @@ export function DashboardPage() {
     ? (
         [
           ['Database', systemStatus.database],
-          ['Payment gateway', systemStatus.paymentGateway],
           ['Email', systemStatus.email],
           ['File storage', systemStatus.storage],
           ['Sheets sync', systemStatus.sheetsSync],
         ] as [string, IntegrationStatus][]
       ).filter(([, s]) => s.status !== 'ok')
     : [];
-
-  const revenueCurrency = data?.revenueByPlan[0]?.currency ?? 'INR';
 
   return (
     <div className="page">
@@ -176,12 +144,6 @@ export function DashboardPage() {
               {data.eventDate && <span>{formatDateTime(data.eventDate)}</span>}
             </div>
           )}
-          {data.failedPayments > 0 && (
-            <div className="dashboard-alert dashboard-alert-danger">
-              {data.failedPayments} failed payment{data.failedPayments === 1 ? '' : 's'} need attention.{' '}
-              <Link to="/payments">View payments →</Link>
-            </div>
-          )}
           {failingIntegrations.map(([label, s]) => (
             <div className="dashboard-alert dashboard-alert-danger" key={label}>
               {label}: {s.detail} <Link to="/system-status">View system status →</Link>
@@ -198,35 +160,18 @@ export function DashboardPage() {
       )}
 
       {data && (
-        <>
-          <div className="stat-grid">
-            <div className="stat-card">
-              <div className="stat-value">
-                {revenueCurrency} {data.revenueTotal}
-              </div>
-              <div className="stat-label">Total revenue</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value">{data.checkInPercentage}%</div>
-              <div className="stat-label">Check-in rate</div>
-            </div>
-            {CARDS.map((card) => (
-              <div className="stat-card" key={card.key}>
-                <div className="stat-value">{data[card.key]}</div>
-                <div className="stat-label">{card.label}</div>
-              </div>
-            ))}
+        <div className="stat-grid">
+          <div className="stat-card">
+            <div className="stat-value">{data.checkInPercentage}%</div>
+            <div className="stat-label">Check-in rate</div>
           </div>
-
-          {data.revenueByPlan.length > 0 && (
-            <div className="chart-section">
-              <h2>Revenue by ticket type</h2>
-              <HorizontalBars
-                data={data.revenueByPlan.map((p) => ({ label: `${p.planName} (${p.currency})`, value: Number(p.total) }))}
-              />
+          {CARDS.map((card) => (
+            <div className="stat-card" key={card.key}>
+              <div className="stat-value">{data[card.key]}</div>
+              <div className="stat-label">{card.label}</div>
             </div>
-          )}
-        </>
+          ))}
+        </div>
       )}
 
       {trends && (
@@ -274,26 +219,6 @@ export function DashboardPage() {
                     <span>{r.fullName}</span>
                     <StatusBadge status={r.status} />
                     <span className="dashboard-recent-meta">{formatDateTime(r.createdAt)}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="dashboard-recent-section">
-            <h2>Recent payments</h2>
-            {recent.recentPayments.length === 0 ? (
-              <p className="status-line">No payments yet.</p>
-            ) : (
-              <ul className="dashboard-recent-list">
-                {recent.recentPayments.map((p) => (
-                  <li key={p.id}>
-                    <span>{p.fullName}</span>
-                    <span>
-                      {p.currency} {p.amount}
-                    </span>
-                    <StatusBadge status={p.status} />
-                    <span className="dashboard-recent-meta">{formatDateTime(p.createdAt)}</span>
                   </li>
                 ))}
               </ul>

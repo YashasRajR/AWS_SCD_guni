@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../lib/api.js';
 
 interface SearchResult {
-  type: 'ATTENDEE' | 'REGISTRATION' | 'PAYMENT' | 'INVOICE';
+  type: 'ATTENDEE' | 'REGISTRATION';
   id: string;
   title: string;
   subtitle: string;
@@ -13,14 +13,12 @@ interface SearchResult {
 const TYPE_LABELS: Record<SearchResult['type'], string> = {
   ATTENDEE: 'Attendee',
   REGISTRATION: 'Registration',
-  PAYMENT: 'Payment',
-  INVOICE: 'Invoice',
 };
 
-/** Cross-entity search bar for the admin topbar — matches attendees,
- * registrations, payments, and invoices in one query (spec #44). The
- * backend only searches the categories the caller's own permissions
- * allow, so results are already scoped correctly per role. */
+/** Cross-entity search bar for the admin topbar — matches attendees and
+ * registrations in one query (spec #44). The backend only searches the
+ * categories the caller's own permissions allow, so results are already
+ * scoped correctly per role. */
 export function GlobalSearch() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -62,7 +60,7 @@ export function GlobalSearch() {
       <input
         type="search"
         className="input search-input global-search-input"
-        placeholder="Search attendees, registrations, payments, invoices…"
+        placeholder="Search attendees, registrations…"
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);

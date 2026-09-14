@@ -46,9 +46,6 @@ export const registrationsService = {
         'Discount amount',
         'Registered at',
         'Confirmed at',
-        'Payment status',
-        'Payment amount',
-        'Payment currency',
       ],
       rows.map((r) => [
         r.registration_number,
@@ -64,9 +61,6 @@ export const registrationsService = {
         r.discount_amount,
         r.registered_at,
         r.confirmed_at,
-        r.payment_status,
-        r.payment_amount,
-        r.payment_currency,
       ]),
     );
   },
@@ -84,7 +78,11 @@ export const registrationsService = {
    * a specific ticket plan (see ticket-plans module). One registration per
    * attendee (this platform is single-edition this phase, so "the event"
    * is unambiguous — see docs/architecture). Honors the event's
-   * registration window when one is configured.
+   * registration window when one is configured. Registration is free (no
+   * in-app payment step -- ticketing/payment is handled externally via
+   * KonfHub), so the registration is confirmed immediately: ticket
+   * issuance, confirmation email, and sheets sync all fire the same way
+   * they would after a payment confirmation used to.
    */
   async create(attendeeId: string, ticketPlanCode: string, couponCode?: string): Promise<Registration> {
     // A CANCELLED registration doesn't block a fresh one -- see migration
@@ -154,7 +152,7 @@ export const registrationsService = {
     if (pricing) {
       await couponsService.recordUsage(pricing.couponId, attendeeId, row.id, pricing.discountAmount);
     }
-    return toRegistration(row);
+    return this.updateStatus(row.id, { status: 'CONFIRMED' });
   },
 
   /**

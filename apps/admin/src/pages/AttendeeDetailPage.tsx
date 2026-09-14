@@ -8,7 +8,7 @@ import { getStoredToken } from '../lib/auth-storage.js';
 import { formatDateTime } from '../lib/format.js';
 import { StatusBadge } from '../components/StatusBadge.js';
 
-/** Same authenticated-blob-download pattern as TicketsPage/InvoicesPage --
+/** Same authenticated-blob-download pattern as TicketsPage --
  * the PDF endpoints return a raw application/pdf body, not the JSON envelope. */
 async function downloadPdf(path: string, filename: string): Promise<void> {
   const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api/v1';
@@ -34,7 +34,7 @@ interface DocumentVersion {
 /** Reissue history (spec #35) -- lists the document_versions rows already
  * exposed by the tickets/invoices admin "History" endpoints, reused here
  * instead of a second history view. */
-function DocumentVersionHistory({ kind, id }: { kind: 'tickets' | 'invoices'; id: string }) {
+function DocumentVersionHistory({ kind, id }: { kind: 'tickets'; id: string }) {
   const { data: versions, loading, error } = useResource<DocumentVersion[]>(`/admin/${kind}/${id}/versions`);
   if (loading) return <p className="form-help">Loading history…</p>;
   if (error) return <p className="form-error">{error}</p>;
@@ -107,9 +107,7 @@ export function AttendeeDetailPage() {
     attendee,
     email,
     registration,
-    payment,
     ticket,
-    invoice,
     qrTokens,
     checkpointProgress,
     activityHistory,
@@ -180,20 +178,6 @@ export function AttendeeDetailPage() {
     }
     void run('Ticket reissued.', () =>
       apiClient.post(`/admin/tickets/${ticket.id}/reissue-pdf`, { reason: reason.trim() }),
-    );
-  };
-  const resendInvoiceEmail = () =>
-    invoice && run('Invoice email resent.', () => apiClient.post(`/admin/invoices/${invoice.id}/resend-email`));
-  const regenerateInvoice = () => {
-    if (!invoice) return;
-    const reason = window.prompt('Reason for regenerating this invoice PDF (kept in its version history):');
-    if (reason === null) return;
-    if (reason.trim().length < 3) {
-      setActionError('A reason of at least 3 characters is required.');
-      return;
-    }
-    void run('Invoice regenerated.', () =>
-      apiClient.post(`/admin/invoices/${invoice.id}/regenerate`, { reason: reason.trim() }),
     );
   };
   const rotateQr = (type: string) =>
@@ -319,28 +303,6 @@ export function AttendeeDetailPage() {
       </section>
 
       <section className="panel">
-        <h2>Payment</h2>
-        {payment ? (
-          <dl className="detail-list">
-            <dt>Amount</dt>
-            <dd>
-              {payment.currency} {payment.amount}
-            </dd>
-            <dt>Status</dt>
-            <dd>
-              <StatusBadge status={payment.status} />
-            </dd>
-            <dt>Provider</dt>
-            <dd>{payment.provider ?? '—'}</dd>
-            <dt>Paid at</dt>
-            <dd>{formatDateTime(payment.paidAt)}</dd>
-          </dl>
-        ) : (
-          <p className="form-help">No payment record.</p>
-        )}
-      </section>
-
-      <section className="panel">
         <h2>Ticket</h2>
         {ticket ? (
           <>
@@ -379,46 +341,6 @@ export function AttendeeDetailPage() {
           </>
         ) : (
           <p className="form-help">No ticket issued.</p>
-        )}
-      </section>
-
-      <section className="panel">
-        <h2>Invoice</h2>
-        {invoice ? (
-          <>
-            <dl className="detail-list">
-              <dt>Number</dt>
-              <dd>{invoice.invoiceNumber}</dd>
-              <dt>Amount</dt>
-              <dd>
-                {invoice.currency} {invoice.amount}
-              </dd>
-              <dt>Generated</dt>
-              <dd>{formatDateTime(invoice.generatedAt)}</dd>
-              <dt>Version</dt>
-              <dd>{invoice.version}</dd>
-            </dl>
-            <div className="row-actions">
-              <button
-                type="button"
-                className="btn-link"
-                disabled={busy}
-                onClick={() => downloadPdf(`/admin/invoices/${invoice.id}/pdf`, `invoice-${invoice.invoiceNumber}.pdf`)}
-              >
-                Download PDF
-              </button>
-              <button type="button" className="btn-link" disabled={busy} onClick={regenerateInvoice}>
-                Regenerate
-              </button>
-              <button type="button" className="btn-link" disabled={busy} onClick={resendInvoiceEmail}>
-                Resend email
-              </button>
-            </div>
-            <h3>Reissue history</h3>
-            <DocumentVersionHistory kind="invoices" id={invoice.id} />
-          </>
-        ) : (
-          <p className="form-help">No invoice issued.</p>
         )}
       </section>
 
@@ -520,9 +442,7 @@ export function AttendeeDetailPage() {
       </section>
 
       <p className="form-help">
-        Payments, tickets, and invoices can also be managed from their own pages:{' '}
-        <Link to="/payments">Payments</Link>, <Link to="/tickets">Tickets</Link>,{' '}
-        <Link to="/invoices">Invoices</Link>.
+        Tickets can also be managed from their own page: <Link to="/tickets">Tickets</Link>.
       </p>
     </div>
   );

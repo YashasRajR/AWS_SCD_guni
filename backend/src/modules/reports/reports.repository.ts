@@ -5,9 +5,7 @@ import type {
   AdminDashboardTrends,
   DailyCount,
   RecentCheckIn,
-  RecentPayment,
   RecentRegistration,
-  RevenueByPlan,
   StatusCount,
 } from './reports.types.js';
 
@@ -64,12 +62,6 @@ export const reportsRepository = {
       registrationsToday,
       registrationsThisWeek,
       registrationsThisMonth,
-      pendingPayments,
-      paidPayments,
-      failedPayments,
-      refundedPayments,
-      revenueRow,
-      revenueByPlanRows,
       checkpointCompletions,
       checkInCount,
       activeVolunteers,
@@ -84,21 +76,6 @@ export const reportsRepository = {
       count(`SELECT count(*) FROM registrations WHERE created_at >= date_trunc('day', now())`),
       count(`SELECT count(*) FROM registrations WHERE created_at >= date_trunc('week', now())`),
       count(`SELECT count(*) FROM registrations WHERE created_at >= date_trunc('month', now())`),
-      count(`SELECT count(*) FROM payments WHERE status = 'PENDING'`),
-      count(`SELECT count(*) FROM payments WHERE status = 'PAID'`),
-      count(`SELECT count(*) FROM payments WHERE status = 'FAILED'`),
-      count(`SELECT count(*) FROM payments WHERE status = 'REFUNDED'`),
-      getPool().query<{ total: string }>(
-        `SELECT COALESCE(SUM(amount), 0)::text AS total FROM payments WHERE status = 'PAID'`,
-      ),
-      getPool().query<{ code: string; name: string; currency: string; total: string }>(
-        `SELECT tp.code, tp.name, tp.currency, COALESCE(SUM(p.amount), 0)::text AS total
-         FROM ticket_plans tp
-         LEFT JOIN registrations r ON r.ticket_plan_id = tp.id
-         LEFT JOIN payments p ON p.registration_id = r.id AND p.status = 'PAID'
-         GROUP BY tp.id, tp.code, tp.name, tp.currency, tp.display_order
-         ORDER BY tp.display_order`,
-      ),
       count(`SELECT count(*) FROM checkpoint_attendance WHERE status = 'COMPLETED'`),
       count(
         `SELECT count(DISTINCT ca.attendee_id) FROM checkpoint_attendance ca
@@ -115,13 +92,6 @@ export const reportsRepository = {
       ),
     ]);
 
-    const revenueByPlan: RevenueByPlan[] = revenueByPlanRows.rows.map((r) => ({
-      planCode: r.code,
-      planName: r.name,
-      currency: r.currency,
-      total: r.total,
-    }));
-
     const checkInPercentage =
       confirmedRegistrations > 0 ? Math.round((checkInCount / confirmedRegistrations) * 1000) / 10 : 0;
 
@@ -133,12 +103,6 @@ export const reportsRepository = {
       registrationsToday,
       registrationsThisWeek,
       registrationsThisMonth,
-      pendingPayments,
-      paidPayments,
-      failedPayments,
-      refundedPayments,
-      revenueTotal: revenueRow.rows[0]?.total ?? '0',
-      revenueByPlan,
       checkpointCompletions,
       checkInCount,
       checkInPercentage,
@@ -154,7 +118,7 @@ export const reportsRepository = {
   },
 
   async getRecentActivity(): Promise<AdminDashboardRecentActivity> {
-    const [registrationsRows, paymentsRows, checkInsRows] = await Promise.all([
+    const [registrationsRows, checkInsRows] = await Promise.all([
       getPool().query<{
         id: string;
         registration_number: string;
@@ -166,22 +130,6 @@ export const reportsRepository = {
          FROM registrations r
          JOIN attendees a ON a.id = r.attendee_id
          ORDER BY r.created_at DESC
-         LIMIT ${RECENT_ACTIVITY_LIMIT}`,
-      ),
-      getPool().query<{
-        id: string;
-        registration_number: string;
-        full_name: string;
-        amount: string;
-        currency: string;
-        status: string;
-        created_at: string;
-      }>(
-        `SELECT p.id, r.registration_number, a.full_name, p.amount, p.currency, p.status, p.created_at
-         FROM payments p
-         JOIN registrations r ON r.id = p.registration_id
-         JOIN attendees a ON a.id = r.attendee_id
-         ORDER BY p.created_at DESC
          LIMIT ${RECENT_ACTIVITY_LIMIT}`,
       ),
       getPool().query<{
@@ -210,16 +158,6 @@ export const reportsRepository = {
       createdAt: r.created_at,
     }));
 
-    const recentPayments: RecentPayment[] = paymentsRows.rows.map((r) => ({
-      id: r.id,
-      registrationNumber: r.registration_number,
-      fullName: r.full_name,
-      amount: r.amount,
-      currency: r.currency,
-      status: r.status,
-      createdAt: r.created_at,
-    }));
-
     const recentCheckIns: RecentCheckIn[] = checkInsRows.rows.map((r) => ({
       id: r.id,
       attendeeName: r.attendee_name,
@@ -228,6 +166,6 @@ export const reportsRepository = {
       completedAt: r.completed_at,
     }));
 
-    return { recentRegistrations, recentPayments, recentCheckIns };
+    return { recentRegistrations, recentCheckIns };
   },
 };

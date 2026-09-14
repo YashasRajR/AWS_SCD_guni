@@ -25,17 +25,6 @@ const envSchema = z.object({
   VOLUNTEER_APP_URL: z.string().url().default('http://localhost:5174'),
   ADMIN_APP_URL: z.string().url().default('http://localhost:5175'),
 
-  // Razorpay-shaped (key id + key secret + webhook secret) — chosen because
-  // its test/sandbox mode is free to develop against and it settles in
-  // INR, matching the default currency below. Left blank, initiating a
-  // payment fails with a clear "not configured" error rather than faking
-  // an order — see integrations/payment/unconfigured-provider.ts. Live
-  // transaction fees are Razorpay's standard pricing, not "free forever";
-  // verify current rates before going live.
-  PAYMENT_PROVIDER_KEY: z.string().optional().default(''),
-  PAYMENT_PROVIDER_SECRET: z.string().optional().default(''),
-  PAYMENT_WEBHOOK_SECRET: z.string().optional().default(''),
-
   // SMTP is the free/self-hostable choice (works with a Gmail app password,
   // a free-tier relay like Brevo/Mailtrap, or any real mail server) rather
   // than binding to one paid provider's API. Left blank, the backend falls

@@ -42,10 +42,10 @@ const SELECT_WITH_TICKET_PLAN = `
 
 export const registrationsRepository = {
   /**
-   * Creates a PENDING registration for an attendee against a specific
-   * ticket plan. The full registration flow (payment, confirmation) is
-   * implemented in a later phase -- this establishes the data model +
-   * service boundary now, per spec.
+   * Creates a registration for an attendee against a specific ticket
+   * plan. Confirmed immediately by the service layer (see
+   * registrations.service.ts's create()) -- registration is free,
+   * ticketing/payment is handled externally.
    */
   async create(
     attendeeId: string,
@@ -113,7 +113,7 @@ export const registrationsRepository = {
   },
 
   /**
-   * Full attendee + ticket plan + payment join for the admin CSV export.
+   * Full attendee + ticket plan join for the admin CSV export.
    * Unbounded by design — an admin exporting the list wants everything,
    * not a page of it — but this is a single-event platform (see
    * registrations.service create()), so row counts stay in the thousands
@@ -134,16 +134,12 @@ export const registrationsRepository = {
          c.code AS coupon_code,
          r.discount_amount,
          r.registered_at,
-         r.confirmed_at,
-         p.status AS payment_status,
-         p.amount AS payment_amount,
-         p.currency AS payment_currency
+         r.confirmed_at
        FROM registrations r
        JOIN attendees a ON a.id = r.attendee_id
        JOIN users u ON u.id = a.user_id
        LEFT JOIN ticket_plans tp ON tp.id = r.ticket_plan_id
        LEFT JOIN coupons c ON c.id = r.coupon_id
-       LEFT JOIN payments p ON p.registration_id = r.id
        ORDER BY r.created_at DESC`,
     );
     return rows;

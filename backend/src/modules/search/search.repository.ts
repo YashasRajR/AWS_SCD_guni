@@ -50,47 +50,4 @@ export const searchRepository = {
     }));
   },
 
-  /** Payment gateway order/payment id, or the registration it belongs to. */
-  async payments(q: string): Promise<SearchResult[]> {
-    const { rows } = await getPool().query<{
-      id: string;
-      provider_payment_id: string | null;
-      registration_number: string;
-      amount: string;
-      status: string;
-    }>(
-      `SELECT p.id, p.provider_payment_id, r.registration_number, p.amount, p.status
-       FROM payments p
-       JOIN registrations r ON r.id = p.registration_id
-       WHERE p.provider_payment_id ILIKE $1
-          OR p.provider_order_id ILIKE $1
-          OR r.registration_number ILIKE $1
-       ORDER BY p.created_at DESC
-       LIMIT $2`,
-      [`%${q}%`, LIMIT],
-    );
-    return rows.map((r) => ({
-      type: 'PAYMENT' as const,
-      id: r.id,
-      title: r.provider_payment_id ?? r.id,
-      subtitle: `${r.registration_number} · ${r.amount} · ${r.status}`,
-      adminPath: `/payments?search=${encodeURIComponent(r.registration_number)}`,
-    }));
-  },
-
-  /** Invoice number → the invoice record. */
-  async invoices(q: string): Promise<SearchResult[]> {
-    const { rows } = await getPool().query<{ id: string; invoice_number: string }>(
-      `SELECT id, invoice_number FROM invoices WHERE invoice_number ILIKE $1
-       ORDER BY created_at DESC LIMIT $2`,
-      [`%${q}%`, LIMIT],
-    );
-    return rows.map((r) => ({
-      type: 'INVOICE' as const,
-      id: r.id,
-      title: r.invoice_number,
-      subtitle: 'Invoice',
-      adminPath: `/invoices?search=${encodeURIComponent(r.invoice_number)}`,
-    }));
-  },
 };

@@ -311,29 +311,6 @@ export function renderEmailTemplate(
     case 'ticket-resend':
       return renderTicketEmail(data, template === 'ticket-resend');
 
-    case 'invoice-resend': {
-      const name = str('fullName', 'there');
-      const invoiceNumber = str('invoiceNumber');
-      const registrationNumber = str('registrationNumber');
-      return wrap(
-        `<p>Hi ${escapeHtml(name)},</p><p>Here's your fee receipt / invoice for AWS Student Community Day 2026.</p><p><strong>Invoice number:</strong> ${escapeHtml(invoiceNumber)}<br><strong>Registration number:</strong> ${escapeHtml(registrationNumber)}</p><p>You can also view it any time in your dashboard.</p>`,
-        `Hi ${name},\n\nHere's your fee receipt / invoice for AWS Student Community Day 2026.\nInvoice number: ${invoiceNumber}\nRegistration number: ${registrationNumber}\n\nYou can also view it any time in your dashboard.`,
-      );
-    }
-    case 'payment-success': {
-      const name = str('fullName', 'there');
-      return wrap(
-        `<p>Hi ${escapeHtml(name)},</p><p>We've received your payment for AWS Student Community Day 2026. Your registration is now confirmed.</p>`,
-        `Hi ${name},\n\nWe've received your payment for AWS Student Community Day 2026. Your registration is now confirmed.`,
-      );
-    }
-    case 'payment-failed': {
-      const name = str('fullName', 'there');
-      return wrap(
-        `<p>Hi ${escapeHtml(name)},</p><p>Your payment for AWS Student Community Day 2026 didn't go through. Please try again from your dashboard.</p>`,
-        `Hi ${name},\n\nYour payment for AWS Student Community Day 2026 didn't go through. Please try again from your dashboard.`,
-      );
-    }
     case 'certificate-ready': {
       const name = str('fullName', 'there');
       const link = str('link');

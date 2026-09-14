@@ -1,5 +1,5 @@
 export interface SearchResult {
-  type: 'ATTENDEE' | 'REGISTRATION' | 'PAYMENT' | 'INVOICE';
+  type: 'ATTENDEE' | 'REGISTRATION';
   id: string;
   title: string;
   subtitle: string;

@@ -47,18 +47,7 @@ export function createApp(): Express {
     }),
   );
   app.use(requestLogger);
-  app.use(
-    express.json({
-      limit: '1mb',
-      // Captures the exact raw bytes alongside the parsed body — the
-      // payments webhook needs these to verify the provider's HMAC
-      // signature, which is computed over the raw request, not our
-      // re-serialization of req.body (see modules/payments/payments.controller.ts).
-      verify: (req, _res, buf) => {
-        (req as express.Request).rawBody = Buffer.from(buf);
-      },
-    }),
-  );
+  app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
   // /health and /ready are intentionally outside both the rate limiter

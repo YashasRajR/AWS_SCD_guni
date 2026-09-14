@@ -8,10 +8,8 @@ import type {
   RecordSocialShareInput,
 } from '@scd/validation';
 import { ticketsService } from '../tickets/tickets.service.js';
-import { invoicesService } from '../invoices/invoices.service.js';
 import { ticketPlansService } from '../ticket-plans/ticket-plans.service.js';
 import { couponsService } from '../coupons/coupons.service.js';
-import { paymentsService } from '../payments/payments.service.js';
 import { checkpointsService } from '../checkpoints/checkpoints.service.js';
 import { certificatesService } from '../certificates/certificates.service.js';
 import { achievementsService } from '../achievements/achievements.service.js';
@@ -95,26 +93,6 @@ export const userDashboardController = {
     res.type('application/pdf').send(pdf);
   },
 
-  async getInvoice(req: Request, res: Response): Promise<void> {
-    const attendee = await attendeesService.requireByUserId(req.identity!.userId);
-    const registration = await registrationsService.getByAttendeeId(attendee.id);
-    if (!registration) {
-      sendSuccess(res, null);
-      return;
-    }
-    sendSuccess(res, await invoicesService.getByRegistrationId(registration.id));
-  },
-
-  async getInvoicePdf(req: Request, res: Response): Promise<void> {
-    const attendee = await attendeesService.requireByUserId(req.identity!.userId);
-    const registration = await registrationsService.getByAttendeeId(attendee.id);
-    if (!registration) throw AppError.notFound('Invoice');
-    const invoice = await invoicesService.getByRegistrationId(registration.id);
-    if (!invoice) throw AppError.notFound('Invoice');
-    const pdf = await invoicesService.getPdfBuffer(invoice.id);
-    res.type('application/pdf').send(pdf);
-  },
-
   /** Self-service fallback (spec #04A step 3) -- lets an attendee re-trigger
    * their own ticket email if delivery failed, without needing an admin.
    * Only works once the PDF already exists; if generation is still pending
@@ -130,38 +108,6 @@ export const userDashboardController = {
     await ticketsService.resendEmail(ticket.id);
     await auditLogsService.log(req, 'TICKET_EMAIL_RESENT', 'ticket', ticket.id, { selfService: true });
     sendSuccess(res, { resent: true });
-  },
-
-  /** Self-service fallback (spec #04A step 3) -- same as resendTicketEmail but for the fee receipt/invoice. */
-  async resendInvoiceEmail(req: Request, res: Response): Promise<void> {
-    const attendee = await attendeesService.requireByUserId(req.identity!.userId);
-    const registration = await registrationsService.getByAttendeeId(attendee.id);
-    if (!registration) throw AppError.notFound('Invoice');
-    const invoice = await invoicesService.getByRegistrationId(registration.id);
-    if (!invoice) {
-      throw AppError.validation("Your receipt hasn't been generated yet -- please try again shortly.");
-    }
-    await invoicesService.resendEmail(invoice.id);
-    await auditLogsService.log(req, 'INVOICE_EMAIL_RESENT', 'invoice', invoice.id, { selfService: true });
-    sendSuccess(res, { resent: true });
-  },
-
-  async getPayment(req: Request, res: Response): Promise<void> {
-    const attendee = await attendeesService.requireByUserId(req.identity!.userId);
-    const registration = await registrationsService.getByAttendeeId(attendee.id);
-    if (!registration) {
-      sendSuccess(res, null);
-      return;
-    }
-    sendSuccess(res, await paymentsService.getByRegistrationId(registration.id));
-  },
-
-  /** Starts a checkout for the authenticated attendee's own PENDING registration. */
-  async initiatePayment(req: Request, res: Response): Promise<void> {
-    const attendee = await attendeesService.requireByUserId(req.identity!.userId);
-    const result = await paymentsService.initiatePayment(attendee.id);
-    await auditLogsService.log(req, 'PAYMENT_INITIATED', 'payment', result.payment.id);
-    sendSuccess(res, result);
   },
 
   async getProgress(req: Request, res: Response): Promise<void> {

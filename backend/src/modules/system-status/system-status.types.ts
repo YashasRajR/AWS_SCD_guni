@@ -7,7 +7,6 @@ export interface IntegrationStatus {
 
 export interface SystemStatus {
   database: IntegrationStatus;
-  paymentGateway: IntegrationStatus;
   email: IntegrationStatus & { queueDepth: number };
   storage: IntegrationStatus;
   sheetsSync: IntegrationStatus & { queueDepth: number };

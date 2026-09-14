@@ -5,7 +5,6 @@ import type {
   Certificate,
   Checkpoint,
   EventConfig,
-  Invoice,
   PublicUser,
   Registration,
   Ticket,
@@ -72,11 +71,6 @@ export function DashboardPage() {
     error: ticketError,
     reload: reloadTicket,
   } = useResource<Ticket>('/me/ticket', Boolean(registration));
-  const {
-    data: invoice,
-    error: invoiceError,
-    reload: reloadInvoice,
-  } = useResource<Invoice>('/me/invoice', Boolean(registration));
   const {
     items: progress,
     loading: progressLoading,
@@ -145,7 +139,7 @@ export function DashboardPage() {
               )}
             </>
           ) : (
-            // The dashboard route guard (App.tsx's RequirePaidRegistration)
+            // The dashboard route guard (App.tsx's RequireConfirmedRegistration)
             // only lets a CONFIRMED registration through, so this is
             // unreachable in practice -- kept as an honest fallback rather
             // than assuming the guard can never change.
@@ -184,39 +178,6 @@ export function DashboardPage() {
           ) : (
             <p className="status-line">
               Your ticket will appear here once your registration is confirmed.
-            </p>
-          )}
-        </section>
-
-        <section className="dashboard-card">
-          <h2>Fee receipt</h2>
-          {invoiceError ? (
-            <SectionError message={invoiceError} onRetry={reloadInvoice} />
-          ) : invoice ? (
-            <>
-              <p className="dashboard-card-row">
-                <span className="dashboard-card-meta">#{invoice.invoiceNumber}</span>
-              </p>
-              <p className="status-line">
-                {invoice.currency} {invoice.amount} — generated {formatDateTime(invoice.generatedAt)}.
-              </p>
-              {invoice.pdfAvailable && (
-                <button
-                  type="button"
-                  className="btn-link"
-                  onClick={() =>
-                    downloadOwnPdf('/me/invoice/pdf', `invoice-${invoice.invoiceNumber}.pdf`).catch((err) =>
-                      setDownloadError(err instanceof Error ? err.message : 'Failed to download the receipt PDF.'),
-                    )
-                  }
-                >
-                  Download receipt PDF
-                </button>
-              )}
-            </>
-          ) : (
-            <p className="status-line">
-              Your fee receipt will appear here once your payment is confirmed.
             </p>
           )}
         </section>

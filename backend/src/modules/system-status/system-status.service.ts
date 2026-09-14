@@ -39,16 +39,6 @@ export const systemStatusService = {
       detail: databaseOk ? 'Connected' : 'Connection failed',
     };
 
-    const paymentConfigured = Boolean(env.PAYMENT_PROVIDER_KEY && env.PAYMENT_PROVIDER_SECRET);
-    const paymentGateway: IntegrationStatus = {
-      name: paymentConfigured ? 'Razorpay' : 'Payment gateway',
-      configured: paymentConfigured,
-      status: paymentConfigured ? 'ok' : 'error',
-      detail: paymentConfigured
-        ? 'Configured — checkout accepts real payments.'
-        : 'PAYMENT_PROVIDER_KEY/SECRET not set — checkout is refused.',
-    };
-
     const emailConfigured = Boolean(env.EMAIL_SMTP_HOST);
     const email: IntegrationStatus & { queueDepth: number } = {
       name: emailConfigured ? 'SMTP' : 'Console (dev fallback)',
@@ -82,6 +72,6 @@ export const systemStatusService = {
       queueDepth: sheetsQueueDepth,
     };
 
-    return { database, paymentGateway, email, storage, sheetsSync };
+    return { database, email, storage, sheetsSync };
   },
 };

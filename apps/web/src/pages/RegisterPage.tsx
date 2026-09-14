@@ -199,11 +199,10 @@ export function RegisterPage() {
         linkedinUrl: form.linkedinUrl.trim() || undefined,
         consent: true,
       });
-      // Account created — but no dashboard access yet. /complete-payment
-      // creates the actual event registration for this plan and takes the
-      // attendee through checkout; only a confirmed payment unlocks the
-      // dashboard (see App.tsx's RequirePaidRegistration).
-      navigate('/complete-payment', {
+      // Account created — but no dashboard access yet. /complete-registration
+      // creates the actual event registration for this plan (confirmed
+      // immediately -- see App.tsx's RequireConfirmedRegistration).
+      navigate('/complete-registration', {
         replace: true,
         state: { ticketPlanCode: form.registrationType },
       });

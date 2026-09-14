@@ -1,7 +1,6 @@
 export * from './auth.js';
 export * from './attendees.js';
 export * from './checkpoints.js';
-export * from './payments.js';
 export * from './common.js';
 export * from './content.js';
 export * from './volunteers.js';

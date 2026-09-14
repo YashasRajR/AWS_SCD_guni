@@ -6,9 +6,7 @@ import { toAttendee } from './attendees.types.js';
 import type { CreateAttendeeInput } from './attendees.types.js';
 import { AppError } from '../../utils/errors.js';
 import { registrationsService } from '../registrations/registrations.service.js';
-import { paymentsService } from '../payments/payments.service.js';
 import { ticketsService } from '../tickets/tickets.service.js';
-import { invoicesService } from '../invoices/invoices.service.js';
 import { qrTokensService } from '../qr-tokens/qr-tokens.service.js';
 import { checkpointsService } from '../checkpoints/checkpoints.service.js';
 import { eventService } from '../event/event.service.js';
@@ -100,7 +98,7 @@ export const attendeesService = {
   },
 
   /** Soft-delete -- excluded from list/search/export from then on, but
-   * every prior registration/ticket/invoice/payment record is untouched. */
+   * every prior registration/ticket record is untouched. */
   async archive(id: string): Promise<Attendee> {
     const row = await attendeesRepository.archive(id);
     if (!row) throw AppError.notFound('Attendee', 'Already archived, or does not exist.');
@@ -136,13 +134,7 @@ export const attendeesService = {
     const attendee = await this.requireById(id);
     const user = await usersRepository.findById(attendee.userId);
     const registration = await registrationsService.getByAttendeeId(id);
-    const [payment, ticket, invoice] = registration
-      ? await Promise.all([
-          paymentsService.getByRegistrationId(registration.id),
-          ticketsService.getByRegistrationId(registration.id),
-          invoicesService.getByRegistrationId(registration.id),
-        ])
-      : [null, null, null];
+    const ticket = registration ? await ticketsService.getByRegistrationId(registration.id) : null;
     const qrTokens = ticket ? await qrTokensService.listForTicket(ticket.id) : [];
 
     const event = await eventService.getCurrent().catch(() => null);
@@ -153,19 +145,14 @@ export const attendeesService = {
     const entityPairs = [{ entityType: 'attendee', entityId: id }];
     if (registration) entityPairs.push({ entityType: 'registration', entityId: registration.id });
     if (ticket) entityPairs.push({ entityType: 'ticket', entityId: ticket.id });
-    if (invoice) entityPairs.push({ entityType: 'invoice', entityId: invoice.id });
     const activityHistory = await auditLogsService.listForEntities(entityPairs);
-    const documentEmails = user
-      ? await emailsService.listForUser(user.id, ['ticket', 'ticket-resend', 'invoice-resend'])
-      : [];
+    const documentEmails = user ? await emailsService.listForUser(user.id, ['ticket', 'ticket-resend']) : [];
 
     return {
       attendee,
       email: user?.email ?? null,
       registration,
-      payment,
       ticket,
-      invoice,
       qrTokens,
       checkpointProgress,
       activityHistory,

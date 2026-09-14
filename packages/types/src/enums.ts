@@ -27,15 +27,6 @@ export const REGISTRATION_STATUSES = [
 ] as const;
 export type RegistrationStatus = (typeof REGISTRATION_STATUSES)[number];
 
-export const PAYMENT_STATUSES = [
-  'PENDING',
-  'PROCESSING',
-  'PAID',
-  'FAILED',
-  'REFUNDED',
-] as const;
-export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
-
 export const TICKET_STATUSES = ['ISSUED', 'REVOKED'] as const;
 export type TicketStatus = (typeof TICKET_STATUSES)[number];
 
@@ -116,11 +107,8 @@ export type EmailStatus = (typeof EMAIL_STATUSES)[number];
 
 export const EMAIL_TEMPLATES = [
   'registration-confirmation',
-  'payment-success',
-  'payment-failed',
   'ticket',
   'ticket-resend',
-  'invoice-resend',
   'password-reset',
   'email-verification',
   'event-announcement',

@@ -9,7 +9,6 @@ interface IntegrationStatus {
 
 interface SystemStatus {
   database: IntegrationStatus;
-  paymentGateway: IntegrationStatus;
   email: IntegrationStatus & { queueDepth: number };
   storage: IntegrationStatus;
   sheetsSync: IntegrationStatus & { queueDepth: number };
@@ -25,7 +24,6 @@ export function SystemStatusPage() {
   const rows: { key: string; label: string; item: IntegrationStatus; extra?: string }[] = data
     ? [
         { key: 'database', label: 'Database', item: data.database },
-        { key: 'paymentGateway', label: 'Payment gateway', item: data.paymentGateway },
         {
           key: 'email',
           label: 'Email provider',
