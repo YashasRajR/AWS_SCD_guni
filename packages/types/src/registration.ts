@@ -20,6 +20,13 @@ export interface Attendee {
   profileImage: string | null;
   registrationType: string | null;
   linkedinUrl: string | null;
+  collegeId: string | null;
+  groupName: string | null;
+  yearsOfExperience: string | null;
+  howHeard: string | null;
+  tshirtSize: string | null;
+  dietaryPreference: string | null;
+  emergencyContact: string | null;
   /** Soft-delete marker (spec #34/#55) -- non-null means archived, excluded
    * from normal listings/search/export. */
   deletedAt: string | null;

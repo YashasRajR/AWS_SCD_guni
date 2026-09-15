@@ -78,6 +78,13 @@ export const authService = {
           designation: input.designation,
           registrationType: input.registrationType,
           linkedinUrl: input.linkedinUrl || undefined,
+          collegeId: input.collegeId,
+          groupName: input.groupName,
+          yearsOfExperience: input.yearsOfExperience,
+          howHeard: input.howHeard,
+          tshirtSize: input.tshirtSize,
+          dietaryPreference: input.dietaryPreference,
+          emergencyContact: input.emergencyContact || undefined,
         },
         client,
       );

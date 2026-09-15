@@ -30,6 +30,13 @@ interface FormState {
   companyName: string;
   designation: string;
   linkedinUrl: string;
+  collegeId: string;
+  groupName: string;
+  yearsOfExperience: string;
+  howHeard: string;
+  tshirtSize: '' | 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL';
+  dietaryPreference: string;
+  emergencyContact: string;
   consent: boolean;
 }
 
@@ -48,6 +55,13 @@ const INITIAL_STATE: FormState = {
   companyName: '',
   designation: '',
   linkedinUrl: '',
+  collegeId: '',
+  groupName: '',
+  yearsOfExperience: '',
+  howHeard: '',
+  tshirtSize: '',
+  dietaryPreference: '',
+  emergencyContact: '',
   consent: false,
 };
 
@@ -92,6 +106,12 @@ function validateLinkedin(v: string): string | null {
   if (!v.trim()) return null; // optional
   return /^https?:\/\/.+/i.test(v.trim()) ? null : 'Enter a valid URL, starting with https://.';
 }
+function validateEmergencyContact(v: string): string | null {
+  if (!v.trim() || v.trim() === '+91') return null; // optional
+  return phoneSchema.safeParse(v.trim()).success
+    ? null
+    : 'Enter a valid Indian mobile number, e.g. +919876543210.';
+}
 
 export function RegisterPage() {
   useDocumentHead({ title: 'Register' });
@@ -127,6 +147,7 @@ export function RegisterPage() {
   setIfError('phone', validatePhone(form.phone));
   setIfError('dateOfBirth', validateDob(form.dateOfBirth));
   setIfError('linkedinUrl', validateLinkedin(form.linkedinUrl));
+  setIfError('emergencyContact', validateEmergencyContact(form.emergencyContact));
   if (isStudent) {
     setIfError('university', validateRequiredText(form.university, 'college/university name'));
     setIfError('department', validateRequiredText(form.department, 'department'));
@@ -158,6 +179,7 @@ export function RegisterPage() {
       year: true,
       companyName: true,
       designation: true,
+      emergencyContact: true,
     }));
   };
 
@@ -197,6 +219,16 @@ export function RegisterPage() {
         companyName: form.companyName.trim() || undefined,
         designation: form.designation.trim() || undefined,
         linkedinUrl: form.linkedinUrl.trim() || undefined,
+        collegeId: form.collegeId.trim() || undefined,
+        groupName: form.groupName.trim() || undefined,
+        yearsOfExperience: form.yearsOfExperience.trim() || undefined,
+        howHeard: form.howHeard.trim() || undefined,
+        tshirtSize: form.tshirtSize || undefined,
+        dietaryPreference: form.dietaryPreference.trim() || undefined,
+        emergencyContact:
+          form.emergencyContact.trim() && form.emergencyContact.trim() !== '+91'
+            ? form.emergencyContact.trim()
+            : undefined,
         consent: true,
       });
       // Account created — but no dashboard access yet. /complete-registration
@@ -419,6 +451,36 @@ export function RegisterPage() {
                       />
                       {showError('designation') && <span className="form-error">{showError('designation')}</span>}
                     </label>
+                    <label className="form-field">
+                      <span>Years of experience</span>
+                      <input
+                        type="text"
+                        value={form.yearsOfExperience}
+                        onChange={(e) => setField('yearsOfExperience', e.target.value)}
+                        placeholder="e.g. 2"
+                      />
+                    </label>
+                  </>
+                )}
+                {isStudent && (
+                  <>
+                    <label className="form-field">
+                      <span>College ID / enrollment number</span>
+                      <input
+                        type="text"
+                        value={form.collegeId}
+                        onChange={(e) => setField('collegeId', e.target.value)}
+                      />
+                    </label>
+                    <label className="form-field">
+                      <span>Group/club (if attending as one)</span>
+                      <input
+                        type="text"
+                        value={form.groupName}
+                        onChange={(e) => setField('groupName', e.target.value)}
+                        placeholder="Leave blank if attending solo"
+                      />
+                    </label>
                   </>
                 )}
                 <label className="form-field">
@@ -445,6 +507,69 @@ export function RegisterPage() {
                     aria-invalid={Boolean(showError('linkedinUrl'))}
                   />
                   {showError('linkedinUrl') && <span className="form-error">{showError('linkedinUrl')}</span>}
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset className="form-field-span register-section">
+              <legend>Additional details (optional)</legend>
+              <div className="auth-form-grid">
+                <label className="form-field">
+                  <span>How did you hear about this event?</span>
+                  <select value={form.howHeard} onChange={(e) => setField('howHeard', e.target.value)}>
+                    <option value="">Select an option</option>
+                    <option value="Social media">Social media</option>
+                    <option value="Friend/Classmate">Friend/Classmate</option>
+                    <option value="College/University">College/University</option>
+                    <option value="LinkedIn">LinkedIn</option>
+                    <option value="Email">Email</option>
+                    <option value="Poster/Flyer">Poster/Flyer</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </label>
+                <label className="form-field">
+                  <span>T-shirt size</span>
+                  <select
+                    value={form.tshirtSize}
+                    onChange={(e) => setField('tshirtSize', e.target.value as FormState['tshirtSize'])}
+                  >
+                    <option value="">Select a size</option>
+                    {(['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const).map((size) => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="form-field">
+                  <span>Dietary preference / allergies</span>
+                  <input
+                    type="text"
+                    value={form.dietaryPreference}
+                    onChange={(e) => setField('dietaryPreference', e.target.value)}
+                    placeholder="e.g. Vegetarian, nut allergy"
+                  />
+                </label>
+                <label className="form-field">
+                  <span>Emergency contact number</span>
+                  <div className="phone-input-group">
+                    <span className="phone-prefix" aria-hidden="true">+91</span>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      value={form.emergencyContact.replace(/^\+91/, '')}
+                      onChange={(e) =>
+                        setField('emergencyContact', e.target.value ? `+91${e.target.value.replace(/\D/g, '').slice(0, 10)}` : '')
+                      }
+                      onBlur={() => markTouched('emergencyContact')}
+                      placeholder="9876543210"
+                      maxLength={10}
+                      aria-invalid={Boolean(showError('emergencyContact'))}
+                    />
+                  </div>
+                  {showError('emergencyContact') && (
+                    <span className="form-error">{showError('emergencyContact')}</span>
+                  )}
                 </label>
               </div>
             </fieldset>

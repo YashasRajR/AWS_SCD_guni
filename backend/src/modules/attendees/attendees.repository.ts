@@ -15,8 +15,8 @@ type Queryable = Pool | PoolClient;
 export const attendeesRepository = {
   async create(input: CreateAttendeeInput, db: Queryable = getPool()): Promise<AttendeeRow> {
     const { rows } = await db.query<AttendeeRow>(
-      `INSERT INTO attendees (user_id, full_name, phone, university, department, branch, year, date_of_birth, company_name, designation, registration_type, linkedin_url)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      `INSERT INTO attendees (user_id, full_name, phone, university, department, branch, year, date_of_birth, company_name, designation, registration_type, linkedin_url, college_id, group_name, years_of_experience, how_heard, tshirt_size, dietary_preference, emergency_contact)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
        RETURNING *`,
       [
         input.userId,
@@ -31,6 +31,13 @@ export const attendeesRepository = {
         input.designation ?? null,
         input.registrationType ?? null,
         input.linkedinUrl ?? null,
+        input.collegeId ?? null,
+        input.groupName ?? null,
+        input.yearsOfExperience ?? null,
+        input.howHeard ?? null,
+        input.tshirtSize ?? null,
+        input.dietaryPreference ?? null,
+        input.emergencyContact ?? null,
       ],
     );
     return rows[0]!;
@@ -81,6 +88,13 @@ export const attendeesRepository = {
          a.department,
          a.year,
          a.registration_type,
+         a.college_id,
+         a.group_name,
+         a.years_of_experience,
+         a.how_heard,
+         a.tshirt_size,
+         a.dietary_preference,
+         a.emergency_contact,
          r.registration_number,
          r.status AS registration_status,
          a.created_at
@@ -144,6 +158,13 @@ export const attendeesRepository = {
       designation: patch.designation,
       registration_type: patch.registrationType,
       linkedin_url: patch.linkedinUrl,
+      college_id: patch.collegeId,
+      group_name: patch.groupName,
+      years_of_experience: patch.yearsOfExperience,
+      how_heard: patch.howHeard,
+      tshirt_size: patch.tshirtSize,
+      dietary_preference: patch.dietaryPreference,
+      emergency_contact: patch.emergencyContact,
     });
     if (values.length === 0) return this.findById(id);
     values.push(id);

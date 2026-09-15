@@ -51,6 +51,13 @@ export const registerSchema = z
     companyName: z.string().trim().max(200).optional(),
     designation: z.string().trim().max(200).optional(),
     linkedinUrl: z.string().trim().url().max(300).optional().or(z.literal('')),
+    collegeId: z.string().trim().max(100).optional(),
+    groupName: z.string().trim().max(200).optional(),
+    yearsOfExperience: z.string().trim().max(50).optional(),
+    howHeard: z.string().trim().max(100).optional(),
+    tshirtSize: z.enum(['XS', 'S', 'M', 'L', 'XL', 'XXL']).optional(),
+    dietaryPreference: z.string().trim().max(200).optional(),
+    emergencyContact: phoneSchema.optional().or(z.literal('')),
     consent: z.literal(true, {
       errorMap: () => ({ message: 'You must accept the terms to register' }),
     }),

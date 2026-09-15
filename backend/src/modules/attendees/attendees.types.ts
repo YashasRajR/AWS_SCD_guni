@@ -15,6 +15,13 @@ export interface AttendeeRow {
   profile_image: string | null;
   registration_type: string | null;
   linkedin_url: string | null;
+  college_id: string | null;
+  group_name: string | null;
+  years_of_experience: string | null;
+  how_heard: string | null;
+  tshirt_size: string | null;
+  dietary_preference: string | null;
+  emergency_contact: string | null;
   deleted_at: string | null;
   created_at: string;
   updated_at: string;
@@ -32,6 +39,13 @@ export interface UpdateAttendeeInput {
   designation?: string;
   registrationType?: string;
   linkedinUrl?: string;
+  collegeId?: string;
+  groupName?: string;
+  yearsOfExperience?: string;
+  howHeard?: string;
+  tshirtSize?: string;
+  dietaryPreference?: string;
+  emergencyContact?: string;
 }
 
 export interface CreateAttendeeInput {
@@ -47,6 +61,13 @@ export interface CreateAttendeeInput {
   designation?: string;
   registrationType?: string;
   linkedinUrl?: string;
+  collegeId?: string;
+  groupName?: string;
+  yearsOfExperience?: string;
+  howHeard?: string;
+  tshirtSize?: string;
+  dietaryPreference?: string;
+  emergencyContact?: string;
 }
 
 export interface AttendeeExportRow {
@@ -57,6 +78,13 @@ export interface AttendeeExportRow {
   department: string | null;
   year: string | null;
   registration_type: string | null;
+  college_id: string | null;
+  group_name: string | null;
+  years_of_experience: string | null;
+  how_heard: string | null;
+  tshirt_size: string | null;
+  dietary_preference: string | null;
+  emergency_contact: string | null;
   registration_number: string | null;
   registration_status: string | null;
   created_at: string;
@@ -78,6 +106,13 @@ export function toAttendee(row: AttendeeRow): Attendee {
     profileImage: row.profile_image,
     registrationType: row.registration_type,
     linkedinUrl: row.linkedin_url,
+    collegeId: row.college_id,
+    groupName: row.group_name,
+    yearsOfExperience: row.years_of_experience,
+    howHeard: row.how_heard,
+    tshirtSize: row.tshirt_size,
+    dietaryPreference: row.dietary_preference,
+    emergencyContact: row.emergency_contact,
     deletedAt: row.deleted_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
