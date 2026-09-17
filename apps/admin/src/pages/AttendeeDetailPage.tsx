@@ -109,7 +109,6 @@ export function AttendeeDetailPage() {
     registration,
     ticket,
     qrTokens,
-    checkpointProgress,
     activityHistory,
     documentEmails,
   } = data;
@@ -184,13 +183,6 @@ export function AttendeeDetailPage() {
     ticket && run(`${type} QR rotated.`, () => apiClient.post(`/admin/tickets/${ticket.id}/qr-tokens/${type}/rotate`));
   const revokeQr = (tokenId: string, type: string) =>
     run(`${type} QR revoked.`, () => apiClient.delete(`/admin/qr-tokens/${tokenId}`));
-  const reverseCheckpoint = (attendanceId: string, name: string) => {
-    const reason = window.prompt(`Reason for reversing "${name}" (optional, kept in the audit log):`) ?? undefined;
-    void run(`"${name}" reversed.`, () =>
-      apiClient.post(`/admin/checkpoints/attendance/${attendanceId}/reverse`, { reason }),
-    );
-  };
-
   return (
     <div className="page">
       <div className="page-header">
@@ -366,38 +358,6 @@ export function AttendeeDetailPage() {
                     Rotate
                   </button>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section className="panel">
-        <h2>Check-in &amp; goodie progress</h2>
-        {checkpointProgress.length === 0 ? (
-          <p className="form-help">No checkpoints defined for the current event.</p>
-        ) : (
-          <div className="qr-token-list">
-            {checkpointProgress.map((p) => (
-              <div className="qr-token-row" key={p.checkpoint.id}>
-                <div>
-                  <strong>{p.checkpoint.name}</strong>{' '}
-                  {p.completed ? (
-                    <span className="form-help">completed {formatDateTime(p.completedAt)}</span>
-                  ) : (
-                    <span className="form-help">not completed</span>
-                  )}
-                </div>
-                {p.completed && p.attendanceId && (
-                  <button
-                    type="button"
-                    className="btn-link"
-                    disabled={busy}
-                    onClick={() => reverseCheckpoint(p.attendanceId as string, p.checkpoint.name)}
-                  >
-                    Reverse (correct)
-                  </button>
-                )}
               </div>
             ))}
           </div>

@@ -51,7 +51,7 @@ describe('Ticket ownership (/me/ticket)', () => {
     expect(res.status).toBe(401);
   });
 
-  it('rejects a volunteer or admin account (route is attendee-only)', async () => {
+  it('rejects a non-attendee account (route is attendee-only)', async () => {
     const admin = await adminToken();
     const res = await getTestAgent().get('/api/v1/me/ticket').set('Authorization', `Bearer ${admin}`);
     expect(res.status).toBe(403);

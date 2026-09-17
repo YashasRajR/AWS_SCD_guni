@@ -4,7 +4,7 @@ import type { AuditLogRow, RecordAuditLogInput } from './audit-logs.types.js';
 export const auditLogsRepository = {
   /**
    * Fire-and-log: never throws into the caller's flow. Auditing a failed
-   * checkpoint-completion attempt should not itself take down the request.
+   * admin action attempt should not itself take down the request.
    */
   async record(input: RecordAuditLogInput): Promise<void> {
     await getPool().query(

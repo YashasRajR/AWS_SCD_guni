@@ -1,7 +1,7 @@
 import { randomBytes, createHash } from 'node:crypto';
 import { getPool, withTransaction } from '../../config/database.js';
-import type { QrTokenType, QrScanResult } from '@scd/types';
-import type { QrScanLogRow, QrTokenRow } from './qr-tokens.types.js';
+import type { QrTokenType } from '@scd/types';
+import type { QrTokenRow } from './qr-tokens.types.js';
 
 export function hashToken(rawToken: string): string {
   return createHash('sha256').update(rawToken).digest('hex');
@@ -26,14 +26,6 @@ export const qrTokensRepository = {
       [ticketId],
     );
     return rows;
-  },
-
-  async findByHash(tokenHash: string): Promise<QrTokenRow | null> {
-    const { rows } = await getPool().query<QrTokenRow>(
-      'SELECT * FROM qr_tokens WHERE token_hash = $1',
-      [tokenHash],
-    );
-    return rows[0] ?? null;
   },
 
   /**
@@ -79,28 +71,5 @@ export const qrTokensRepository = {
       [id],
     );
     return rows[0] ?? null;
-  },
-
-  async logScan(entry: {
-    qrTokenId: string | null;
-    type: QrTokenType;
-    volunteerId: string | null;
-    checkpointId: string | null;
-    attendeeId: string | null;
-    result: QrScanResult;
-  }): Promise<QrScanLogRow> {
-    const { rows } = await getPool().query<QrScanLogRow>(
-      `INSERT INTO qr_scan_logs (qr_token_id, type, volunteer_id, checkpoint_id, attendee_id, result)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [
-        entry.qrTokenId,
-        entry.type,
-        entry.volunteerId,
-        entry.checkpointId,
-        entry.attendeeId,
-        entry.result,
-      ],
-    );
-    return rows[0]!;
   },
 };

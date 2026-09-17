@@ -114,7 +114,7 @@ export function useResource<T>(path: string, enabled = true): UsePaginatedResour
 }
 
 /**
- * The event id needed by venues/agenda/timeline/checkpoints create forms.
+ * The event id needed by venues/agenda/timeline create forms.
  * Uses the public /event read (always the current PUBLISHED event) —
  * every domain that needs an eventId is scoped to the one currently-live
  * event, matching this platform's single-edition scope this phase.

@@ -14,6 +14,5 @@ export const DEV_PASSWORD = 'DevPassw0rd!';
 export const SEEDED_USERS = {
   superAdmin: 'superadmin@dev.local',
   admin: 'admin@dev.local',
-  volunteer: 'volunteer@dev.local',
   attendee: 'attendee1@dev.local',
 } as const;

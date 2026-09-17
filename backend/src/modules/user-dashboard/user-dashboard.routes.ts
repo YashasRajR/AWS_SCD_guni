@@ -34,7 +34,6 @@ userDashboardRouter.post(
 userDashboardRouter.get('/ticket', asyncHandler(userDashboardController.getTicket));
 userDashboardRouter.get('/ticket/pdf', asyncHandler(userDashboardController.getTicketPdf));
 userDashboardRouter.post('/ticket/resend-email', asyncHandler(userDashboardController.resendTicketEmail));
-userDashboardRouter.get('/progress', asyncHandler(userDashboardController.getProgress));
 userDashboardRouter.get('/sessions', asyncHandler(userDashboardController.getSessions));
 userDashboardRouter.get('/certificates', asyncHandler(userDashboardController.getCertificates));
 userDashboardRouter.get('/achievements', asyncHandler(userDashboardController.getAchievements));

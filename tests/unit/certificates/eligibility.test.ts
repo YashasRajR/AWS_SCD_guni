@@ -1,6 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import type { Registration, EventConfig, User } from '@scd/types';
-import type { CheckpointAttendanceRow } from '../../../backend/src/modules/checkpoints/checkpoints.types.js';
+import type { Registration, User } from '@scd/types';
 import type { AttendeeRow } from '../../../backend/src/modules/attendees/attendees.types.js';
 import type { CertificateRow } from '../../../backend/src/modules/certificates/certificates.types.js';
 
@@ -13,12 +12,6 @@ vi.mock('../../../backend/src/modules/certificates/certificates.repository.js', 
 }));
 vi.mock('../../../backend/src/modules/registrations/registrations.service.js', () => ({
   registrationsService: { getByAttendeeId: vi.fn() },
-}));
-vi.mock('../../../backend/src/modules/checkpoints/checkpoints.repository.js', () => ({
-  checkpointsRepository: { getAttendeeCompletions: vi.fn() },
-}));
-vi.mock('../../../backend/src/modules/event/event.service.js', () => ({
-  eventService: { getCurrent: vi.fn() },
 }));
 vi.mock('../../../backend/src/modules/attendees/attendees.repository.js', () => ({
   attendeesRepository: { findById: vi.fn() },
@@ -34,9 +27,6 @@ const { certificatesRepository } =
   await import('../../../backend/src/modules/certificates/certificates.repository.js');
 const { registrationsService } =
   await import('../../../backend/src/modules/registrations/registrations.service.js');
-const { checkpointsRepository } =
-  await import('../../../backend/src/modules/checkpoints/checkpoints.repository.js');
-const { eventService } = await import('../../../backend/src/modules/event/event.service.js');
 const { attendeesRepository } =
   await import('../../../backend/src/modules/attendees/attendees.repository.js');
 const { certificatesService } =
@@ -62,33 +52,10 @@ describe('certificatesService.isEligible', () => {
     expect(result.reason).toMatch(/not confirmed/i);
   });
 
-  it('is ineligible when there is no active event', async () => {
+  it('is eligible with a confirmed registration', async () => {
     vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({
       status: 'CONFIRMED',
     } as Registration);
-    vi.mocked(eventService.getCurrent).mockRejectedValue(new Error('no event'));
-    const result = await certificatesService.isEligible('attendee-1');
-    expect(result).toEqual({ eligible: false, reason: 'No active event is configured.' });
-  });
-
-  it('is ineligible with a confirmed registration but zero checkpoint completions', async () => {
-    vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({
-      status: 'CONFIRMED',
-    } as Registration);
-    vi.mocked(eventService.getCurrent).mockResolvedValue({ id: 'event-1' } as EventConfig);
-    vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([]);
-    const result = await certificatesService.isEligible('attendee-1');
-    expect(result).toEqual({ eligible: false, reason: 'No recorded event attendance yet.' });
-  });
-
-  it('is eligible with a confirmed registration and at least one checkpoint completion', async () => {
-    vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({
-      status: 'CONFIRMED',
-    } as Registration);
-    vi.mocked(eventService.getCurrent).mockResolvedValue({ id: 'event-1' } as EventConfig);
-    vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([
-      { checkpoint_id: 'cp-1' },
-    ] as CheckpointAttendanceRow[]);
     const result = await certificatesService.isEligible('attendee-1');
     expect(result).toEqual({ eligible: true });
   });
@@ -136,10 +103,6 @@ describe('certificatesService.issue', () => {
     vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({
       status: 'CONFIRMED',
     } as Registration);
-    vi.mocked(eventService.getCurrent).mockResolvedValue({ id: 'event-1' } as EventConfig);
-    vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([
-      { checkpoint_id: 'cp-1' },
-    ] as CheckpointAttendanceRow[]);
     const issuedRow = {
       id: 'cert-2',
       status: 'ISSUED',
@@ -179,10 +142,6 @@ describe('certificatesService.issue', () => {
     vi.mocked(registrationsService.getByAttendeeId).mockResolvedValue({
       status: 'CONFIRMED',
     } as Registration);
-    vi.mocked(eventService.getCurrent).mockResolvedValue({ id: 'event-1' } as EventConfig);
-    vi.mocked(checkpointsRepository.getAttendeeCompletions).mockResolvedValue([
-      { checkpoint_id: 'cp-1' },
-    ] as CheckpointAttendanceRow[]);
     vi.mocked(certificatesRepository.issue).mockRejectedValue({ code: '23505' });
 
     const result = await certificatesService.issue({

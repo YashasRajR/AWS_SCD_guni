@@ -4,7 +4,6 @@ import { getTestAgent, getTestPool, loginAs } from '../../fixtures/test-app.js';
 let adminToken: string;
 let attendeeToken: string;
 let attendeeEmail: string;
-let eventId: string;
 
 beforeAll(async () => {
   const adminLogin = await loginAs('admin@dev.local', 'DevPassw0rd!');
@@ -25,9 +24,6 @@ beforeAll(async () => {
     consent: true,
   });
   attendeeToken = attendeeRegister.body.data.accessToken as string;
-
-  const eventRes = await getTestAgent().get('/api/v1/event');
-  eventId = eventRes.body.data.id as string;
 });
 
 describe('Admin speaker CRUD', () => {
@@ -82,41 +78,6 @@ describe('Admin speaker CRUD', () => {
   });
 });
 
-describe('Admin checkpoint CRUD', () => {
-  it('lets an ADMIN create and update a checkpoint', async () => {
-    const create = await getTestAgent()
-      .post('/api/v1/admin/checkpoints')
-      .set('Authorization', `Bearer ${adminToken}`)
-      .send({ eventId, name: `Photo Booth ${Date.now()}`, isRequired: false });
-    expect(create.status).toBe(201);
-    const checkpointId = create.body.data.id as string;
-
-    const update = await getTestAgent()
-      .patch(`/api/v1/admin/checkpoints/${checkpointId}`)
-      .set('Authorization', `Bearer ${adminToken}`)
-      .send({ isRequired: true, location: 'Main Hall' });
-    expect(update.status).toBe(200);
-    expect(update.body.data.isRequired).toBe(true);
-    expect(update.body.data.location).toBe('Main Hall');
-  });
-
-  it('rejects a duplicate checkpoint name for the same event', async () => {
-    const name = `Duplicate Checkpoint ${Date.now()}`;
-    const first = await getTestAgent()
-      .post('/api/v1/admin/checkpoints')
-      .set('Authorization', `Bearer ${adminToken}`)
-      .send({ eventId, name });
-    expect(first.status).toBe(201);
-
-    const second = await getTestAgent()
-      .post('/api/v1/admin/checkpoints')
-      .set('Authorization', `Bearer ${adminToken}`)
-      .send({ eventId, name });
-    expect(second.status).toBe(409);
-    expect(second.body.error.code).toBe('DUPLICATE_RESOURCE');
-  });
-});
-
 describe('Admin registration status update', () => {
   it('lets an ADMIN confirm a PENDING registration', async () => {
     // No API path creates a registration yet in this phase (the payment/
@@ -144,76 +105,11 @@ describe('Admin registration status update', () => {
     expect(res.body.data.confirmedAt).not.toBeNull();
   });
 
-  it('rejects a VOLUNTEER trying to update a registration status', async () => {
-    const volunteerLogin = await loginAs('volunteer@dev.local', 'DevPassw0rd!');
-    const volunteerToken = volunteerLogin.body.data.accessToken as string;
+  it('rejects an ATTENDEE trying to update a registration status', async () => {
     const res = await getTestAgent()
       .patch(`/api/v1/admin/registrations/00000000-0000-0000-0000-000000000000/status`)
-      .set('Authorization', `Bearer ${volunteerToken}`)
+      .set('Authorization', `Bearer ${attendeeToken}`)
       .send({ status: 'CONFIRMED' });
     expect(res.status).toBe(403);
-  });
-});
-
-describe('Admin volunteer management', () => {
-  it('promotes an already-registered attendee to volunteer and assigns a checkpoint', async () => {
-    const create = await getTestAgent()
-      .post('/api/v1/admin/volunteers')
-      .set('Authorization', `Bearer ${adminToken}`)
-      .send({ email: attendeeEmail, name: 'Promoted Volunteer' });
-    expect(create.status).toBe(201);
-    const volunteerId = create.body.data.id as string;
-
-    // The promoted user's next login carries the VOLUNTEER role/permissions
-    // (roles are embedded in the JWT at issuance) and can reach /volunteer/me.
-    const relogin = await loginAs(attendeeEmail, 'TestPassw0rd!');
-    const volunteerToken = relogin.body.data.accessToken as string;
-    const me = await getTestAgent()
-      .get('/api/v1/volunteer/me')
-      .set('Authorization', `Bearer ${volunteerToken}`);
-    expect(me.status).toBe(200);
-    expect(me.body.data.id).toBe(volunteerId);
-
-    const checkpoints = await getTestAgent()
-      .get('/api/v1/admin/checkpoints?pageSize=1')
-      .set('Authorization', `Bearer ${adminToken}`);
-    const checkpointId = checkpoints.body.data.items[0].id as string;
-
-    const assign = await getTestAgent()
-      .post(`/api/v1/admin/volunteers/${volunteerId}/checkpoints`)
-      .set('Authorization', `Bearer ${adminToken}`)
-      .send({ checkpointId });
-    expect(assign.status).toBe(201);
-
-    const assigned = await getTestAgent()
-      .get(`/api/v1/admin/volunteers/${volunteerId}/checkpoints`)
-      .set('Authorization', `Bearer ${adminToken}`);
-    expect(assigned.body.data.some((c: { id: string }) => c.id === checkpointId)).toBe(true);
-
-    const revoke = await getTestAgent()
-      .delete(`/api/v1/admin/volunteers/${volunteerId}/checkpoints/${checkpointId}`)
-      .set('Authorization', `Bearer ${adminToken}`);
-    expect(revoke.status).toBe(200);
-
-    const afterRevoke = await getTestAgent()
-      .get(`/api/v1/admin/volunteers/${volunteerId}/checkpoints`)
-      .set('Authorization', `Bearer ${adminToken}`);
-    expect(afterRevoke.body.data.some((c: { id: string }) => c.id === checkpointId)).toBe(false);
-  });
-
-  it('rejects promoting the same user twice', async () => {
-    const res = await getTestAgent()
-      .post('/api/v1/admin/volunteers')
-      .set('Authorization', `Bearer ${adminToken}`)
-      .send({ email: attendeeEmail, name: 'Promoted Volunteer Again' });
-    expect(res.status).toBe(409);
-  });
-
-  it('rejects promoting an email with no account', async () => {
-    const res = await getTestAgent()
-      .post('/api/v1/admin/volunteers')
-      .set('Authorization', `Bearer ${adminToken}`)
-      .send({ email: 'nobody-registered@example.test', name: 'Ghost' });
-    expect(res.status).toBe(422);
   });
 });

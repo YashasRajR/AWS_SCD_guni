@@ -13,7 +13,7 @@ const SLIDE_MS = 5000;
  * clipboard, both of which the user themselves controls the destination of.
  */
 async function shareWrapped(wrapped: EventWrapped): Promise<'shared' | 'copied' | 'failed'> {
-  const text = `I completed ${wrapped.statistics.checkpointsCompleted}/${wrapped.statistics.totalCheckpoints} checkpoints and unlocked ${wrapped.statistics.achievementsUnlocked} achievements at AWS Student Community Day 2026!`;
+  const text = `I unlocked ${wrapped.statistics.achievementsUnlocked} achievements at AWS Student Community Day 2026!`;
   const shareData = { title: 'My AWS Student Community Day 2026 Wrapped', text, url: window.location.href };
   if (navigator.share) {
     try {
@@ -48,8 +48,6 @@ function buildSlides(wrapped: EventWrapped): Slide[] {
   const s = wrapped.statistics;
   const slides: Slide[] = [
     { label: 'Sessions attended', value: s.sessionsAttended, caption: 'sessions attended' },
-    { label: 'Checkpoints', value: s.checkpointsCompleted, suffix: `/${s.totalCheckpoints}`, caption: 'checkpoints completed' },
-    { label: 'Participation', value: s.participationPercentage, suffix: '%', caption: 'participation rate' },
     { label: 'Badges', value: s.achievementsUnlocked, caption: 'achievements unlocked' },
   ];
   if (s.topInterest) {

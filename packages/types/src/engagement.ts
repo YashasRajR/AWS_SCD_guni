@@ -46,9 +46,6 @@ export interface AttendeeAchievement {
 
 export interface EventWrappedStatistics {
   sessionsAttended: number;
-  checkpointsCompleted: number;
-  totalCheckpoints: number;
-  participationPercentage: number;
   achievementsUnlocked: number;
   certificateUnlocked: boolean;
   topInterest: string | null;

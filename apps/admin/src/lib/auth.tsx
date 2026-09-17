@@ -40,7 +40,6 @@ const ADMIN_PANEL_ROLES = [
   'ADMIN',
   'FINANCE_ADMIN',
   'CONTENT_ADMIN',
-  'VOLUNTEER_MANAGER',
 ] as const;
 
 /** Decodes+validates a stored token, returning the identity only if it's a non-expired admin-panel token. */

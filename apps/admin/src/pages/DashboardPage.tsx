@@ -17,7 +17,6 @@ interface StatusCount {
 
 interface AdminDashboardTrends {
   registrationsByDay: DailyCount[];
-  checkpointCompletionsByDay: DailyCount[];
   registrationsByStatus: StatusCount[];
 }
 
@@ -40,10 +39,6 @@ interface AdminDashboardSummary {
   registrationsToday: number;
   registrationsThisWeek: number;
   registrationsThisMonth: number;
-  checkpointCompletions: number;
-  checkInCount: number;
-  checkInPercentage: number;
-  activeVolunteers: number;
   certificatesIssued: number;
   achievementsUnlocked: number;
   emailsSent: number;
@@ -61,17 +56,8 @@ interface RecentRegistration {
   createdAt: string;
 }
 
-interface RecentCheckIn {
-  id: string;
-  attendeeName: string;
-  checkpointName: string;
-  volunteerName: string | null;
-  completedAt: string;
-}
-
 interface AdminDashboardRecentActivity {
   recentRegistrations: RecentRegistration[];
-  recentCheckIns: RecentCheckIn[];
 }
 
 interface IntegrationStatus {
@@ -98,8 +84,6 @@ const CARDS: { key: NumericSummaryKey; label: string }[] = [
   { key: 'registrationsThisWeek', label: 'Registrations this week' },
   { key: 'registrationsThisMonth', label: 'Registrations this month' },
   { key: 'confirmedRegistrations', label: 'Confirmed registrations' },
-  { key: 'checkInCount', label: 'Checked in' },
-  { key: 'activeVolunteers', label: 'Active volunteers' },
   { key: 'certificatesIssued', label: 'Certificates issued' },
   { key: 'achievementsUnlocked', label: 'Achievements unlocked' },
   { key: 'emailsSent', label: 'Emails sent' },
@@ -161,10 +145,6 @@ export function DashboardPage() {
 
       {data && (
         <div className="stat-grid">
-          <div className="stat-card">
-            <div className="stat-value">{data.checkInPercentage}%</div>
-            <div className="stat-label">Check-in rate</div>
-          </div>
           {CARDS.map((card) => (
             <div className="stat-card" key={card.key}>
               <div className="stat-value">{data[card.key]}</div>
@@ -181,15 +161,6 @@ export function DashboardPage() {
             <BarChart
               data={trends.registrationsByDay.map((d) => ({ label: d.day, value: d.count }))}
               formatLabel={formatDayLabel}
-            />
-          </div>
-
-          <div className="chart-section">
-            <h2>Checkpoint completions, last 14 days</h2>
-            <BarChart
-              data={trends.checkpointCompletionsByDay.map((d) => ({ label: d.day, value: d.count }))}
-              formatLabel={formatDayLabel}
-              color="var(--blue-text)"
             />
           </div>
 
@@ -219,23 +190,6 @@ export function DashboardPage() {
                     <span>{r.fullName}</span>
                     <StatusBadge status={r.status} />
                     <span className="dashboard-recent-meta">{formatDateTime(r.createdAt)}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="dashboard-recent-section">
-            <h2>Recent check-ins</h2>
-            {recent.recentCheckIns.length === 0 ? (
-              <p className="status-line">No check-ins yet.</p>
-            ) : (
-              <ul className="dashboard-recent-list">
-                {recent.recentCheckIns.map((c) => (
-                  <li key={c.id}>
-                    <span>{c.attendeeName}</span>
-                    <span className="dashboard-recent-meta">{c.checkpointName}</span>
-                    <span className="dashboard-recent-meta">{formatDateTime(c.completedAt)}</span>
                   </li>
                 ))}
               </ul>

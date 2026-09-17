@@ -8,8 +8,6 @@ import { AppError } from '../../utils/errors.js';
 import { registrationsService } from '../registrations/registrations.service.js';
 import { ticketsService } from '../tickets/tickets.service.js';
 import { qrTokensService } from '../qr-tokens/qr-tokens.service.js';
-import { checkpointsService } from '../checkpoints/checkpoints.service.js';
-import { eventService } from '../event/event.service.js';
 import { auditLogsService } from '../audit-logs/audit-logs.service.js';
 import { usersRepository } from '../users/users.repository.js';
 import { emailsService } from '../emails/emails.service.js';
@@ -151,11 +149,6 @@ export const attendeesService = {
     const ticket = registration ? await ticketsService.getByRegistrationId(registration.id) : null;
     const qrTokens = ticket ? await qrTokensService.listForTicket(ticket.id) : [];
 
-    const event = await eventService.getCurrent().catch(() => null);
-    const checkpointProgress = event
-      ? await checkpointsService.getProgressForAttendee(id, event.id)
-      : [];
-
     const entityPairs = [{ entityType: 'attendee', entityId: id }];
     if (registration) entityPairs.push({ entityType: 'registration', entityId: registration.id });
     if (ticket) entityPairs.push({ entityType: 'ticket', entityId: ticket.id });
@@ -168,7 +161,6 @@ export const attendeesService = {
       registration,
       ticket,
       qrTokens,
-      checkpointProgress,
       activityHistory,
       documentEmails,
     };

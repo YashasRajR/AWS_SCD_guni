@@ -1,7 +1,6 @@
 import type { EventWrapped, EventWrappedStatistics } from '@scd/types';
 import { eventWrappedRepository } from './event-wrapped.repository.js';
 import { toEventWrapped } from './event-wrapped.types.js';
-import { checkpointsRepository } from '../checkpoints/checkpoints.repository.js';
 import { achievementsService } from '../achievements/achievements.service.js';
 import { getPool } from '../../config/database.js';
 
@@ -13,24 +12,11 @@ export const eventWrappedService = {
 
   /**
    * Generate (or regenerate) event wrapped statistics for an attendee.
-   * Uses real data: checkpoint completions, achievements, etc.
+   * Uses real data: achievements and certificate status.
    * Idempotent: overwrites any existing wrapped for this attendee+event.
    */
   async generate(attendeeId: string, eventId: string): Promise<EventWrapped> {
-    const [checkpoints, completions, achievements] = await Promise.all([
-      checkpointsRepository.listByEvent(eventId),
-      checkpointsRepository.getAttendeeCompletions(attendeeId, eventId),
-      achievementsService.listForAttendee(attendeeId),
-    ]);
-
-    const totalCheckpoints = checkpoints.length;
-    const checkpointsCompleted = completions.length;
-    const requiredCheckpoints = checkpoints.filter((c) => c.is_required);
-    const requiredCompleted = requiredCheckpoints.filter((c) =>
-      completions.some((comp) => comp.checkpoint_id === c.id),
-    );
-    const participationPercentage =
-      totalCheckpoints > 0 ? Math.round((checkpointsCompleted / totalCheckpoints) * 100) : 0;
+    const achievements = await achievementsService.listForAttendee(attendeeId);
 
     // Check if attendee has a certificate
     const { rows: certRows } = await getPool().query(
@@ -40,9 +26,6 @@ export const eventWrappedService = {
 
     const statistics: EventWrappedStatistics = {
       sessionsAttended: 0, // Will be populated when session-level tracking is added
-      checkpointsCompleted,
-      totalCheckpoints,
-      participationPercentage,
       achievementsUnlocked: achievements.length,
       certificateUnlocked: certRows.length > 0,
       topInterest: null, // Will be derived from session tracks when available
@@ -50,16 +33,8 @@ export const eventWrappedService = {
 
     // Build summary text
     const summaryParts: string[] = [];
-    if (checkpointsCompleted > 0) {
-      summaryParts.push(
-        `You completed ${checkpointsCompleted} of ${totalCheckpoints} checkpoints (${participationPercentage}% participation).`,
-      );
-    }
     if (achievements.length > 0) {
       summaryParts.push(`You earned ${achievements.length} achievement${achievements.length > 1 ? 's' : ''}.`);
-    }
-    if (requiredCheckpoints.length > 0 && requiredCompleted.length === requiredCheckpoints.length) {
-      summaryParts.push('You completed every required activity at the event.');
     }
     if (certRows.length > 0) {
       summaryParts.push('You received your event certificate.');

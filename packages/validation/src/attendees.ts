@@ -18,7 +18,7 @@ export const updateAttendeeSchema = z.object({
 export type UpdateAttendeeInput = z.infer<typeof updateAttendeeSchema>;
 
 // --- Admin: soft-delete / restore an attendee (spec #34) -------------------
-// Reason is optional -- same convention as checkpoints' reverseAttendanceSchema,
+// Reason is optional -- same convention as archive/reason fields elsewhere,
 // a step below the mandatory reason on ticket/invoice regeneration.
 export const archiveAttendeeSchema = z.object({
   reason: z.string().trim().max(500).optional(),

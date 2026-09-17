@@ -18,10 +18,6 @@ describe('AppError', () => {
     expect(AppError.duplicate('dup').status).toBe(409);
   });
 
-  it('maps CHECKPOINT_ALREADY_COMPLETED to 409', () => {
-    expect(AppError.checkpointAlreadyCompleted().status).toBe(409);
-  });
-
   it('carries the error code through to serialization call sites', () => {
     const err = AppError.validation('bad input', { field: 'email' });
     expect(err.code).toBe('VALIDATION_ERROR');

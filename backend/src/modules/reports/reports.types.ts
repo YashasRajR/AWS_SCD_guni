@@ -4,12 +4,6 @@ export interface AdminDashboardSummary {
   registrationsToday: number;
   registrationsThisWeek: number;
   registrationsThisMonth: number;
-  checkpointCompletions: number;
-  /** Distinct attendees who've completed at least one required checkpoint (i.e. actually checked in). */
-  checkInCount: number;
-  /** checkInCount / confirmedRegistrations * 100, rounded to 1 decimal; 0 when there are no confirmed registrations. */
-  checkInPercentage: number;
-  activeVolunteers: number;
   certificatesIssued: number;
   achievementsUnlocked: number;
   emailsSent: number;
@@ -31,7 +25,6 @@ export interface StatusCount {
 
 export interface AdminDashboardTrends {
   registrationsByDay: DailyCount[];
-  checkpointCompletionsByDay: DailyCount[];
   registrationsByStatus: StatusCount[];
 }
 
@@ -43,15 +36,6 @@ export interface RecentRegistration {
   createdAt: string;
 }
 
-export interface RecentCheckIn {
-  id: string;
-  attendeeName: string;
-  checkpointName: string;
-  volunteerName: string | null;
-  completedAt: string;
-}
-
 export interface AdminDashboardRecentActivity {
   recentRegistrations: RecentRegistration[];
-  recentCheckIns: RecentCheckIn[];
 }

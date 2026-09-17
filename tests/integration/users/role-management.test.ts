@@ -59,28 +59,28 @@ describe('admin role management (SUPER_ADMIN boundary)', () => {
     const forbiddenGrant = await getTestAgent()
       .post(`/api/v1/admin/users/${targetUser.id}/roles`)
       .set('Authorization', `Bearer ${adminTok}`)
-      .send({ role: 'VOLUNTEER' });
+      .send({ role: 'FINANCE_ADMIN' });
     expect(forbiddenGrant.status).toBe(403);
 
     const grantRes = await getTestAgent()
       .post(`/api/v1/admin/users/${targetUser.id}/roles`)
       .set('Authorization', `Bearer ${superToken}`)
-      .send({ role: 'VOLUNTEER' });
+      .send({ role: 'FINANCE_ADMIN' });
     expect(grantRes.status).toBe(200);
-    expect(grantRes.body.data.roles).toContain('VOLUNTEER');
+    expect(grantRes.body.data.roles).toContain('FINANCE_ADMIN');
 
     // Granting the same role again is idempotent (unique PK, ON CONFLICT DO NOTHING).
     const grantAgain = await getTestAgent()
       .post(`/api/v1/admin/users/${targetUser.id}/roles`)
       .set('Authorization', `Bearer ${superToken}`)
-      .send({ role: 'VOLUNTEER' });
+      .send({ role: 'FINANCE_ADMIN' });
     expect(grantAgain.status).toBe(200);
 
     const revokeRes = await getTestAgent()
-      .delete(`/api/v1/admin/users/${targetUser.id}/roles/VOLUNTEER`)
+      .delete(`/api/v1/admin/users/${targetUser.id}/roles/FINANCE_ADMIN`)
       .set('Authorization', `Bearer ${superToken}`);
     expect(revokeRes.status).toBe(200);
-    expect(revokeRes.body.data.roles).not.toContain('VOLUNTEER');
+    expect(revokeRes.body.data.roles).not.toContain('FINANCE_ADMIN');
   });
 
   it("refuses to revoke the platform's last SUPER_ADMIN", async () => {

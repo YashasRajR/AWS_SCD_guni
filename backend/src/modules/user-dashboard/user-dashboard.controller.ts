@@ -10,7 +10,6 @@ import type {
 import { ticketsService } from '../tickets/tickets.service.js';
 import { ticketPlansService } from '../ticket-plans/ticket-plans.service.js';
 import { couponsService } from '../coupons/coupons.service.js';
-import { checkpointsService } from '../checkpoints/checkpoints.service.js';
 import { certificatesService } from '../certificates/certificates.service.js';
 import { achievementsService } from '../achievements/achievements.service.js';
 import { eventWrappedService } from '../event-wrapped/event-wrapped.service.js';
@@ -110,15 +109,9 @@ export const userDashboardController = {
     sendSuccess(res, { resent: true });
   },
 
-  async getProgress(req: Request, res: Response): Promise<void> {
-    const attendee = await attendeesService.requireByUserId(req.identity!.userId);
-    const event = await eventService.getCurrent();
-    sendSuccess(res, await checkpointsService.getProgressForAttendee(attendee.id, event.id));
-  },
-
   /**
    * There is no session_attendance table yet (session-level participation
-   * tracking, as opposed to checkpoint attendance, is a later phase) — this
+   * tracking is a later phase) — this
    * route is established now per the API architecture but returns an empty
    * list until that model exists, rather than fabricating data.
    */

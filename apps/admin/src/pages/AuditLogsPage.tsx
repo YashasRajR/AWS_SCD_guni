@@ -30,7 +30,7 @@ export function AuditLogsPage() {
       <div className="page-header">
         <div>
           <h1>Audit logs</h1>
-          <p className="page-description">Every admin/volunteer write action, newest first.</p>
+          <p className="page-description">Every admin write action, newest first.</p>
         </div>
       </div>
 

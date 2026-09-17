@@ -22,13 +22,8 @@ import { AnnouncementsPage } from './pages/content/AnnouncementsPage.js';
 import { RegistrationsPage } from './pages/RegistrationsPage.js';
 import { AttendeesPage } from './pages/AttendeesPage.js';
 import { AttendeeDetailPage } from './pages/AttendeeDetailPage.js';
-import { PaymentDetailPage } from './pages/PaymentDetailPage.js';
-import { CheckpointsPage } from './pages/CheckpointsPage.js';
-import { VolunteersPage } from './pages/VolunteersPage.js';
 import { AuditLogsPage } from './pages/AuditLogsPage.js';
-import { PaymentsPage } from './pages/PaymentsPage.js';
 import { TicketsPage } from './pages/TicketsPage.js';
-import { InvoicesPage } from './pages/InvoicesPage.js';
 import { CertificatesPage } from './pages/CertificatesPage.js';
 import { AchievementsPage } from './pages/AchievementsPage.js';
 import { EmailsPage } from './pages/EmailsPage.js';
@@ -85,13 +80,8 @@ function AppRoutes() {
         <Route path="registrations" element={<RegistrationsPage />} />
         <Route path="attendees" element={<AttendeesPage />} />
         <Route path="attendees/:id" element={<AttendeeDetailPage />} />
-        <Route path="checkpoints" element={<CheckpointsPage />} />
-        <Route path="volunteers" element={<VolunteersPage />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
-        <Route path="payments" element={<PaymentsPage />} />
-        <Route path="payments/:id" element={<PaymentDetailPage />} />
         <Route path="tickets" element={<TicketsPage />} />
-        <Route path="invoices" element={<InvoicesPage />} />
         <Route path="certificates" element={<CertificatesPage />} />
         <Route path="achievements" element={<AchievementsPage />} />
         <Route path="emails" element={<EmailsPage />} />

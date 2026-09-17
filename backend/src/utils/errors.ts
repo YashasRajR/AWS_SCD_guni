@@ -42,14 +42,6 @@ export class AppError extends Error {
     return new AppError(ERROR_CODES.DUPLICATE_RESOURCE, message, details);
   }
 
-  static checkpointAlreadyCompleted(message = 'This checkpoint has already been completed.'): AppError {
-    return new AppError(ERROR_CODES.CHECKPOINT_ALREADY_COMPLETED, message);
-  }
-
-  static checkpointNotAssigned(message = 'You are not assigned to this checkpoint.'): AppError {
-    return new AppError(ERROR_CODES.CHECKPOINT_NOT_ASSIGNED, message);
-  }
-
   static qrTokenInvalid(message = 'This QR code is not valid.'): AppError {
     return new AppError(ERROR_CODES.QR_TOKEN_INVALID, message);
   }

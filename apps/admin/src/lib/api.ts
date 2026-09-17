@@ -16,7 +16,7 @@ import {
  */
 export const apiClient = new ApiClient({
   // Every admin route lives under /api/v1 (see backend/src/server/app.ts) —
-  // unlike the web/volunteer placeholder apps, nothing here calls the
+  // unlike the web placeholder app, nothing here calls the
   // unprefixed /health endpoint, so the default baseUrl includes the prefix.
   baseUrl: import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api/v1',
   getToken: () => getStoredToken(),

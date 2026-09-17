@@ -29,3 +29,12 @@ export const idVersionParamSchema = z.object({
   id: z.string().uuid(),
   version: z.coerce.number().int().min(1),
 });
+
+export const uuidParamSchema = z.object({
+  id: z.string().uuid(),
+});
+
+export const attendeeSearchQuerySchema = z.object({
+  q: z.string().trim().min(1).max(200),
+});
+export type AttendeeSearchQuery = z.infer<typeof attendeeSearchQuerySchema>;

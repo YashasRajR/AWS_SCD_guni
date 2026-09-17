@@ -4,7 +4,6 @@ import type {
   AdminDashboardSummary,
   AdminDashboardTrends,
   DailyCount,
-  RecentCheckIn,
   RecentRegistration,
   StatusCount,
 } from './reports.types.js';
@@ -36,14 +35,13 @@ async function dailyCountsLast14Days(table: string, dateColumn: string, extraWhe
 
 export const reportsRepository = {
   /**
-   * table/dateColumn are always fixed, hardcoded strings from the two
-   * call sites below, never user input — same injection-safety rule as
+   * table/dateColumn are always fixed, hardcoded strings from the call
+   * site below, never user input — same injection-safety rule as
    * utils/sql.ts's paginatedListQuery.
    */
   async getTrends(): Promise<AdminDashboardTrends> {
-    const [registrationsByDay, checkpointCompletionsByDay, statusRows] = await Promise.all([
+    const [registrationsByDay, statusRows] = await Promise.all([
       dailyCountsLast14Days('registrations', 'created_at'),
-      dailyCountsLast14Days('checkpoint_attendance', 'completed_at', `status = 'COMPLETED'`),
       getPool().query<{ status: string; count: string }>(
         'SELECT status, count(*)::text AS count FROM registrations GROUP BY status',
       ),
@@ -52,7 +50,7 @@ export const reportsRepository = {
       status: r.status,
       count: Number(r.count),
     }));
-    return { registrationsByDay, checkpointCompletionsByDay, registrationsByStatus };
+    return { registrationsByDay, registrationsByStatus };
   },
 
   async getDashboardSummary(): Promise<AdminDashboardSummary> {
@@ -62,9 +60,6 @@ export const reportsRepository = {
       registrationsToday,
       registrationsThisWeek,
       registrationsThisMonth,
-      checkpointCompletions,
-      checkInCount,
-      activeVolunteers,
       certificatesIssued,
       achievementsUnlocked,
       emailsSent,
@@ -76,13 +71,6 @@ export const reportsRepository = {
       count(`SELECT count(*) FROM registrations WHERE created_at >= date_trunc('day', now())`),
       count(`SELECT count(*) FROM registrations WHERE created_at >= date_trunc('week', now())`),
       count(`SELECT count(*) FROM registrations WHERE created_at >= date_trunc('month', now())`),
-      count(`SELECT count(*) FROM checkpoint_attendance WHERE status = 'COMPLETED'`),
-      count(
-        `SELECT count(DISTINCT ca.attendee_id) FROM checkpoint_attendance ca
-         JOIN checkpoints c ON c.id = ca.checkpoint_id
-         WHERE ca.status = 'COMPLETED' AND c.is_required = true`,
-      ),
-      count(`SELECT count(*) FROM volunteers WHERE status = 'ACTIVE'`),
       count(`SELECT count(*) FROM certificates WHERE status = 'ISSUED'`),
       count('SELECT count(*) FROM attendee_achievements'),
       count(`SELECT count(*) FROM email_records WHERE status = 'SENT'`),
@@ -92,9 +80,6 @@ export const reportsRepository = {
       ),
     ]);
 
-    const checkInPercentage =
-      confirmedRegistrations > 0 ? Math.round((checkInCount / confirmedRegistrations) * 1000) / 10 : 0;
-
     const event = eventRow.rows[0];
 
     return {
@@ -103,10 +88,6 @@ export const reportsRepository = {
       registrationsToday,
       registrationsThisWeek,
       registrationsThisMonth,
-      checkpointCompletions,
-      checkInCount,
-      checkInPercentage,
-      activeVolunteers,
       certificatesIssued,
       achievementsUnlocked,
       emailsSent,
@@ -118,37 +99,19 @@ export const reportsRepository = {
   },
 
   async getRecentActivity(): Promise<AdminDashboardRecentActivity> {
-    const [registrationsRows, checkInsRows] = await Promise.all([
-      getPool().query<{
-        id: string;
-        registration_number: string;
-        full_name: string;
-        status: string;
-        created_at: string;
-      }>(
-        `SELECT r.id, r.registration_number, a.full_name, r.status, r.created_at
-         FROM registrations r
-         JOIN attendees a ON a.id = r.attendee_id
-         ORDER BY r.created_at DESC
-         LIMIT ${RECENT_ACTIVITY_LIMIT}`,
-      ),
-      getPool().query<{
-        id: string;
-        attendee_name: string;
-        checkpoint_name: string;
-        volunteer_name: string | null;
-        completed_at: string;
-      }>(
-        `SELECT ca.id, a.full_name AS attendee_name, c.name AS checkpoint_name, v.name AS volunteer_name, ca.completed_at
-         FROM checkpoint_attendance ca
-         JOIN attendees a ON a.id = ca.attendee_id
-         JOIN checkpoints c ON c.id = ca.checkpoint_id
-         LEFT JOIN volunteers v ON v.id = ca.volunteer_id
-         WHERE ca.status = 'COMPLETED'
-         ORDER BY ca.completed_at DESC
-         LIMIT ${RECENT_ACTIVITY_LIMIT}`,
-      ),
-    ]);
+    const registrationsRows = await getPool().query<{
+      id: string;
+      registration_number: string;
+      full_name: string;
+      status: string;
+      created_at: string;
+    }>(
+      `SELECT r.id, r.registration_number, a.full_name, r.status, r.created_at
+       FROM registrations r
+       JOIN attendees a ON a.id = r.attendee_id
+       ORDER BY r.created_at DESC
+       LIMIT ${RECENT_ACTIVITY_LIMIT}`,
+    );
 
     const recentRegistrations: RecentRegistration[] = registrationsRows.rows.map((r) => ({
       id: r.id,
@@ -158,14 +121,6 @@ export const reportsRepository = {
       createdAt: r.created_at,
     }));
 
-    const recentCheckIns: RecentCheckIn[] = checkInsRows.rows.map((r) => ({
-      id: r.id,
-      attendeeName: r.attendee_name,
-      checkpointName: r.checkpoint_name,
-      volunteerName: r.volunteer_name,
-      completedAt: r.completed_at,
-    }));
-
-    return { recentRegistrations, recentCheckIns };
+    return { recentRegistrations };
   },
 };

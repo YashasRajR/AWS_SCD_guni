@@ -38,7 +38,7 @@ export function createApp(): Express {
   );
   app.use(
     cors({
-      origin: [env.PUBLIC_APP_URL, env.VOLUNTEER_APP_URL, env.ADMIN_APP_URL],
+      origin: [env.PUBLIC_APP_URL, env.ADMIN_APP_URL],
       // No `credentials: true` — auth is a Bearer token attached in JS
       // (packages/api-client), never a cookie, so there is nothing
       // cookie-based for the browser to send cross-origin. Setting

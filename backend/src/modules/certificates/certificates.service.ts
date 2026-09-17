@@ -3,8 +3,6 @@ import { certificatesRepository } from './certificates.repository.js';
 import { toCertificate } from './certificates.types.js';
 import { attendeesRepository } from '../attendees/attendees.repository.js';
 import { registrationsService } from '../registrations/registrations.service.js';
-import { checkpointsRepository } from '../checkpoints/checkpoints.repository.js';
-import { eventService } from '../event/event.service.js';
 import { usersService } from '../users/users.service.js';
 import { emailsService } from '../emails/emails.service.js';
 import { AppError } from '../../utils/errors.js';
@@ -55,28 +53,16 @@ export const certificatesService = {
   },
 
   /**
-   * Real eligibility rule (not a stub): the attendee must have a
-   * CONFIRMED registration and at least one recorded checkpoint
-   * attendance — i.e. they actually showed up to something, not just
-   * registered. This is deliberately the minimum bar rather than "all
-   * required checkpoints", so a partial attendee still qualifies for a
-   * PARTICIPATION certificate; SESSION/ACHIEVEMENT-type certificates are
-   * issued at admin discretion on top of this same floor.
+   * Eligibility rule: the attendee must have a CONFIRMED registration.
+   * Attendance/check-in tracking (checkpoints) was removed, so a
+   * confirmed registration is now the only floor for a PARTICIPATION
+   * certificate; SESSION/ACHIEVEMENT-type certificates are issued at
+   * admin discretion on top of this same floor.
    */
   async isEligible(attendeeId: string): Promise<CertificateEligibility> {
     const registration = await registrationsService.getByAttendeeId(attendeeId);
     if (!registration || registration.status !== 'CONFIRMED') {
       return { eligible: false, reason: 'Registration is not confirmed.' };
-    }
-
-    const event = await eventService.getCurrent().catch(() => null);
-    if (!event) {
-      return { eligible: false, reason: 'No active event is configured.' };
-    }
-
-    const completions = await checkpointsRepository.getAttendeeCompletions(attendeeId, event.id);
-    if (completions.length === 0) {
-      return { eligible: false, reason: 'No recorded event attendance yet.' };
     }
 
     return { eligible: true };

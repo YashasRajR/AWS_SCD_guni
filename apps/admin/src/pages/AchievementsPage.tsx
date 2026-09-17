@@ -24,8 +24,6 @@ const fields: FieldDef[] = [
     required: true,
     options: [
       { value: 'MANUAL', label: 'Manual (admin only)' },
-      { value: 'CHECKPOINT_COUNT', label: 'Checkpoint count' },
-      { value: 'FULL_ATTENDANCE', label: 'Full attendance' },
       { value: 'SESSION_COUNT', label: 'Session count' },
     ],
   },

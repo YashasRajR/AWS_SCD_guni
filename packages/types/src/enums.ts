@@ -6,12 +6,10 @@
 
 export const ROLE_NAMES = [
   'ADMIN',
-  'VOLUNTEER',
   'ATTENDEE',
   'SUPER_ADMIN',
   'FINANCE_ADMIN',
   'CONTENT_ADMIN',
-  'VOLUNTEER_MANAGER',
 ] as const;
 export type RoleName = (typeof ROLE_NAMES)[number];
 
@@ -48,16 +46,6 @@ export type QrTokenType = (typeof QR_TOKEN_TYPES)[number];
 export const QR_TOKEN_STATUSES = ['ACTIVE', 'REVOKED'] as const;
 export type QrTokenStatus = (typeof QR_TOKEN_STATUSES)[number];
 
-export const QR_SCAN_RESULTS = [
-  'SUCCESS',
-  'ALREADY_USED',
-  'INVALID',
-  'REVOKED',
-  'CHECKPOINT_INACTIVE',
-  'NOT_ASSIGNED',
-] as const;
-export type QrScanResult = (typeof QR_SCAN_RESULTS)[number];
-
 export const EVENT_STATUSES = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
 export type EventStatus = (typeof EVENT_STATUSES)[number];
 
@@ -73,15 +61,6 @@ export type ContentStatus = (typeof CONTENT_STATUSES)[number];
 export const SESSION_TYPES = ['KEYNOTE', 'TALK', 'WORKSHOP', 'PANEL', 'BREAK'] as const;
 export type SessionType = (typeof SESSION_TYPES)[number];
 
-export const CHECKPOINT_ATTENDANCE_STATUSES = ['COMPLETED', 'REVERSED'] as const;
-export type CheckpointAttendanceStatus = (typeof CHECKPOINT_ATTENDANCE_STATUSES)[number];
-
-export const VOLUNTEER_STATUSES = ['ACTIVE', 'INACTIVE'] as const;
-export type VolunteerStatus = (typeof VOLUNTEER_STATUSES)[number];
-
-export const ASSIGNMENT_STATUSES = ['ACTIVE', 'REVOKED'] as const;
-export type AssignmentStatus = (typeof ASSIGNMENT_STATUSES)[number];
-
 export const CERTIFICATE_STATUSES = ['ISSUED', 'REVOKED'] as const;
 export type CertificateStatus = (typeof CERTIFICATE_STATUSES)[number];
 
@@ -89,9 +68,7 @@ export const CERTIFICATE_TYPES = ['PARTICIPATION', 'SESSION', 'ACHIEVEMENT'] as 
 export type CertificateType = (typeof CERTIFICATE_TYPES)[number];
 
 export const ACHIEVEMENT_CONDITION_TYPES = [
-  'CHECKPOINT_COUNT',
   'SESSION_COUNT',
-  'FULL_ATTENDANCE',
   'MANUAL',
 ] as const;
 export type AchievementConditionType = (typeof ACHIEVEMENT_CONDITION_TYPES)[number];

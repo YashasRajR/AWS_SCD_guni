@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "AWS Student Community Day 2026 — event platform monorepo (public web, volunteer portal, admin portal, backend API).",
+  "description": "AWS Student Community Day 2026 — event platform monorepo (public web, admin portal, backend API).",
   "workspaces": [
     "apps/*",
     "packages/*",
@@ -16,8 +16,7 @@
   "scripts": {
     "dev": "npm run dev --workspace=backend",
     "dev:web": "npm run dev --workspace=apps/web",
-    "dev:volunteer": "npm run dev --workspace=apps/volunteer",
-    "dev:admin": "npm run dev --workspace=apps/admin",
+      "dev:admin": "npm run dev --workspace=apps/admin",
     "dev:backend": "npm run dev --workspace=backend",
     "build": "npm run build --workspaces --if-present",
     "lint": "eslint . --max-warnings=0",

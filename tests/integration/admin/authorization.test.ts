@@ -28,23 +28,6 @@ describe('Role- and permission-based authorization', () => {
     expect(res.body.error.code).toBe('FORBIDDEN');
   });
 
-  it('rejects a VOLUNTEER calling an admin-only route', async () => {
-    const token = await tokenFor('volunteer@dev.local', 'DevPassw0rd!');
-    const res = await getTestAgent()
-      .get('/api/v1/admin/dashboard')
-      .set('Authorization', `Bearer ${token}`);
-    expect(res.status).toBe(403);
-  });
-
-  it('rejects an ATTENDEE calling a volunteer-only route', async () => {
-    const { email } = await registerTestAttendee('authz-attendee-vol');
-    const token = await tokenFor(email, 'TestPassw0rd!');
-    const res = await getTestAgent()
-      .get('/api/v1/volunteer/me')
-      .set('Authorization', `Bearer ${token}`);
-    expect(res.status).toBe(403);
-  });
-
   it('allows an ADMIN through, with the expected dashboard shape', async () => {
     const token = await tokenFor('admin@dev.local', 'DevPassw0rd!');
     const res = await getTestAgent()
@@ -52,7 +35,6 @@ describe('Role- and permission-based authorization', () => {
       .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveProperty('totalRegistrations');
-    expect(res.body.data).toHaveProperty('checkpointCompletions');
   });
 
   it('rejects a request with a garbage bearer token', async () => {

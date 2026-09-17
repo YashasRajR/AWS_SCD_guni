@@ -1,7 +1,6 @@
-import type { QrScanResult, QrTokenStatus, QrTokenType, RegistrationStatus, TicketStatus } from './enums.js';
+import type { QrTokenStatus, QrTokenType, RegistrationStatus, TicketStatus } from './enums.js';
 import type { TicketPlan } from './event-content.js';
 import type { Coupon } from './coupons.js';
-import type { AttendeeCheckpointProgress } from './checkpoints.js';
 import type { AuditLog } from './identity.js';
 import type { EmailRecord } from './engagement.js';
 
@@ -44,7 +43,6 @@ export interface AttendeeDetail {
   registration: Registration | null;
   ticket: Ticket | null;
   qrTokens: QrToken[];
-  checkpointProgress: AttendeeCheckpointProgress[];
   activityHistory: AuditLog[];
   /** Ticket email delivery status (spec #35) -- so an admin never
    * has to search the attendee's inbox to know whether a document email
@@ -94,15 +92,4 @@ export interface QrToken {
   revokedAt: string | null;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface QrScanLog {
-  id: string;
-  qrTokenId: string | null;
-  type: QrTokenType;
-  volunteerId: string | null;
-  checkpointId: string | null;
-  attendeeId: string | null;
-  result: QrScanResult;
-  createdAt: string;
 }

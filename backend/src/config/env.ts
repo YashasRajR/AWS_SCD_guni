@@ -22,7 +22,6 @@ const envSchema = z.object({
   EMAIL_VERIFICATION_TOKEN_TTL: z.string().default('24h'),
 
   PUBLIC_APP_URL: z.string().url().default('http://localhost:5173'),
-  VOLUNTEER_APP_URL: z.string().url().default('http://localhost:5174'),
   ADMIN_APP_URL: z.string().url().default('http://localhost:5175'),
 
   // SMTP is the free/self-hostable choice (works with a Gmail app password,
@@ -48,7 +47,7 @@ const envSchema = z.object({
   // -- see integrations/storage/local-storage.ts. UPLOAD_DIR is resolved
   // relative to the backend process's cwd; PUBLIC_API_URL is the origin
   // uploaded files are served from, so a stored URL still resolves from
-  // apps on other origins (web/volunteer), not just the admin app.
+  // apps on other origins (web), not just the admin app.
   UPLOAD_DIR: z.string().optional().default('uploads'),
   PUBLIC_API_URL: z.string().url().default('http://localhost:4000'),
   UPLOAD_MAX_BYTES: z.coerce.number().int().positive().default(5 * 1024 * 1024),

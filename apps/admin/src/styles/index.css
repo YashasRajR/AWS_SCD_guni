@@ -446,7 +446,7 @@ textarea {
   font-weight: 600;
   cursor: pointer;
   /* Admin is dense operational software (fine to be denser than the
-     public/volunteer apps) but primary actions still need a real tap
+     public web app) but primary actions still need a real tap
      target -- phase 6 rule 40 targets ~44px for important controls. */
   min-height: 44px;
 }

@@ -21,7 +21,7 @@ export function MyAchievementsPage() {
         <div className="empty-state">
           <p>No achievements unlocked yet.</p>
           <p className="status-line">
-            Complete event checkpoints and activities to earn achievements.
+            Complete event activities to earn achievements.
           </p>
         </div>
       )}

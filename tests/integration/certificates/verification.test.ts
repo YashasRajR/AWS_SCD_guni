@@ -5,20 +5,18 @@ import {
   registerAndCreatePendingRegistration,
 } from '../../fixtures/test-app.js';
 
-async function tokenFor(role: 'admin' | 'volunteer'): Promise<string> {
-  const [email, password] =
-    role === 'admin' ? ['admin@dev.local', 'DevPassw0rd!'] : ['volunteer@dev.local', 'DevPassw0rd!'];
-  const res = await loginAs(email, password);
+async function tokenFor(): Promise<string> {
+  const res = await loginAs('admin@dev.local', 'DevPassw0rd!');
   return res.body.data.accessToken as string;
 }
 
-async function findAttendeeIdByFullName(volunteerToken: string, fullName: string): Promise<string> {
+async function findAttendeeIdByFullName(adminToken: string, fullName: string): Promise<string> {
   const res = await getTestAgent()
-    .get('/api/v1/volunteer/attendees/search')
-    .query({ q: fullName })
-    .set('Authorization', `Bearer ${volunteerToken}`);
-  const match = res.body.data.find((a: { fullName: string }) => a.fullName === fullName);
-  if (!match) throw new Error(`Attendee "${fullName}" not found via volunteer search`);
+    .get('/api/v1/admin/attendees')
+    .query({ search: fullName, pageSize: 50 })
+    .set('Authorization', `Bearer ${adminToken}`);
+  const match = res.body.data.items.find((a: { fullName: string }) => a.fullName === fullName);
+  if (!match) throw new Error(`Attendee "${fullName}" not found via admin search`);
   return match.id;
 }
 
@@ -37,8 +35,7 @@ describe('Certificate verification (public)', () => {
   });
 
   it('issues, verifies, then revokes a certificate end to end, without leaking attendee contact info', async () => {
-    const admin = await tokenFor('admin');
-    const volunteer = await tokenFor('volunteer');
+    const admin = await tokenFor();
     const { registrationId } = await registerAndCreatePendingRegistration('cert-flow');
     const fullName = 'Test Attendee cert-flow';
 
@@ -47,20 +44,7 @@ describe('Certificate verification (public)', () => {
       .set('Authorization', `Bearer ${admin}`)
       .send({ status: 'CONFIRMED' });
 
-    const attendeeId = await findAttendeeIdByFullName(volunteer, fullName);
-
-    const checkpoints = await getTestAgent()
-      .get('/api/v1/admin/checkpoints')
-      .query({ page: 1, pageSize: 50 })
-      .set('Authorization', `Bearer ${admin}`);
-    const registrationCheckpoint = checkpoints.body.data.items.find(
-      (c: { name: string }) => c.name === 'Registration',
-    );
-
-    await getTestAgent()
-      .post('/api/v1/volunteer/checkpoints/complete')
-      .set('Authorization', `Bearer ${volunteer}`)
-      .send({ checkpointId: registrationCheckpoint.id, attendeeId });
+    const attendeeId = await findAttendeeIdByFullName(admin, fullName);
 
     const issued = await getTestAgent()
       .post('/api/v1/admin/certificates')
@@ -84,17 +68,12 @@ describe('Certificate verification (public)', () => {
     expect(afterRevoke.body.data.valid).toBe(false);
   });
 
-  it('refuses to issue a certificate to an attendee who has not attended anything', async () => {
-    const admin = await tokenFor('admin');
-    const volunteer = await tokenFor('volunteer');
+  it('refuses to issue a certificate to an attendee without a confirmed registration', async () => {
+    const admin = await tokenFor();
     const { registrationId } = await registerAndCreatePendingRegistration('cert-ineligible');
+    void registrationId; // left PENDING on purpose
     const fullName = 'Test Attendee cert-ineligible';
-
-    await getTestAgent()
-      .patch(`/api/v1/admin/registrations/${registrationId}/status`)
-      .set('Authorization', `Bearer ${admin}`)
-      .send({ status: 'CONFIRMED' });
-    const attendeeId = await findAttendeeIdByFullName(volunteer, fullName);
+    const attendeeId = await findAttendeeIdByFullName(admin, fullName);
 
     const res = await getTestAgent()
       .post('/api/v1/admin/certificates')

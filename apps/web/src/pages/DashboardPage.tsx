@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import type {
   Attendee,
   Certificate,
-  Checkpoint,
   EventConfig,
   PublicUser,
   Registration,
@@ -18,12 +17,6 @@ import { useDocumentHead } from '../lib/seo.js';
 interface MeData {
   user: PublicUser;
   attendee: Attendee | null;
-}
-
-interface ProgressItem {
-  checkpoint: Checkpoint;
-  completed: boolean;
-  completedAt: string | null;
 }
 
 /** Shared "this section failed to load" fallback — every dashboard card renders
@@ -72,12 +65,6 @@ export function DashboardPage() {
     reload: reloadTicket,
   } = useResource<Ticket>('/me/ticket', Boolean(registration));
   const {
-    items: progress,
-    loading: progressLoading,
-    error: progressError,
-    reload: reloadProgress,
-  } = useResource<ProgressItem>('/me/progress');
-  const {
     items: certificates,
     loading: certificatesLoading,
     error: certificatesError,
@@ -97,8 +84,6 @@ export function DashboardPage() {
   // never shown once the event has already happened.
   const firstName = me?.attendee?.fullName.split(' ')[0];
   const daysToGo = event ? Math.ceil((new Date(event.eventDate).getTime() - Date.now()) / 86400000) : null;
-
-  const completedCount = progress.filter((p) => p.completed).length;
 
   useDocumentHead({ title: 'My Dashboard' });
 
@@ -179,36 +164,6 @@ export function DashboardPage() {
             <p className="status-line">
               Your ticket will appear here once your registration is confirmed.
             </p>
-          )}
-        </section>
-
-        <section className="dashboard-card">
-          <h2>Checkpoint progress</h2>
-          {progressLoading ? (
-            <p className="status-line">Loading…</p>
-          ) : progressError ? (
-            <SectionError message={progressError} onRetry={reloadProgress} />
-          ) : progress.length === 0 ? (
-            <p className="status-line">Checkpoints haven&apos;t been set up yet.</p>
-          ) : (
-            <>
-              <div className="progress-bar">
-                <div
-                  className="progress-bar-fill"
-                  style={{ width: `${progress.length ? (completedCount / progress.length) * 100 : 0}%` }}
-                />
-              </div>
-              <p className="status-line">
-                {completedCount} of {progress.length} completed
-              </p>
-              <ul className="checkpoint-list">
-                {progress.map((p) => (
-                  <li key={p.checkpoint.id} className={p.completed ? 'checkpoint-done' : ''}>
-                    <span>{p.completed ? '✓' : '○'}</span> {p.checkpoint.name}
-                  </li>
-                ))}
-              </ul>
-            </>
           )}
         </section>
 

@@ -26,16 +26,6 @@ export default defineConfig({
       },
     },
     {
-      name: 'volunteer',
-      testMatch: 'volunteer.spec.ts',
-      use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:5174' },
-      webServer: {
-        command: 'npm run dev -w apps/volunteer',
-        url: 'http://localhost:5174',
-        reuseExistingServer: !process.env.CI,
-      },
-    },
-    {
       name: 'admin',
       testMatch: 'admin.spec.ts',
       use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:5175' },

@@ -5,7 +5,6 @@ describe('ROLE_PERMISSION_SEED — SUPER_ADMIN boundary', () => {
   it('grants MANAGE_ROLES only to SUPER_ADMIN', () => {
     expect(ROLE_PERMISSION_SEED.SUPER_ADMIN).toContain(PERMISSIONS.MANAGE_ROLES);
     expect(ROLE_PERMISSION_SEED.ADMIN).not.toContain(PERMISSIONS.MANAGE_ROLES);
-    expect(ROLE_PERMISSION_SEED.VOLUNTEER).not.toContain(PERMISSIONS.MANAGE_ROLES);
     expect(ROLE_PERMISSION_SEED.ATTENDEE).not.toContain(PERMISSIONS.MANAGE_ROLES);
   });
 
@@ -27,11 +26,7 @@ describe('ROLE_PERMISSION_SEED — SUPER_ADMIN boundary', () => {
     }
   });
 
-  it('VOLUNTEER and ATTENDEE grants are unchanged', () => {
-    expect(ROLE_PERMISSION_SEED.VOLUNTEER).toEqual([
-      PERMISSIONS.VIEW_ATTENDEE,
-      PERMISSIONS.COMPLETE_CHECKPOINT,
-    ]);
+  it('ATTENDEE grants are unchanged', () => {
     expect(ROLE_PERMISSION_SEED.ATTENDEE).toEqual([]);
   });
 });

@@ -1,7 +1,6 @@
 import type { Achievement, AttendeeAchievement, PaginatedData } from '@scd/types';
 import { achievementsRepository } from './achievements.repository.js';
 import { toAchievement, toAttendeeAchievement } from './achievements.types.js';
-import { checkpointsRepository } from '../checkpoints/checkpoints.repository.js';
 import { AppError } from '../../utils/errors.js';
 import { logger } from '../../utils/logger.js';
 
@@ -113,31 +112,7 @@ export const achievementsService = {
     attendeeId: string,
     achievement: { condition_type: string; condition_config: Record<string, unknown> | null },
   ): Promise<boolean> {
-    const config = achievement.condition_config ?? {};
-
     switch (achievement.condition_type) {
-      case 'CHECKPOINT_COUNT': {
-        const minCount = Number((config as { minCount?: number }).minCount ?? 1);
-        const completions = await checkpointsRepository.getAttendeeCompletions(
-          attendeeId,
-          // If config specifies an event_id, use it; otherwise check all
-          // (null, not '' -- eventId is a uuid column and '' fails to parse).
-          (config as { eventId?: string }).eventId ?? null,
-        );
-        return completions.length >= minCount;
-      }
-
-      case 'FULL_ATTENDANCE': {
-        const eventId = (config as { eventId?: string }).eventId;
-        if (!eventId) return false;
-        const checkpoints = await checkpointsRepository.listByEvent(eventId);
-        const requiredCheckpoints = checkpoints.filter((c) => c.is_required);
-        if (requiredCheckpoints.length === 0) return false;
-        const completions = await checkpointsRepository.getAttendeeCompletions(attendeeId, eventId);
-        const completedIds = new Set(completions.map((c) => c.checkpoint_id));
-        return requiredCheckpoints.every((c) => completedIds.has(c.id));
-      }
-
       case 'MANUAL':
         // Manual achievements are never auto-evaluated — only granted by admin
         return false;

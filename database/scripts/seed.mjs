@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Development seed data. Creates the event, roles/permissions, the default
-// checkpoints, and a small set of CLEARLY FAKE dev accounts. Idempotent —
+// a small set of CLEARLY FAKE dev accounts. Idempotent —
 // safe to run more than once (uses ON CONFLICT upserts).
 import bcrypt from 'bcryptjs';
 import { createPool } from './db.mjs';
@@ -19,10 +19,7 @@ const PERMISSIONS = [
   'MANAGE_VENUES',
   'MANAGE_FAQ',
   'MANAGE_ANNOUNCEMENTS',
-  'MANAGE_CHECKPOINTS',
-  'COMPLETE_CHECKPOINT',
   'MANAGE_QR_TOKENS',
-  'MANAGE_VOLUNTEERS',
   'MANAGE_CERTIFICATES',
   'MANAGE_ACHIEVEMENTS',
   'VIEW_REPORTS',
@@ -35,7 +32,6 @@ const ROLE_PERMISSIONS = {
   // MANAGE_ROLES (granting/revoking roles) is SUPER_ADMIN-exclusive.
   SUPER_ADMIN: PERMISSIONS,
   ADMIN: PERMISSIONS.filter((code) => code !== 'MANAGE_ROLES'),
-  VOLUNTEER: ['VIEW_ATTENDEE', 'COMPLETE_CHECKPOINT'],
   ATTENDEE: [],
   // Narrower admin roles (spec #43) — keep in sync with
   // packages/constants/src/permissions.ts ROLE_PERMISSION_SEED.
@@ -50,24 +46,9 @@ const ROLE_PERMISSIONS = {
     'MANAGE_ANNOUNCEMENTS',
     'MANAGE_SETTINGS',
   ],
-  VOLUNTEER_MANAGER: [
-    'VIEW_ATTENDEE',
-    'MANAGE_VOLUNTEERS',
-    'MANAGE_CHECKPOINTS',
-    'MANAGE_QR_TOKENS',
-    'COMPLETE_CHECKPOINT',
-  ],
 };
 
 const DEV_PASSWORD = 'DevPassw0rd!'; // clearly-fake dev-only password for every seeded account
-
-const CHECKPOINTS = [
-  { name: 'Registration', displayOrder: 1, isRequired: true },
-  { name: 'Breakfast', displayOrder: 2, isRequired: false },
-  { name: 'Lunch', displayOrder: 3, isRequired: false },
-  { name: 'High Tea', displayOrder: 4, isRequired: false },
-  { name: 'Goodies', displayOrder: 5, isRequired: false },
-];
 
 async function upsertUser(client, { email, roleName, fullName }) {
   const passwordHash = await bcrypt.hash(DEV_PASSWORD, 10);
@@ -109,11 +90,9 @@ async function main() {
     for (const name of [
       'SUPER_ADMIN',
       'ADMIN',
-      'VOLUNTEER',
       'ATTENDEE',
       'FINANCE_ADMIN',
       'CONTENT_ADMIN',
-      'VOLUNTEER_MANAGER',
     ]) {
       await client.query(
         `INSERT INTO roles (name, description) VALUES ($1, $2)
@@ -193,28 +172,9 @@ async function main() {
        ON CONFLICT (UPPER(code)) DO NOTHING`,
     );
 
-    // --- Checkpoints (seed data only — never hard-coded into app logic) ---
-    for (const cp of CHECKPOINTS) {
-      await client.query(
-        `INSERT INTO checkpoints (event_id, name, display_order, is_required)
-         VALUES ($1, $2, $3, $4)
-         ON CONFLICT (event_id, name) DO NOTHING`,
-        [eventId, cp.name, cp.displayOrder, cp.isRequired],
-      );
-    }
-
     // --- Dev users (CLEARLY FAKE — never real people) ----------------------
     await upsertUser(client, { email: 'superadmin@dev.local', roleName: 'SUPER_ADMIN' });
     await upsertUser(client, { email: 'admin@dev.local', roleName: 'ADMIN' });
-    const volunteerUserId = await upsertUser(client, {
-      email: 'volunteer@dev.local',
-      roleName: 'VOLUNTEER',
-    });
-    await client.query(
-      `INSERT INTO volunteers (user_id, name) VALUES ($1, $2)
-       ON CONFLICT (user_id) DO NOTHING`,
-      [volunteerUserId, 'Dev Volunteer'],
-    );
     await upsertUser(client, {
       email: 'attendee1@dev.local',
       roleName: 'ATTENDEE',
@@ -227,21 +187,6 @@ async function main() {
     });
     await upsertUser(client, { email: 'finance@dev.local', roleName: 'FINANCE_ADMIN' });
     await upsertUser(client, { email: 'content@dev.local', roleName: 'CONTENT_ADMIN' });
-    await upsertUser(client, { email: 'volunteermgr@dev.local', roleName: 'VOLUNTEER_MANAGER' });
-
-    // Assign the dev volunteer to the Registration checkpoint.
-    const volunteerRow = await client.query('SELECT id FROM volunteers WHERE user_id = $1', [
-      volunteerUserId,
-    ]);
-    const registrationCheckpoint = await client.query(
-      `SELECT id FROM checkpoints WHERE event_id = $1 AND name = 'Registration'`,
-      [eventId],
-    );
-    await client.query(
-      `INSERT INTO volunteer_checkpoint_assignments (volunteer_id, checkpoint_id)
-       VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-      [volunteerRow.rows[0].id, registrationCheckpoint.rows[0].id],
-    );
 
     await client.query('COMMIT');
     console.log('Seed complete.');
@@ -249,12 +194,10 @@ async function main() {
     console.log('  Dev accounts (password for all: DevPassw0rd!):');
     console.log('    superadmin@dev.local  (SUPER_ADMIN)');
     console.log('    admin@dev.local       (ADMIN)');
-    console.log('    volunteer@dev.local   (VOLUNTEER, assigned to Registration checkpoint)');
     console.log('    attendee1@dev.local   (ATTENDEE)');
     console.log('    attendee2@dev.local   (ATTENDEE)');
     console.log('    finance@dev.local     (FINANCE_ADMIN)');
     console.log('    content@dev.local     (CONTENT_ADMIN)');
-    console.log('    volunteermgr@dev.local (VOLUNTEER_MANAGER)');
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;
