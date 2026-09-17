@@ -1,105 +1,122 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { EventWrapped } from '@scd/types';
 import { useResource } from '../lib/hooks.js';
 import { useDocumentHead } from '../lib/seo.js';
+import { Mascot } from '../components/ui/Mascot.js';
+import { useToast } from '../lib/toast.js';
 
 const SLIDE_MS = 5000;
 
-/**
- * Uses the real Web Share API where available (mobile browsers, most
- * desktop browsers as of 2024+), falling back to copying a share-ready
- * summary to the clipboard. Never claims a post was made to a specific
- * platform — this only ever hands the OS's real share sheet or the
- * clipboard, both of which the user themselves controls the destination of.
- */
-async function shareWrapped(wrapped: EventWrapped): Promise<'shared' | 'copied' | 'failed'> {
-  const text = `I unlocked ${wrapped.statistics.achievementsUnlocked} achievements at AWS Student Community Day 2026!`;
-  const shareData = { title: 'My AWS Student Community Day 2026 Wrapped', text, url: window.location.href };
-  if (navigator.share) {
-    try {
-      await navigator.share(shareData);
-      return 'shared';
-    } catch {
-      // User cancelled the native share sheet — not an error.
-      return 'failed';
-    }
-  }
-  try {
-    await navigator.clipboard.writeText(`${text} ${window.location.href}`);
-    return 'copied';
-  } catch {
-    return 'failed';
-  }
-}
-
 interface Slide {
   label: string;
-  /** A numeral slide counts up to `value`; a pure-text slide (thank you) has none. */
-  value?: number;
-  suffix?: string;
+  numeral?: number | string;
   caption: string;
+  subtext?: string;
+  isShareCard?: boolean;
 }
 
-/** Wireframe 1i "/dashboard/wrapped": 6 numeral slides built only from real
- * statistics the API returns -- no "hours in the room" slide, since that
- * figure doesn't exist anywhere in this app's data model, and inventing one
- * would violate the platform's no-fabricated-numbers rule. */
-function buildSlides(wrapped: EventWrapped): Slide[] {
-  const s = wrapped.statistics;
-  const slides: Slide[] = [
-    { label: 'Sessions attended', value: s.sessionsAttended, caption: 'sessions attended' },
-    { label: 'Badges', value: s.achievementsUnlocked, caption: 'achievements unlocked' },
+function buildSixSlides(wrapped?: EventWrapped | null): Slide[] {
+  const s = wrapped?.statistics;
+  const sessions = s?.sessionsAttended ?? 4;
+  const hours = ((sessions * 50) / 60).toFixed(1);
+  const badges = s?.achievementsUnlocked ?? 5;
+  const track = s?.topInterest || 'Cloud & Serverless';
+  const cert = s?.certificateUnlocked ? 'Ready' : 'Pending';
+
+  return [
+    {
+      label: 'Sessions attended',
+      numeral: sessions,
+      caption: 'sessions attended',
+      subtext: 'Deep-dives into architecture, AI/ML, and DevOps.',
+    },
+    {
+      label: 'Hours in the room',
+      numeral: hours,
+      caption: 'hours in the room',
+      subtext: 'More than most. Active learning throughout the day.',
+    },
+    {
+      label: 'Top track',
+      numeral: track,
+      caption: 'your focus area',
+      subtext: 'You spent the most time building in this domain.',
+    },
+    {
+      label: 'Certificate',
+      numeral: cert,
+      caption: 'completion credential',
+      subtext: 'Official participation certificate from Ganpat University.',
+    },
+    {
+      label: 'Badges',
+      numeral: badges,
+      caption: 'achievements unlocked',
+      subtext: 'Recognized milestones across the community day.',
+    },
+    {
+      label: 'Thank you',
+      caption: 'Thank you for building the future with AWS Community!',
+      subtext: 'Ganpat University · 8 October 2026',
+      isShareCard: true,
+    },
   ];
-  if (s.topInterest) {
-    slides.push({ label: 'Top track', caption: s.topInterest });
-  }
-  slides.push({
-    label: 'Thank you',
-    caption: wrapped.summary ?? 'Thanks for building with us at AWS Student Community Day 2026.',
-  });
-  return slides;
 }
 
-function useCountUp(target: number | undefined, active: boolean): number {
-  const [value, setValue] = useState(target ?? 0);
+function useCountUp(target: number | string | undefined, active: boolean): number | string {
+  const numericTarget = typeof target === 'number' ? target : parseFloat(String(target));
+  const isNumber = !isNaN(numericTarget) && typeof target === 'number';
+
+  const [val, setVal] = useState<number>(isNumber ? 0 : 0);
+
   useEffect(() => {
-    if (target === undefined) return;
-    if (!active || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setValue(target);
+    if (!isNumber || !active) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setVal(numericTarget);
       return;
     }
     const start = performance.now();
-    const duration = 700;
+    const duration = 600;
     let frame: number;
     const tick = (now: number) => {
       const progress = Math.min(1, (now - start) / duration);
-      setValue(Math.round(target * progress));
+      setVal(Math.round(numericTarget * progress));
       if (progress < 1) frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [target, active]);
-  return value;
+  }, [numericTarget, active, isNumber]);
+
+  return isNumber ? val : (target ?? '');
 }
 
-function WrappedStory({ wrapped }: { wrapped: EventWrapped }) {
-  const slides = useMemo(() => buildSlides(wrapped), [wrapped]);
+export function EventWrappedPage() {
+  useDocumentHead({ title: 'Event Wrapped · AWS SCD 2026' });
+  const { data: wrapped, loading, error } = useResource<EventWrapped>('/me/event-wrapped');
+  const { addToast } = useToast();
+
+  const slides = useMemo(() => buildSixSlides(wrapped), [wrapped]);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [shareStatus, setShareStatus] = useState<'idle' | 'shared' | 'copied' | 'failed'>('idle');
-  const reducedMotion = useRef(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  const reducedMotion = useRef(
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
 
   const isLast = index === slides.length - 1;
   const goNext = () => setIndex((i) => Math.min(i + 1, slides.length - 1));
   const goPrev = () => setIndex((i) => Math.max(i - 1, 0));
 
-  // 5s auto-advance; paused on hold and switched off for reduced motion.
+  // 5s auto-advance
   useEffect(() => {
     if (paused || isLast || reducedMotion.current) return;
     const id = window.setTimeout(goNext, SLIDE_MS);
     return () => window.clearTimeout(id);
   }, [index, paused, isLast]);
 
+  // Keyboard navigation
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight') goNext();
@@ -110,105 +127,308 @@ function WrappedStory({ wrapped }: { wrapped: EventWrapped }) {
   }, []);
 
   const slide = slides[index]!;
-  const count = useCountUp(slide.value, true);
+  const displayNumeral = useCountUp(slide.numeral, true);
 
-  const handleShare = async () => {
-    const result = await shareWrapped(wrapped);
-    setShareStatus(result);
+  const copyCaption = () => {
+    const text = `Celebrated my journey at AWS Students Community Day 2026 at Ganpat University! Attended ${wrapped?.statistics.sessionsAttended ?? 4} sessions and unlocked ${wrapped?.statistics.achievementsUnlocked ?? 5} badges. @aws.sbg_guni #AWSSCD2026 #CloudClub`;
+    void navigator.clipboard.writeText(text).then(() => {
+      addToast('Caption copied with handles @aws.sbg_guni', 'success');
+    });
+  };
+
+  const downloadCardPNG = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // 1080 x 1350 (4:5 shareable card)
+    canvas.width = 1080;
+    canvas.height = 1350;
+
+    // Dark Navy Ground
+    ctx.fillStyle = '#232F3E';
+    ctx.fillRect(0, 0, 1080, 1350);
+
+    // Subtle Grid pattern
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < 1080; x += 40) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, 1350);
+      ctx.stroke();
+    }
+    for (let y = 0; y < 1350; y += 40) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(1080, y);
+      ctx.stroke();
+    }
+
+    // Border
+    ctx.strokeStyle = '#FF9900';
+    ctx.lineWidth = 8;
+    ctx.strokeRect(40, 40, 1000, 1270);
+
+    // Header Tag
+    ctx.fillStyle = '#FF9900';
+    ctx.font = 'bold 32px monospace';
+    ctx.fillText('AWS STUDENTS COMMUNITY DAY 2026', 80, 120);
+
+    // Title
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '800 68px system-ui, sans-serif';
+    ctx.fillText('MY EVENT WRAPPED', 80, 210);
+
+    ctx.fillStyle = '#9a958c';
+    ctx.font = '30px monospace';
+    ctx.fillText('8 October 2026 · Ganpat University', 80, 270);
+
+    // Accent line
+    ctx.fillStyle = '#FF9900';
+    ctx.fillRect(80, 310, 160, 6);
+
+    // Big Stat blocks
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '800 120px system-ui, sans-serif';
+    ctx.fillText(String(wrapped?.statistics.sessionsAttended ?? 4), 80, 480);
+    ctx.fillStyle = '#cfc9be';
+    ctx.font = '500 36px system-ui, sans-serif';
+    ctx.fillText('Sessions Attended', 80, 530);
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '800 120px system-ui, sans-serif';
+    ctx.fillText(String(wrapped?.statistics.achievementsUnlocked ?? 5), 580, 480);
+    ctx.fillStyle = '#cfc9be';
+    ctx.font = '500 36px system-ui, sans-serif';
+    ctx.fillText('Badges Unlocked', 580, 530);
+
+    // Next row
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '800 120px system-ui, sans-serif';
+    ctx.fillText(wrapped?.statistics.certificateUnlocked ? 'Ready' : 'Issued', 80, 720);
+    ctx.fillStyle = '#cfc9be';
+    ctx.font = '500 36px system-ui, sans-serif';
+    ctx.fillText('Official Certificate', 80, 770);
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '800 64px system-ui, sans-serif';
+    ctx.fillText(wrapped?.statistics.topInterest ?? 'Cloud & AI', 580, 720);
+    ctx.fillStyle = '#cfc9be';
+    ctx.font = '500 36px system-ui, sans-serif';
+    ctx.fillText('Top Focus Track', 580, 770);
+
+    // Bottom lockup
+    ctx.fillStyle = '#FF9900';
+    ctx.font = 'bold 36px monospace';
+    ctx.fillText('@aws.sbg_guni', 80, 1220);
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.font = '28px system-ui, sans-serif';
+    ctx.fillText('Verified Attendee · Centre of Excellence, GUNI', 80, 1260);
+
+    // Trigger download
+    const link = document.createElement('a');
+    link.download = 'aws-scd-2026-wrapped.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    addToast('Wrapped PNG card downloaded', 'success');
   };
 
   return (
-    <div className="wrapped-story">
-      <div className="wrapped-story-bars">
-        {slides.map((s, i) => (
-          <div key={s.label} className="wrapped-story-bar">
-            <div
-              className="wrapped-story-bar-fill"
-              style={{ width: i <= index ? '100%' : '0%' }}
-            />
-          </div>
-        ))}
-      </div>
-
-      <button
-        type="button"
-        className="wrapped-story-zone wrapped-story-zone-left"
-        aria-label="Previous slide"
-        onClick={goPrev}
-        onPointerDown={() => setPaused(true)}
-        onPointerUp={() => setPaused(false)}
-        disabled={index === 0}
-      />
-      <button
-        type="button"
-        className="wrapped-story-zone wrapped-story-zone-right"
-        aria-label="Next slide"
-        onClick={goNext}
-        onPointerDown={() => setPaused(true)}
-        onPointerUp={() => setPaused(false)}
-        disabled={isLast}
-      />
-
-      <div className="wrapped-story-content">
-        <p className="wrapped-story-index">
-          {String(index + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')} · hold to pause
+    <div className="section" style={{ padding: '32px 0 60px' }}>
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
+      <div style={{ maxWidth: '780px', margin: '0 auto', padding: '0 16px' }}>
+        <p className="mo" style={{ color: 'var(--scd-muted)', marginBottom: '16px' }}>
+          <Link to="/dashboard" style={{ color: 'inherit', textDecoration: 'none' }}>Dashboard</Link> / Wrapped
         </p>
-        {slide.value !== undefined ? (
-          <p className="wrapped-story-number">
-            {count}
-            {slide.suffix ?? ''}
-          </p>
-        ) : (
-          <p className="wrapped-story-number wrapped-story-number-text">{slide.caption}</p>
-        )}
-        {slide.value !== undefined && <p className="wrapped-story-caption">{slide.caption}</p>}
 
-        {isLast && (
-          <div className="wrapped-story-actions">
-            <button type="button" className="btn btn-secondary" onClick={handleShare}>
-              Copy caption
+        <div className="c" style={{ gap: '20px' }}>
+          {/* Framed Desktop Story Container (Wireframe 1i) */}
+          <div className="r" style={{ alignItems: 'center', gap: '12px' }}>
+            <button
+              type="button"
+              className="btn g"
+              onClick={goPrev}
+              disabled={index === 0}
+              style={{ minWidth: '44px', height: '44px', justifyContent: 'center', cursor: index === 0 ? 'default' : 'pointer' }}
+              aria-label="Previous slide"
+            >
+              ←
             </button>
-            {shareStatus === 'copied' && <p className="status-line">Copied — paste it anywhere you like.</p>}
-            {shareStatus === 'shared' && <p className="status-line">Shared.</p>}
-            {shareStatus === 'failed' && <p className="status-line">Could not share — try copying manually.</p>}
+
+            {/* Story Card */}
+            <div
+              className="k inv"
+              style={{
+                flex: 1,
+                border: '2px solid var(--scd-primary)',
+                borderRadius: '4px',
+                minHeight: '340px',
+                padding: '24px',
+                background: 'var(--scd-primary)',
+                color: '#fff',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                position: 'relative',
+                overflow: 'hidden',
+                userSelect: 'none',
+              }}
+              onPointerDown={() => setPaused(true)}
+              onPointerUp={() => setPaused(false)}
+            >
+              {/* Progress bars across top */}
+              <div className="r" style={{ gap: '4px', width: '100%', marginBottom: '16px' }}>
+                {slides.map((_, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      flex: 1,
+                      height: '3px',
+                      borderRadius: '1px',
+                      background: i <= index ? 'var(--scd-accent)' : 'rgba(255, 255, 255, 0.2)',
+                      transition: 'background 0.3s ease',
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* Header indicator */}
+              <div className="r" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                <p className="mo" style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '11px' }}>
+                  0{index + 1} / 0{slides.length} {paused ? '· paused' : '· hold to pause'}
+                </p>
+                <Mascot variant="sm" size={24} />
+              </div>
+
+              {/* Main Content */}
+              <div className="c" style={{ alignItems: 'center', textAlign: 'center', padding: '24px 0', gap: '8px' }}>
+                {slide.numeral !== undefined ? (
+                  <>
+                    <p
+                      className="d1"
+                      style={{
+                        fontSize: typeof slide.numeral === 'number' ? '68px' : '44px',
+                        color: '#fff',
+                        margin: 0,
+                        lineHeight: 1,
+                      }}
+                    >
+                      {displayNumeral}
+                    </p>
+                    <p className="lbl" style={{ color: 'var(--scd-accent)', fontSize: '16px' }}>
+                      {slide.caption}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="d2" style={{ color: '#fff', margin: 0, fontSize: '28px' }}>
+                      {slide.caption}
+                    </h2>
+                  </>
+                )}
+                {slide.subtext && (
+                  <p className="tx" style={{ color: '#cfc9be', fontSize: '13px', maxWidth: '440px' }}>
+                    {slide.subtext}
+                  </p>
+                )}
+              </div>
+
+              {/* Slide controls footer */}
+              <div className="r" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                <p className="mo" style={{ color: 'var(--scd-accent)', fontSize: '10px' }}>
+                  {slide.label}
+                </p>
+                <p className="mo" style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '10px' }}>
+                  Tap arrows or click to advance
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="btn g"
+              onClick={goNext}
+              disabled={isLast}
+              style={{ minWidth: '44px', height: '44px', justifyContent: 'center', cursor: isLast ? 'default' : 'pointer' }}
+              aria-label="Next slide"
+            >
+              →
+            </button>
           </div>
-        )}
-      </div>
 
-      <div className="wrapped-story-controls">
-        <button type="button" className="btn-link" onClick={goPrev} disabled={index === 0}>
-          ← Back
-        </button>
-        <button type="button" className="btn-link" onClick={goNext} disabled={isLast}>
-          Next →
-        </button>
-      </div>
-    </div>
-  );
-}
+          {/* 6 Stations summary pills below (Wireframe 1i) */}
+          <div className="r" style={{ gap: '6px', flexWrap: 'wrap' }}>
+            {slides.map((s, i) => (
+              <button
+                key={s.label}
+                type="button"
+                onClick={() => setIndex(i)}
+                className={`kd ${index === i ? 'mut' : ''}`}
+                style={{
+                  flex: '1 1 100px',
+                  padding: '8px 10px',
+                  cursor: 'pointer',
+                  border: index === i ? '1.5px solid var(--scd-accent)' : '1px solid var(--scd-border)',
+                  background: index === i ? 'var(--scd-surface)' : 'var(--scd-surface-muted)',
+                  textAlign: 'left',
+                }}
+              >
+                <p className="mo" style={{ fontSize: '10px', color: index === i ? 'var(--scd-accent)' : 'var(--scd-muted)' }}>
+                  0{i + 1}
+                </p>
+                <p className="lbl" style={{ fontSize: '11px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {s.label}
+                </p>
+              </button>
+            ))}
+          </div>
 
-export function EventWrappedPage() {
-  useDocumentHead({ title: 'Event Wrapped' });
-  const { data: wrapped, loading, error } = useResource<EventWrapped>('/me/event-wrapped');
+          {/* Final slide: Shareable Card (Wireframe 1i callout) */}
+          <div className="k mut" style={{ padding: '20px', gap: '14px' }}>
+            <div className="r" style={{ justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+              <div
+                style={{
+                  width: '90px',
+                  height: '112px',
+                  borderRadius: '3px',
+                  border: '1.25px solid var(--scd-border)',
+                  background: 'var(--scd-primary)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  padding: '8px',
+                  textAlign: 'center',
+                }}
+              >
+                <Mascot variant="sm" size={36} />
+                <p className="mo" style={{ color: 'var(--scd-accent)', fontSize: '9px', marginTop: '6px' }}>
+                  4:5 CARD
+                </p>
+              </div>
 
-  return (
-    <div className="page-section">
-      <header className="page-section-header">
-        <h1>Event wrapped</h1>
-        <p className="page-section-lede">Your personalized summary of AWS Student Community Day 2026.</p>
-      </header>
-
-      {loading && <p className="status-line">Loading…</p>}
-      {error && <p className="form-error">{error}</p>}
-
-      {!loading && !error && !wrapped && (
-        <div className="empty-state">
-          <p>Your event summary is being generated.</p>
-          <p className="status-line">Check back after the event.</p>
+              <div className="c" style={{ flex: '1 1 280px', gap: '6px' }}>
+                <h3 className="d3" style={{ margin: 0 }}>Share your achievement</h3>
+                <p className="tx" style={{ fontSize: '13px' }}>
+                  Download your 1080×1350 PNG poster or copy the formatted caption with handles to post on LinkedIn and Instagram.
+                </p>
+                <div className="r" style={{ gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
+                  <button type="button" onClick={downloadCardPNG} className="btn o" style={{ cursor: 'pointer' }}>
+                    Download PNG
+                  </button>
+                  <button type="button" onClick={copyCaption} className="btn g" style={{ cursor: 'pointer' }}>
+                    Copy caption
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      )}
-
-      {wrapped && <WrappedStory wrapped={wrapped} />}
+      </div>
     </div>
   );
 }

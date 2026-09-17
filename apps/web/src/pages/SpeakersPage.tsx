@@ -10,13 +10,20 @@ export function SpeakersPage() {
 
   return (
     <div>
-      <div className="page-hero">
+      <div className="page-hero" style={{ padding: '40px 0 24px', borderBottom: '1px solid var(--scd-border)' }}>
         <PageContainer>
-          <h1>Speakers</h1>
-          <p>Meet the people leading this year&apos;s talks and workshops.</p>
+          <p className="mo" style={{ color: 'var(--scd-muted)', marginBottom: '8px' }}>
+            04 / Speakers
+          </p>
+          <h1 className="d1" style={{ fontSize: '36px', marginBottom: '8px' }}>
+            See who&apos;s speaking
+          </h1>
+          <p className="tx" style={{ fontSize: '14px', maxWidth: '640px' }}>
+            Line-up in progress. Placeholders stay until a speaker is confirmed. Real copy once confirmed — never invented.
+          </p>
         </PageContainer>
       </div>
-      <div className="section">
+      <div className="section" style={{ padding: '32px 0 60px' }}>
         <PageContainer>
           <SpeakerGrid />
         </PageContainer>

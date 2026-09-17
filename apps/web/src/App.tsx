@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import type { Registration } from '@scd/types';
 import { AuthProvider, useAuth } from './lib/auth.js';
+import { ToastProvider } from './lib/toast.js';
 import { useResource } from './lib/hooks.js';
 import { Layout } from './components/Layout.js';
 import { ErrorBoundary } from './components/ui/ErrorBoundary.js';
@@ -167,7 +168,9 @@ export function App() {
     <ErrorBoundary>
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
+          <ToastProvider>
+            <AppRoutes />
+          </ToastProvider>
         </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>

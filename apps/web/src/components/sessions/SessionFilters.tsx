@@ -1,4 +1,4 @@
-interface SessionFiltersProps {
+export interface SessionFiltersProps {
   options: string[];
   active: string;
   onChange: (value: string) => void;
@@ -11,29 +11,52 @@ const TYPE_LABELS: Record<string, string> = {
   WORKSHOP: 'Workshop',
   PANEL: 'Panel',
   BREAK: 'Break',
+  BEGINNER: 'Beginner',
+  INTERMEDIATE: 'Intermediate',
+  ADVANCED: 'Advanced',
+  AWS: 'AWS',
+  AIML: 'AI/ML',
+  CLOUD: 'Cloud',
+  DEVOPS: 'DevOps',
+  COMMUNITY: 'Community',
 };
 
-/**
- * Filter chips built only from session types actually present in the
- * fetched data (plus "All") — never a fixed list that might not match
- * what the API returns.
- */
 export function SessionFilters({ options, active, onChange }: SessionFiltersProps) {
   if (options.length <= 1) return null;
 
   return (
-    <div className="session-filters" role="group" aria-label="Filter sessions by type">
-      {options.map((option) => (
-        <button
-          key={option}
-          type="button"
-          className={active === option ? 'filter-chip filter-chip-active' : 'filter-chip'}
-          aria-pressed={active === option}
-          onClick={() => onChange(option)}
-        >
-          {TYPE_LABELS[option] ?? option}
-        </button>
-      ))}
+    <div
+      className="session-filters r"
+      role="group"
+      aria-label="Filter sessions by topic or type"
+      style={{ flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}
+    >
+      {options.map((option) => {
+        const isSelected = active === option;
+        const label = TYPE_LABELS[option.toUpperCase()] ?? option;
+        return (
+          <button
+            key={option}
+            type="button"
+            className={`chip ${isSelected ? 'on' : ''}`}
+            aria-pressed={isSelected}
+            onClick={() => onChange(option)}
+            style={{
+              cursor: 'pointer',
+              border: '1px solid var(--scd-fg)',
+              fontFamily: 'var(--scd-mono)',
+              fontSize: '11px',
+              padding: '6px 12px',
+              borderRadius: '999px',
+              background: isSelected ? 'var(--scd-accent)' : 'var(--scd-surface)',
+              color: 'var(--scd-fg)',
+              transition: 'background-color 0.15s ease',
+            }}
+          >
+            {label}
+          </button>
+        );
+      })}
     </div>
   );
 }

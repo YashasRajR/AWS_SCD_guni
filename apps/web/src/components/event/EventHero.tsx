@@ -1,16 +1,10 @@
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth.js';
 import { useEvent, useSessions, useSpeakers, useVenues } from '../../lib/queries.js';
 import { formatDate } from '../../lib/format.js';
-import { Button } from '../ui/Button.js';
-import { Skeleton } from '../ui/Skeleton.js';
 import { CountdownTimer } from './CountdownTimer.js';
+import { Mascot } from '../ui/Mascot.js';
 
-/**
- * The high-impact hero. Event name/description/date/venue come from
- * GET /api/v1/event; the stat cards only render counts we can honestly
- * derive from real public endpoints (speakers/sessions/venues) — never a
- * fabricated "attendees" or "community" number.
- */
 export function EventHero() {
   const { data: event, loading: eventLoading, notFound } = useEvent();
   const { status } = useAuth();
@@ -34,80 +28,128 @@ export function EventHero() {
     : undefined;
 
   return (
-    <section className="hero" style={heroStyle}>
-      <div className="hero-inner">
-        <span className="hero-eyebrow">AWS Student Community Day 2026</span>
-
+    <section className="hero gridbg" style={{ ...heroStyle, padding: '48px 0 36px', borderBottom: '1px solid var(--border)' }}>
+      <div className="container">
         {eventLoading ? (
-          <div style={{ width: '100%', maxWidth: 560 }}>
-            <Skeleton height="3rem" />
+          <div style={{ minHeight: '260px', display: 'flex', alignItems: 'center' }}>
+            <p className="mo">Loading event details…</p>
           </div>
         ) : notFound || !event ? (
-          <>
-            <h1>Something big is coming to campus</h1>
-            <p className="hero-lede">
+          <div className="hero-inner" style={{ maxWidth: '640px' }}>
+            <h1 className="d1" style={{ fontSize: '32px' }}>Something big is coming to campus</h1>
+            <p className="tx" style={{ marginTop: '12px', color: 'var(--muted)' }}>
               We&apos;re putting the finishing touches on this year&apos;s event details. Create an account now so
               you&apos;re ready to register the moment it opens.
             </p>
-          </>
+            <div className="r" style={{ marginTop: '20px', gap: '10px' }}>
+              <Link to="/register" className="btn o">
+                Register Now →
+              </Link>
+              <Link to="/agenda" className="btn g">
+                Explore Agenda
+              </Link>
+            </div>
+          </div>
         ) : (
-          <>
-            <h1>{event.name}</h1>
-            {event.heroSubtitle && <p className="hero-subtitle">{event.heroSubtitle}</p>}
-            {event.description && <p className="hero-lede">{event.description}</p>}
-            <dl className="hero-facts">
+          <div className="r" style={{ justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '24px' }}>
+            {/* Left Column: Heading, Countdown, Actions */}
+            <div className="c" style={{ flex: '1 1 500px', maxWidth: '640px', gap: '18px' }}>
+              <p className="mo" style={{ color: 'var(--primary)', fontWeight: 700 }}>
+                {event.eventDate ? formatDate(event.eventDate) : '8 October 2026'} · {event.venue || 'Ganpat University, Mehsana'}
+              </p>
+
               <div>
-                <dt>Date</dt>
-                <dd>{formatDate(event.eventDate)}</dd>
+                <h1
+                  className="d1"
+                  aria-label={event.name || 'AWS Student Community Day 2026'}
+                  style={{ fontSize: 'clamp(32px, 5.5vw, 54px)', lineHeight: 0.98, margin: 0 }}
+                >
+                  AWS<br />
+                  <span className="scr" style={{ fontSize: 'clamp(30px, 5vw, 50px)' }}>Students</span><br />
+                  COMMUNITY<br />
+                  DAY
+                </h1>
+                {event.description && (
+                  <p className="tx" style={{ marginTop: '12px', color: 'var(--muted)', maxWidth: '54ch' }}>
+                    {event.description}
+                  </p>
+                )}
               </div>
-              {event.venue && (
-                <div>
-                  <dt>Venue</dt>
-                  <dd>{event.venue}</dd>
+
+              {/* Countdown Flip Tiles */}
+              <div style={{ marginTop: '4px' }}>
+                <CountdownTimer targetDate={event.eventDate} />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="r" style={{ gap: '10px', flexWrap: 'wrap', marginTop: '6px' }}>
+                {event?.primaryCtaUrl ? (
+                  <a href={event.primaryCtaUrl} className="btn o">
+                    {event.primaryCtaLabel || 'Register Now →'}
+                  </a>
+                ) : status === 'signed-in' ? (
+                  <Link to="/dashboard" className="btn o">
+                    Go to my dashboard →
+                  </Link>
+                ) : (
+                  <Link to="/register" className="btn o">
+                    Register Now →
+                  </Link>
+                )}
+
+                {event?.secondaryCtaUrl ? (
+                  <a href={event.secondaryCtaUrl} className="btn g">
+                    {event.secondaryCtaLabel || 'Explore Agenda'}
+                  </a>
+                ) : (
+                  <Link to="/agenda" className="btn g">
+                    Explore Agenda
+                  </Link>
+                )}
+              </div>
+
+              {/* Stats badges if populated */}
+              {stats.length > 0 && (
+                <div className="r" style={{ gap: '16px', marginTop: '8px' }}>
+                  {stats.map((s) => (
+                    <div key={s.label} className="kd" style={{ padding: '6px 12px' }}>
+                      <p className="d3" style={{ fontSize: '18px', color: 'var(--accent)' }}>{s.value}+</p>
+                      <p className="mo" style={{ fontSize: '0.65rem' }}>{s.label}</p>
+                    </div>
+                  ))}
                 </div>
               )}
-            </dl>
-            <CountdownTimer targetDate={event.eventDate} />
-          </>
-        )}
+            </div>
 
-        <div className="hero-actions">
-          {/* Admin-configured CTAs (spec: "every button must have an editable
-           * destination") fall back to the signed-in-aware defaults when unset. */}
-          {event?.primaryCtaUrl ? (
-            <Button href={event.primaryCtaUrl} size="large">
-              {event.primaryCtaLabel || 'Register Now'}
-            </Button>
-          ) : status === 'signed-in' ? (
-            <Button to="/dashboard" size="large">
-              Go to my dashboard
-            </Button>
-          ) : (
-            <Button to="/register" size="large">
-              Register Now
-            </Button>
-          )}
-          {event?.secondaryCtaUrl ? (
-            <Button href={event.secondaryCtaUrl} size="large" variant="secondary">
-              {event.secondaryCtaLabel || 'Explore Agenda'}
-            </Button>
-          ) : (
-            <Button to="/agenda" size="large" variant="secondary">
-              Explore Agenda
-            </Button>
-          )}
-        </div>
-
-        {stats.length > 0 && (
-          <dl className="hero-stats">
-            {stats.map((s) => (
-              <div key={s.label} className="hero-stat">
-                <dt className="visually-hidden">{s.label}</dt>
-                <dd className="hero-stat-value">{s.value}+</dd>
-                <div className="hero-stat-label">{s.label}</div>
+            {/* Right Column: Vertical Year & Mascot */}
+            <div
+              className="c"
+              style={{
+                alignItems: 'flex-end',
+                justifyContent: 'space-between',
+                minWidth: '180px',
+                height: '100%',
+                display: 'flex',
+              }}
+            >
+              <div
+                className="d2"
+                style={{
+                  writingMode: 'vertical-rl',
+                  fontSize: 'clamp(28px, 4vw, 42px)',
+                  letterSpacing: '0.12em',
+                  color: 'var(--primary)',
+                  opacity: 0.85,
+                  alignSelf: 'flex-end',
+                }}
+              >
+                2026
               </div>
-            ))}
-          </dl>
+              <div style={{ marginTop: '16px' }}>
+                <Mascot variant="wave" size={135} />
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </section>

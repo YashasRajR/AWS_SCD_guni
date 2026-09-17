@@ -18,19 +18,11 @@
   /* --- Typography -------------------------------------------------- */
   --font-sans:
     'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  /* Bold condensed display face for headings/hero -- the poster's
-     voice. Falls back gracefully to a narrow system sans if the
-     Google Fonts request is ever blocked. */
-  --font-display: 'Anton', 'Arial Narrow', 'Segoe UI', sans-serif;
-  /* Small technical/metadata labels only (build numbers, status tags,
-     section indices) -- never body copy. See --tracking-wide below. */
+  --font-display: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
-  /* Negative tracking tightens big condensed headlines; positive tracking
-     spaces out small uppercase technical labels -- this contrast is what
-     reads as "engineering blueprint" rather than default browser type. */
-  --tracking-tight: -0.03em;
-  --tracking-wide: 0.16em;
+  --tracking-tight: -0.02em;
+  --tracking-wide: 0.14em;
 
   /* Fluid type scale -- readable at 320px, comfortable at 1920px+. */
   --text-display: clamp(2.25rem, 1.4rem + 4vw, 4.25rem);
@@ -48,9 +40,9 @@
   --fw-bold: 700;
   --fw-extrabold: 800;
 
-  --lh-tight: 1.15;
-  --lh-snug: 1.3;
-  --lh-normal: 1.55;
+  --lh-tight: 1.1;
+  --lh-snug: 1.25;
+  --lh-normal: 1.5;
   --lh-relaxed: 1.7;
 
   /* --- Spacing scale (4px base) -------------------------------------- */
@@ -67,19 +59,19 @@
   --space-20: 5rem;
   --space-24: 6rem;
 
-  /* --- Radius -- sharp/technical, not soft SaaS pills ------------------- */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  /* --- Radius -- sharp/technical blueprint ------------------------------ */
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
   --radius-full: 999px;
 
-  /* --- Shadows -- small hard offset "blueprint" shadows, not soft glows -- */
+  /* --- Shadows -- restrained blueprint offset --------------------------- */
   --shadow-sm: 2px 2px 0 rgba(51, 32, 82, 0.1);
-  --shadow-md: 4px 4px 0 rgba(51, 32, 82, 0.14);
-  --shadow-lg: 6px 6px 0 rgba(51, 32, 82, 0.18);
+  --shadow-md: 3px 3px 0 rgba(51, 32, 82, 0.12);
+  --shadow-lg: 5px 5px 0 rgba(51, 32, 82, 0.15);
 
   /* --- Containers -------------------------------------------------------- */
-  --container-max: 1180px;
+  --container-max: 1200px;
   --container-narrow: 760px;
   --container-pad: 1.25rem;
 
@@ -90,31 +82,30 @@
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* --- Z-index scale ------------------------------------------------------ */
-  --z-header: 30;
-  --z-overlay: 40;
-  --z-banner: 25;
+  --z-header: 50;
+  --z-overlay: 100;
+  --z-banner: 40;
 
-  /* --- Color: semantic tokens (poster palette) ---------------------------- */
-  --background: #f8f6fc;
-  --foreground: #14181f;
-  --surface: #ffffff;
-  --surface-muted: #eef1f5;
-  --primary: #50377a;
-  --primary-hover: #3f2b61;
-  --primary-foreground: #ffffff;
-  --secondary: #332052;
-  --secondary-foreground: #f4f6f8;
-  --accent: #f28a45;
-  --accent-hover: #d9702f;
-  /* Separate from --accent: --accent is orange, decorative-only (borders,
-     badges) because orange text fails AA contrast on light backgrounds
-     (phase 6 rule 46). --link is what body text/links actually use. */
-  --link: #50377a;
-  /* Purple-tinted rather than neutral gray -- part of the "engineering
-     blueprint" identity (spec: default border rgba(51,32,82,0.18)). */
+  /* --- Color: Wireframe design system tokens ------------------------------ */
+  --background: #F8F6FC;
+  --foreground: #14181F;
+  --surface: #FFFFFF;
+  --surface-muted: #EEF1F5;
+  --primary: #232F3E;
+  --primary-hover: #16191F;
+  --primary-foreground: #FFFFFF;
+  --secondary: #16191F;
+  --secondary-foreground: #F4F6F8;
+  --accent: #FF9900;
+  --accent-hover: #e68a00;
+  --accent-foreground: #14181F;
+  --link: #232F3E;
+  --link-hover: #FF9900;
   --border: rgba(51, 32, 82, 0.18);
-  --border-strong: #332052;
-  --muted: #656d79;
+  --border-muted: #ddd8ce;
+  --border-dashed: #9a958c;
+  --border-strong: #232F3E;
+  --muted: #656D79;
 
   --success: #1c7a41;
   --success-bg: #e5f6ec;
@@ -126,6 +117,17 @@
   --info-bg: #e6f0fd;
   --neutral: #565d68;
   --neutral-bg: #eceef1;
+
+  /* Wireframe alias shortcuts */
+  --scd-bg: var(--background);
+  --scd-fg: var(--foreground);
+  --scd-surface: var(--surface);
+  --scd-surface-muted: var(--surface-muted);
+  --scd-primary: var(--primary);
+  --scd-primary-hover: var(--primary-hover);
+  --scd-accent: var(--accent);
+  --scd-border: var(--border);
+  --scd-muted: var(--muted);
 }
 
 /* Respect the OS-level reduced-motion preference everywhere. */

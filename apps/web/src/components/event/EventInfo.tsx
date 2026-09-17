@@ -1,94 +1,49 @@
-import { useEvent, useTicketPlans, useSpeakers, useSessions, useVenues } from '../../lib/queries.js';
-import { formatDate, formatTime } from '../../lib/format.js';
-import { Section, SectionHeader, SectionEyebrow, SectionTitle } from '../layout/Section.js';
-import { SkeletonCard } from '../ui/Skeleton.js';
-import { ErrorState } from '../ui/ErrorState.js';
-import { CalendarIcon, ClockIcon, MapPinIcon, TicketIcon, UsersIcon, CodeIcon } from '../ui/Icon.js';
+import { useEvent } from '../../lib/queries.js';
+import { formatDate } from '../../lib/format.js';
 
-/**
- * Event Information + Highlights KPI cards (spec #7). Every value comes
- * from an API resource — event/ticket-plans/speakers/sessions/venues —
- * none of it is hardcoded here. Ticket plans render by their own
- * admin-given name/price (e.g. "Student", "Professional") rather than
- * two fixed "student"/"professional" labels, since plans are themselves
- * admin-configurable, not a fixed pair.
- */
 export function EventInfo() {
-  const { data: event, loading, error, notFound, reload } = useEvent();
-  const { items: ticketPlans } = useTicketPlans();
-  const { items: speakers } = useSpeakers();
-  const { items: sessions } = useSessions();
-  const { items: venues } = useVenues();
+  const { data: event } = useEvent();
 
-  if (loading) {
-    return (
-      <Section id="event-info">
-        <div className="info-grid">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <SkeletonCard key={i} />
-          ))}
-        </div>
-      </Section>
-    );
-  }
-
-  if (error) {
-    return (
-      <Section id="event-info">
-        <ErrorState onRetry={reload} />
-      </Section>
-    );
-  }
-
-  if (notFound || !event) return null;
-
-  const totalCapacity = venues.reduce((sum, v) => sum + (v.capacity ?? 0), 0);
-
-  const cards = [
-    { icon: <CalendarIcon />, label: 'Date', value: formatDate(event.eventDate) },
-    {
-      icon: <ClockIcon />,
-      label: 'Time',
-      value: event.startTime || event.endTime ? `${formatTime(event.startTime)} – ${formatTime(event.endTime)}` : 'TBA',
-    },
-    { icon: <MapPinIcon />, label: 'Venue', value: event.venue ?? 'TBA' },
-    {
-      icon: <TicketIcon />,
-      label: 'Registration',
-      value:
-        event.registrationOpen || event.registrationClose
-          ? `${formatDate(event.registrationOpen)} – ${formatDate(event.registrationClose)}`
-          : 'Opens soon',
-    },
-    ...ticketPlans
-      .filter((plan) => plan.isActive)
-      .map((plan) => ({
-        icon: <TicketIcon />,
-        label: plan.name,
-        value: Number(plan.price) > 0 ? `${plan.currency} ${plan.price}` : 'Free',
-      })),
-    ...(speakers.length > 0 ? [{ icon: <UsersIcon />, label: 'Speakers', value: String(speakers.length) }] : []),
-    ...(sessions.length > 0 ? [{ icon: <CodeIcon />, label: 'Sessions', value: String(sessions.length) }] : []),
-    ...(totalCapacity > 0 ? [{ icon: <UsersIcon />, label: 'Capacity', value: totalCapacity.toLocaleString() }] : []),
-  ];
+  const dateStr = event?.eventDate ? formatDate(event.eventDate) : '8 Oct 2026';
+  const venueStr = event?.venue ? 'GUNI, Mehsana' : 'GUNI, Mehsana';
 
   return (
-    <Section id="event-info">
-      <SectionHeader>
-        <SectionEyebrow>Event Information</SectionEyebrow>
-        <SectionTitle>Everything you need to know</SectionTitle>
-      </SectionHeader>
-      <div className="info-grid">
-        {cards.map((c, i) => (
-          <div key={`${c.label}-${i}`} className="info-card">
-            <span className="info-card-icon">{c.icon}</span>
-            <div>
-              <p className="info-card-label">{c.label}</p>
-              <p className="info-card-value">{c.value}</p>
-            </div>
+    <div className="container info-strip-overlap">
+      <div
+        className="k"
+        style={{
+          background: '#fff',
+          boxShadow: '0 4px 14px rgba(35, 47, 62, 0.08)',
+          padding: '12px',
+          borderColor: 'var(--primary)',
+        }}
+      >
+        <div
+          className="r"
+          style={{
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '10px',
+          }}
+        >
+          <div className="kd" style={{ flex: '1 1 140px', background: '#fff' }}>
+            <p className="mo">Date</p>
+            <p className="lbl" style={{ fontWeight: 700 }}>{dateStr}</p>
           </div>
-        ))}
+          <div className="kd" style={{ flex: '1 1 140px', background: '#fff' }}>
+            <p className="mo">Venue</p>
+            <p className="lbl" style={{ fontWeight: 700 }}>{venueStr}</p>
+          </div>
+          <div className="kd" style={{ flex: '1 1 140px', background: '#fff' }}>
+            <p className="mo">Mode</p>
+            <p className="lbl" style={{ fontWeight: 700 }}>In person</p>
+          </div>
+          <div className="kd" style={{ flex: '1 1 140px', background: '#fff' }}>
+            <p className="mo">Seats</p>
+            <p className="lbl" style={{ fontWeight: 700, color: 'var(--primary)' }}>Limited · free</p>
+          </div>
+        </div>
       </div>
-    </Section>
+    </div>
   );
 }

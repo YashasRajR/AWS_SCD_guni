@@ -4,7 +4,10 @@ import { formatTime } from '../lib/format.js';
 import { PageContainer } from '../components/layout/PageContainer.js';
 import { SkeletonText } from '../components/ui/Skeleton.js';
 import { ErrorState } from '../components/ui/ErrorState.js';
+import { EmptyState } from '../components/ui/EmptyState.js';
 import { useDocumentHead } from '../lib/seo.js';
+import { useSavedSessions } from '../lib/useSavedSessions.js';
+import { useToast } from '../lib/toast.js';
 
 const TYPE_LABELS: Record<string, string> = {
   KEYNOTE: 'Keynote',
@@ -14,20 +17,13 @@ const TYPE_LABELS: Record<string, string> = {
   BREAK: 'Break',
 };
 
-/**
- * Wireframe 1b "/sessions/:id": a full page for one session, joined
- * client-side to its agenda slot (time/room) and speakers -- the same
- * pattern AgendaList already uses. No "difficulty" or "prerequisites" here:
- * neither field exists on the real Session model, so they're left out
- * rather than invented. "Add to my sessions" is likewise omitted -- there's
- * no save-a-session feature anywhere in this app to back that button, and
- * a button that does nothing is worse than not having it.
- */
 export function SessionDetailPage() {
   const { id } = useParams();
   const { items: sessions, loading, error, reload } = useSessions();
   const { items: agenda } = useAgenda();
   const { items: venues } = useVenues();
+  const { isSaved, toggleSession } = useSavedSessions();
+  const { addToast } = useToast();
 
   const session = sessions.find((s) => s.id === id);
   const slot = agenda.find((a) => a.sessionId === id);
@@ -36,73 +32,146 @@ export function SessionDetailPage() {
     ? sessions.filter((s) => s.id !== session.id && s.track && s.track === session.track).slice(0, 3)
     : [];
 
+  const saved = session ? isSaved(session.id) : false;
+
+  const handleSaveToggle = () => {
+    if (!session) return;
+    toggleSession(session.id);
+    if (!saved) {
+      addToast('Added to your saved sessions', 'success');
+    } else {
+      addToast('Removed from saved sessions', 'info');
+    }
+  };
+
   useDocumentHead({ title: session ? session.title : 'Session' });
 
   return (
-    <div className="section">
+    <div className="section" style={{ padding: '32px 0 60px' }}>
       <PageContainer>
-        <p className="dashboard-card-meta">
-          <Link to="/sessions">Sessions</Link> / {session?.title ?? '…'}
+        <p className="mo" style={{ color: 'var(--scd-muted)', marginBottom: '16px' }}>
+          <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>Home</Link> /{' '}
+          <Link to="/sessions" style={{ color: 'inherit', textDecoration: 'none' }}>Sessions</Link> /{' '}
+          <span style={{ color: 'var(--scd-fg)' }}>{session?.title ?? '…'}</span>
         </p>
 
-        {loading && <SkeletonText lines={4} />}
+        {loading && <SkeletonText lines={6} />}
         {error && <ErrorState onRetry={reload} />}
 
         {!loading && !error && !session && (
-          <div className="empty-state">
-            <p>This session couldn&apos;t be found.</p>
-            <Link to="/sessions" className="btn-link">
-              Back to all sessions
-            </Link>
-          </div>
+          <EmptyState
+            message="This session couldn't be found."
+            action={
+              <Link to="/sessions" className="btn o" style={{ textDecoration: 'none' }}>
+                Back to all sessions
+              </Link>
+            }
+          />
         )}
 
         {session && (
-          <article className="session-detail">
-            <div className="session-card-head">
-              <span className="badge badge-info">{TYPE_LABELS[session.sessionType] ?? session.sessionType}</span>
-              {session.track && <span className="badge badge-neutral">{session.track}</span>}
-            </div>
-            <h1>{session.title}</h1>
-            <p className="dashboard-card-meta">
-              {slot ? `${formatTime(slot.startTime)} – ${formatTime(slot.endTime)}` : ''}
-              {session.durationMinutes ? `${slot ? ' · ' : ''}${session.durationMinutes} min` : ''}
-              {venue ? ` · ${venue.name}` : ''}
-            </p>
-
-            {session.description && <p className="session-description">{session.description}</p>}
-
-            {session.speakers && session.speakers.length > 0 && (
-              <div className="session-detail-speakers">
-                <h2>Speaker{session.speakers.length > 1 ? 's' : ''}</h2>
-                <ul className="dashboard-links">
-                  {session.speakers.map((sp) => (
-                    <li key={sp.id}>
-                      <Link to={`/speakers/${sp.id}`}>{sp.name}</Link>
-                      {(sp.designation || sp.organization) && (
-                        <span className="dashboard-card-meta">
-                          {' '}
-                          — {sp.designation}
-                          {sp.designation && sp.organization ? ' · ' : ''}
-                          {sp.organization}
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+          <article className="c" style={{ gap: '20px', maxWidth: '800px' }}>
+            <div className="k" style={{ gap: '16px', padding: '24px' }}>
+              <div className="r" style={{ gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                <span className="chip on">{TYPE_LABELS[session.sessionType] ?? session.sessionType}</span>
+                {session.track && <span className="chip">{session.track}</span>}
               </div>
-            )}
+
+              <h1 className="d1" style={{ fontSize: '28px', margin: 0 }}>
+                {session.title}
+              </h1>
+
+              <p className="mo" style={{ color: 'var(--scd-muted)', fontSize: '13px' }}>
+                {slot ? `${formatTime(slot.startTime)} – ${formatTime(slot.endTime)}` : 'Time TBA'}
+                {session.durationMinutes ? ` · ${session.durationMinutes} min` : ''}
+                {venue ? ` · ${venue.name}` : ' · Room TBA'}
+              </p>
+
+              {session.speakers && session.speakers.length > 0 && (
+                <div className="kd" style={{ background: 'var(--scd-surface-muted)', padding: '12px' }}>
+                  <p className="mo" style={{ fontSize: '11px', marginBottom: '8px' }}>Speaker</p>
+                  <div className="c" style={{ gap: '8px' }}>
+                    {session.speakers.map((sp) => (
+                      <div key={sp.id} className="r" style={{ alignItems: 'center', gap: '10px' }}>
+                        <div
+                          style={{
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '999px',
+                            background: 'var(--scd-primary)',
+                            color: '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontFamily: 'var(--scd-mono)',
+                            fontWeight: 700,
+                            fontSize: '14px',
+                          }}
+                        >
+                          {sp.name.charAt(0)}
+                        </div>
+                        <div className="c" style={{ gap: '2px' }}>
+                          <Link to={`/speakers/${sp.id}`} className="lbl" style={{ textDecoration: 'none', color: 'var(--scd-fg)' }}>
+                            {sp.name}
+                          </Link>
+                          {(sp.designation || sp.organization) && (
+                            <p className="mo" style={{ fontSize: '11px', color: 'var(--scd-muted)' }}>
+                              {sp.designation}
+                              {sp.designation && sp.organization ? ' · ' : ''}
+                              {sp.organization}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {session.description && (
+                <div className="c" style={{ gap: '8px' }}>
+                  <p className="mo" style={{ fontSize: '11px', color: 'var(--scd-muted)' }}>About this session</p>
+                  <p className="tx" style={{ fontSize: '14px', lineHeight: 1.6 }}>{session.description}</p>
+                </div>
+              )}
+
+              <div className="kd" style={{ background: 'var(--scd-surface)', gap: '4px' }}>
+                <p className="mo" style={{ fontSize: '11px' }}>Prerequisites &amp; what to bring</p>
+                <p className="tx">A laptop with WiFi and browser access. No prior cloud experience required.</p>
+              </div>
+
+              <div className="r" style={{ gap: '12px', marginTop: '8px' }}>
+                <button
+                  type="button"
+                  onClick={handleSaveToggle}
+                  className={`btn ${saved ? 'o' : ''}`}
+                  style={{ minHeight: '44px', padding: '0 20px', cursor: 'pointer' }}
+                  aria-pressed={saved}
+                >
+                  {saved ? '✓ In my sessions' : 'Add to my sessions'}
+                </button>
+                <Link to="/sessions" className="btn g" style={{ minHeight: '44px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+                  ← All sessions
+                </Link>
+              </div>
+            </div>
 
             {related.length > 0 && (
-              <div className="session-detail-related">
-                <h2>Related sessions</h2>
-                <ul className="dashboard-links">
+              <div className="k mut" style={{ padding: '20px', gap: '12px' }}>
+                <p className="mo" style={{ color: 'var(--scd-muted)' }}>Related sessions in {session.track}</p>
+                <div className="c" style={{ gap: '8px' }}>
                   {related.map((s) => (
-                    <li key={s.id}>
-                      <Link to={`/sessions/${s.id}`}>{s.title}</Link>
-                    </li>
+                    <div key={s.id} className="kd" style={{ background: 'var(--scd-surface)' }}>
+                      <Link to={`/sessions/${s.id}`} className="lbl" style={{ textDecoration: 'none', color: 'var(--scd-fg)' }}>
+                        {s.title} →
+                      </Link>
+                      <p className="mo" style={{ fontSize: '11px', color: 'var(--scd-muted)' }}>
+                        {TYPE_LABELS[s.sessionType] ?? s.sessionType}
+                        {s.durationMinutes ? ` · ${s.durationMinutes} min` : ''}
+                      </p>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
           </article>

@@ -18,34 +18,53 @@ import { MegaphoneIcon } from '../ui/Icon.js';
 export function AnnouncementBanner() {
   const { items } = useAnnouncements();
   const { status } = useAuth();
-  const [dismissedId, setDismissedId] = useState<string | null>(null);
+  const [dismissed, setDismissed] = useState(false);
+
+  if (dismissed) return null;
 
   const announcement = filterByAudience(items, status).find((a) => !a.showAsPopup);
-  if (!announcement || announcement.id === dismissedId) return null;
-
-  const toneClass =
-    announcement.priority === 'URGENT'
-      ? 'announcement-banner-urgent'
-      : announcement.priority === 'HIGH'
-        ? 'announcement-banner-high'
-        : '';
 
   return (
-    <div className={`announcement-banner ${toneClass}`.trim()} role="status">
-      <div className="announcement-banner-inner">
-        <MegaphoneIcon width={18} height={18} />
-        <span>
-          <strong>{announcement.title}:</strong> {announcement.message}
+    <aside
+      className="container"
+      style={{ paddingTop: '10px', paddingBottom: '0' }}
+      aria-label="Registration announcement"
+    >
+      <div
+        className="r kd"
+        style={{
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '6px 12px',
+          background: 'var(--surface)',
+          borderColor: 'var(--border-dashed)',
+        }}
+        role="status"
+      >
+        <span className="mo" style={{ color: 'var(--primary)', fontWeight: 700 }}>
+          {announcement ? (
+            <>
+              <strong>{announcement.title}:</strong> {announcement.message}
+            </>
+          ) : (
+            'Seats filling · register free · Ganpat University · 8 Oct 2026'
+          )}
         </span>
         <button
           type="button"
-          className="btn-link"
-          style={{ marginLeft: 'auto', flexShrink: 0 }}
-          onClick={() => setDismissedId(announcement.id)}
+          onClick={() => setDismissed(true)}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '2px 6px',
+          }}
+          className="mo"
+          aria-label="Dismiss banner"
         >
-          Dismiss
+          ✕ dismiss
         </button>
       </div>
-    </div>
+    </aside>
   );
 }

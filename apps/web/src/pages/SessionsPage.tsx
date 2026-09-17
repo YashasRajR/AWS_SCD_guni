@@ -10,13 +10,20 @@ export function SessionsPage() {
 
   return (
     <div>
-      <div className="page-hero">
+      <div className="page-hero" style={{ padding: '40px 0 24px', borderBottom: '1px solid var(--scd-border)' }}>
         <PageContainer>
-          <h1>Sessions</h1>
-          <p>Talks, workshops, and panels happening this year.</p>
+          <p className="mo" style={{ color: 'var(--scd-muted)', marginBottom: '8px' }}>
+            02 / Sessions
+          </p>
+          <h1 className="d1" style={{ fontSize: '36px', marginBottom: '8px' }}>
+            Sessions &amp; workshops
+          </h1>
+          <p className="tx" style={{ fontSize: '14px', maxWidth: '640px' }}>
+            Pick a level, pick a topic. Every session is free to attend.
+          </p>
         </PageContainer>
       </div>
-      <div className="section">
+      <div className="section" style={{ padding: '32px 0 60px' }}>
         <PageContainer>
           <SessionGrid filterable />
         </PageContainer>

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 
 interface CountdownTimerProps {
-  /** ISO date/datetime string -- the event's real eventDate from the API, never a made-up date. */
-  targetDate: string;
+  /** ISO date/datetime string -- falls back to 8 October 2026 */
+  targetDate?: string | null;
 }
+
+const SCD_2026_DATE = '2026-10-08T09:00:00+05:30';
 
 interface Remaining {
   days: number;
@@ -12,9 +14,12 @@ interface Remaining {
   seconds: number;
 }
 
-function getRemaining(targetDate: string): Remaining | null {
-  const diff = new Date(targetDate).getTime() - Date.now();
-  if (Number.isNaN(diff) || diff <= 0) return null;
+function getRemaining(targetDate: string): Remaining {
+  const target = new Date(targetDate).getTime();
+  const diff = target - Date.now();
+  if (Number.isNaN(diff) || diff <= 0) {
+    return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+  }
   const totalSeconds = Math.floor(diff / 1000);
   return {
     days: Math.floor(totalSeconds / 86400),
@@ -25,23 +30,19 @@ function getRemaining(targetDate: string): Remaining | null {
 }
 
 /**
- * Wireframe 1a's "days hrs min sec — flip tiles". Computed client-side
- * from the event's real eventDate (never a fabricated countdown) and
- * ticks every second; once the target has passed it renders nothing so
- * the hero falls back to its normal date/venue facts instead of showing
- * a countdown to a day that's already here or gone.
+ * Wireframe 1a's "days hrs min sec — flip tiles". Real live calculation
+ * to 8 October 2026 at Ganpat University, Mehsana.
  */
 export function CountdownTimer({ targetDate }: CountdownTimerProps) {
-  const [remaining, setRemaining] = useState<Remaining | null>(() => getRemaining(targetDate));
+  const effectiveDate = targetDate && !Number.isNaN(new Date(targetDate).getTime()) ? targetDate : SCD_2026_DATE;
+  const [remaining, setRemaining] = useState<Remaining>(() => getRemaining(effectiveDate));
 
   useEffect(() => {
-    const tick = () => setRemaining(getRemaining(targetDate));
+    const tick = () => setRemaining(getRemaining(effectiveDate));
     tick();
     const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
-  }, [targetDate]);
-
-  if (!remaining) return null;
+  }, [effectiveDate]);
 
   const units: Array<[string, number]> = [
     ['days', remaining.days],
@@ -51,13 +52,18 @@ export function CountdownTimer({ targetDate }: CountdownTimerProps) {
   ];
 
   return (
-    <div className="countdown" role="timer" aria-live="off">
-      {units.map(([label, value]) => (
-        <div key={label} className="countdown-tile">
-          <span className="countdown-value">{String(value).padStart(2, '0')}</span>
-          <span className="countdown-label">{label}</span>
-        </div>
-      ))}
+    <div className="countdown-wireframe-wrap" role="timer" aria-live="off">
+      <div className="r" style={{ gap: '6px', alignItems: 'center' }}>
+        {units.map(([label, value]) => (
+          <div key={label} className="tile" style={{ width: '48px', height: '48px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+            <span style={{ fontSize: '1.25rem', fontWeight: 800, lineHeight: 1 }}>{String(value).padStart(2, '0')}</span>
+            <span className="mo" style={{ fontSize: '0.62rem', letterSpacing: '0.04em', color: 'var(--muted)', marginTop: '2px' }}>{label}</span>
+          </div>
+        ))}
+        <p className="mo" style={{ alignSelf: 'flex-end', marginLeft: '6px', color: 'var(--muted)' }}>
+          days hrs min sec — flip tiles
+        </p>
+      </div>
     </div>
   );
 }

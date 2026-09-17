@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics=""><meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<style>
+body{margin:0;background:#f0eee9;font-family:system-ui,sans-serif}
+a{color:#2a78d6}a:hover{color:#1a5aa8}
+.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 13px/1.2 system-ui,sans-serif;color:#1a1a1a}
+.dv-opts{display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 system-ui,sans-serif;color:rgba(0,0,0,.55)}
+.dv-opt:target .dv-oid{background:#2a78d6;color:#fff}
+.dv-next{margin:22px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5)}
+.set{display:flex;gap:16px;align-items:flex-start}
+.wf{background:#fff;border:1.5px solid #1a1a1a;border-radius:3px;overflow:hidden;flex:none;color:#1a1a1a}
+.wfh{display:flex;justify-content:space-between;gap:10px;padding:5px 8px;background:#1a1a1a;color:#fff;font:600 8.5px/1.3 ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase}
+.wb{padding:12px;display:flex;flex-direction:column;gap:12px}
+.k{border:1.25px solid #1a1a1a;border-radius:3px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.kd{border:1.25px dashed #9a958c;border-radius:3px;padding:8px;display:flex;flex-direction:column;gap:6px}
+.mut{background:#eae7e0}
+.inv{background:#1a1a1a;color:#fff}
+.inv .tx,.inv .mo{color:#cfc9be}
+.ph{background:repeating-linear-gradient(45deg,#e6e2da 0 6px,#f4f1eb 6px 12px);border:1px solid #cfc9be;display:flex;align-items:center;justify-content:center;padding:6px;font:500 8.5px/1.4 ui-monospace,monospace;color:#6b6459;text-align:center;letter-spacing:.06em}
+.mo{font:600 8.5px/1.4 ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;color:#6b6459;margin:0}
+.d1{font:800 30px/1.05 'Inter',system-ui,sans-serif;letter-spacing:-.02em;margin:0}
+.d2{font:800 17px/1.15 'Inter',system-ui,sans-serif;letter-spacing:-.01em;margin:0}
+.d3{font:700 13px/1.2 'Inter',system-ui,sans-serif;letter-spacing:-.005em;margin:0}
+.tx{font:400 9.5px/1.5 system-ui,sans-serif;color:#3d3a34;margin:0}
+.lbl{font:600 10px/1.3 system-ui,sans-serif;margin:0}
+.scr{font:700 15px/1 'Inter',system-ui,sans-serif;color:#B36200}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border:1.25px solid #1a1a1a;border-radius:3px;font:600 8.5px/1 system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;background:#1a1a1a;color:#fff}
+.btn.o{background:#FF9900;color:#1a1a1a}
+.btn.g{background:transparent;color:#1a1a1a}
+.chip{display:inline-block;padding:4px 8px;border:1px solid #1a1a1a;border-radius:999px;font:600 8px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase}
+.chip.on{background:#FF9900}
+.r{display:flex;gap:10px}
+.c{display:flex;flex-direction:column;gap:10px}
+.gridbg{background-image:linear-gradient(rgba(26,26,26,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(26,26,26,.08) 1px,transparent 1px);background-size:26px 26px}
+.rule{height:2px;background:#FF9900;border:0;margin:0}
+.notes{flex:none;width:186px;display:flex;flex-direction:column;gap:8px;padding-top:6px}
+.notes h4{font:600 8.5px/1 ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;color:#1a1a1a;margin:0}
+.notes p{font:500 11px/1.3 'JetBrains Mono',monospace;color:#8a5a2b;margin:0;padding-left:10px;border-left:1.5px solid #d8b48c}
+.tile{border:1.25px solid #1a1a1a;border-radius:3px;padding:6px 4px;text-align:center;font:800 15px/1 'Inter',sans-serif}
+:root{
+  --scd-bg:#f8f6fc;--scd-fg:#14181f;--scd-surface:#ffffff;--scd-surface-muted:#eef1f5;
+  --scd-primary:#232F3E;--scd-primary-hover:#16191F;--scd-secondary:#16191F;--scd-secondary-fg:#f4f6f8;
+  --scd-accent:#FF9900;--scd-border:rgba(51,32,82,.18);--scd-muted:#656d79;
+  --scd-info:#1a56b0;--scd-info-bg:#e6f0fd;--scd-neutral:#565d68;--scd-neutral-bg:#eceef1;
+  --scd-shadow-sm:2px 2px 0 rgba(51,32,82,.1);
+  --scd-sans:'Inter',system-ui,sans-serif;--scd-display:'Inter',system-ui,sans-serif;--scd-mono:'JetBrains Mono',ui-monospace,monospace;
+}
+.scd-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:4px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;min-height:44px;cursor:pointer}
+.scd-btn-primary{background:var(--scd-primary);color:#fff}
+.scd-btn-secondary{background:transparent;border:1px solid var(--scd-primary);color:var(--scd-primary)}
+</style></helmet>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#232F3E"></rect><g fill="none" stroke="#FF9900" stroke-width="2.5"><rect x="30" y="30" width="18" height="40"></rect><rect x="54" y="30" width="16" height="26"></rect></g><rect x="54" y="62" width="16" height="8" fill="#FF9900"></rect></svg></template>
+
+
+
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">AWS Students Community Day 2026 — 12 screens, desktop + mobile, one take each</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Home — full scroll</div>
+<div class="set">
+<div class="wf" style="width:520px"><div class="wfh"><span>Desktop 1440 · /</span><span>Home</span></div>
+<div class="wb gridbg">
+  <div class="r" style="justify-content:space-between;align-items:center;border:1.25px dashed #9a958c;border-radius:3px;padding:6px 8px">
+    <span class="mo">Seats filling · register free</span><span class="mo">✕ dismiss</span>
+  </div>
+  <div class="r" style="justify-content:space-between;align-items:center">
+    <div class="ph" style="width:120px;height:22px">SBG × GUNI LOCKUP</div>
+    <div class="r" style="gap:8px;align-items:center"><span class="mo">Home</span><span class="mo">About</span><span class="mo">Sessions</span><span class="mo">Agenda</span><span class="mo">Speakers</span><span class="mo">Venue</span><span class="mo">FAQ</span><span class="btn o">Register</span></div>
+  </div>
+  <div class="r" style="align-items:flex-start;gap:14px">
+    <div class="c" style="flex:1">
+      <p class="mo">8 October 2026 · Ganpat University, Mehsana</p>
+      <p class="d1" style="text-transform:uppercase;position:static">AWS<br data-om-id="517fa650:49"><span class="scr" data-om-id="517fa650:50" style="font-size: 30px;">Students</span><br data-om-id="517fa650:51">COMMUNITY<br data-om-id="517fa650:52">DAY</p>
+      <div class="r" style="gap:6px">
+        <div class="tile" style="width:38px">08</div><div class="tile" style="width:38px">14</div><div class="tile" style="width:38px">32</div><div class="tile" style="width:38px">09</div>
+        <p class="mo" style="align-self:flex-end">days hrs min sec — flip tiles</p>
+      </div>
+      <div class="r"><span class="btn o">Register now →</span><span class="btn g">Explore event</span></div>
+    </div>
+    <div class="c" style="width:150px;align-items:flex-end">
+      <div class="d2" style="writing-mode:vertical-rl">2026</div>
+      <div class="ph" style="width:130px;height:150px">MASCOT CUT-OUT<br>(supplied asset)</div>
+    </div>
+  </div>
+  <div class="k" style="margin-top:-2px"><div class="r" style="justify-content:space-between">
+    <div class="kd" style="flex:1"><p class="mo">Date</p><p class="lbl">8 Oct 2026</p></div>
+    <div class="kd" style="flex:1"><p class="mo">Venue</p><p class="lbl">GUNI, Mehsana</p></div>
+    <div class="kd" style="flex:1"><p class="mo">Mode</p><p class="lbl">In person</p></div>
+    <div class="kd" style="flex:1"><p class="mo">Seats</p><p class="lbl">Limited · free</p></div>
+  </div></div>
+  <div class="k mut"><p class="mo">01 / About</p><p class="d2">AWS Students Community Day</p>
+    <div class="r"><div class="k" style="flex:1;background:#fff"><p class="d3">What</p><p class="tx">A one-day student cloud conference.</p></div>
+    <div class="k" style="flex:1;background:#fff"><p class="d3">Why</p><p class="tx">Learn AWS from people building on it.</p></div>
+    <div class="k" style="flex:1;background:#fff"><p class="d3">Who</p><p class="tx">Any student. No cloud experience needed.</p></div></div>
+    <div class="r"><div class="k" style="flex:1;background:#fff"><p class="d3">Where</p><p class="tx">Centre of Excellence, GUNI campus.</p></div>
+    <div class="k" style="flex:1;background:#fff"><p class="d3">When</p><p class="tx">09:00 – 17:30, 8 October.</p></div>
+    <div class="kd" style="flex:1;justify-content:center"><p class="mo">Tap a card → expands in place</p></div></div>
+  </div>
+  <div class="c"><p class="mo">02 / Highlights</p>
+    <div class="r" style="align-items:flex-start">
+      <div class="k" style="flex:1.4;min-height:120px"><p class="d2">What's waiting for you?</p><p class="tx">Six ways to spend the day. Pick one to see what it involves.</p><div class="kd"><p class="mo">Info layer expands here</p></div></div>
+      <div class="c" style="flex:1;margin-left:-18px">
+        <div class="r"><div class="k" style="flex:1;padding:7px"><p class="d3">Learn</p></div><div class="k" style="flex:1;padding:7px"><p class="d3">Build</p></div></div>
+        <div class="r"><div class="k" style="flex:1;padding:7px"><p class="d3">Connect</p></div><div class="k" style="flex:1;padding:7px"><p class="d3">Compete</p></div></div>
+        <div class="r"><div class="k" style="flex:1;padding:7px"><p class="d3">Create</p></div><div class="k" style="flex:1;padding:7px"><p class="d3">Network</p></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="c"><p class="mo">03 / Speakers</p>
+    <div class="r" style="align-items:flex-start">
+      <div class="k" style="width:170px"><div class="ph" style="height:120px">FEATURED SPEAKER 4:5<br>purple duotone</div><p class="d3">Speaker TBA</p><p class="mo">Role · Company</p><div class="r" style="gap:4px"><span class="chip">Cloud</span><span class="chip">AI/ML</span></div></div>
+      <div class="c" style="flex:1">
+        <p class="tx">Bio expands here when a supporting card is selected; their sessions surface underneath.</p>
+        <div class="r"><div class="kd" style="flex:1"><div class="ph" style="height:44px">4:5</div><p class="mo">TBA</p></div><div class="kd" style="flex:1"><div class="ph" style="height:44px">4:5</div><p class="mo">TBA</p></div><div class="kd" style="flex:1"><div class="ph" style="height:44px">4:5</div><p class="mo">TBA</p></div><div class="kd" style="flex:1"><div class="ph" style="height:44px">4:5</div><p class="mo">TBA</p></div></div>
+        <span class="btn g">See who's speaking</span>
+      </div>
+    </div>
+  </div>
+  <div class="k mut"><p class="mo">04 / Sessions</p><p class="d2">Find your track</p>
+    <div class="r" style="flex-wrap:wrap;gap:5px"><span class="chip on">All</span><span class="chip">Beginner</span><span class="chip">AWS</span><span class="chip">AI/ML</span><span class="chip">Cloud</span><span class="chip">DevOps</span><span class="chip">Community</span></div>
+    <div class="r"><div class="k" style="flex:1;background:#fff"><p class="lbl">Session title placeholder</p><p class="mo">Beginner · 45 min · Room TBA</p></div><div class="k" style="flex:1;background:#fff"><p class="lbl">Session title placeholder</p><p class="mo">Advanced · 90 min · Lab</p></div></div>
+    <span class="btn g">All 12 sessions →</span>
+  </div>
+  <div class="c"><p class="mo">05 / Timeline · 08 October</p>
+    <div class="r" style="align-items:flex-start;overflow:hidden">
+      <div class="kd" style="flex:1"><p class="mo">09:00</p><p class="lbl">Registration</p></div>
+      <div class="kd" style="flex:1"><p class="mo">10:00</p><p class="lbl">Opening</p></div>
+      <div class="kd" style="flex:1"><p class="mo">11:00</p><p class="lbl">Keynote</p></div>
+      <div class="kd" style="flex:1"><p class="mo">14:00</p><p class="lbl">Workshop</p></div>
+      <div class="kd" style="flex:1"><p class="mo">17:30</p><p class="lbl">Closing</p></div>
+    </div><hr class="rule">
+  </div>
+  <div class="c"><p class="mo">06 / Venue</p>
+    <div class="r"><div class="ph" style="flex:1;height:90px">CAMPUS PHOTO</div>
+      <div class="k" style="flex:1"><p class="d3">Ganpat University</p><p class="tx">Mehsana, Gujarat · Centre of Excellence</p><div class="r" style="gap:5px"><span class="chip">Bus</span><span class="chip">Train</span><span class="chip">Car</span><span class="chip">Gate</span></div><span class="btn g">Get directions</span></div>
+      <div class="ph" style="flex:1;height:90px">CONTAINED MAP AREA</div></div>
+  </div>
+  <div class="k inv"><p class="d2">Meet. Build. Learn. Connect.</p><p class="tx">Community section — crowd silhouette at 7%, floating imagery cards, @aws.sbg_guni</p>
+    <div class="r"><div class="ph" style="flex:1;height:52px">COMMUNITY 1</div><div class="ph" style="flex:1;height:52px">COMMUNITY 2</div><div class="ph" style="flex:1;height:52px">COMMUNITY 3</div></div>
+  </div>
+  <div class="c"><p class="mo">07 / FAQ</p>
+    <div class="k"><div class="r" style="justify-content:space-between"><p class="lbl">Can any student attend?</p><span class="lbl">−</span></div><div class="kd"><p class="tx">Yes — any student from any college, any year. Registration is free and seats are limited.</p></div></div>
+    <div class="k"><div class="r" style="justify-content:space-between"><p class="lbl">Do I need cloud experience?</p><span class="lbl">+</span></div></div>
+    <div class="k"><div class="r" style="justify-content:space-between"><p class="lbl">Will I get a certificate?</p><span class="lbl">+</span></div></div>
+  </div>
+  <div class="k inv" style="align-items:flex-start"><hr class="rule" style="width:70px"><p class="d1" style="font-size:26px">Ready to build the future?</p><p class="tx">Join AWS Students Community Day 2026 at Ganpat University.</p>
+    <div class="r"><div class="kd" style="flex:1"><p class="mo">Date</p><p class="lbl">8 Oct</p></div><div class="kd" style="flex:1"><p class="mo">Where</p><p class="lbl">GUNI</p></div><div class="kd" style="flex:1"><p class="mo">Entry</p><p class="lbl">Free</p></div><div class="kd" style="flex:1"><p class="mo">Status</p><p class="lbl">Open</p></div></div>
+    <span class="btn o">Register now →</span></div>
+  <div class="k inv"><div class="r" style="justify-content:space-between;align-items:flex-start"><div class="c"><p class="d2">AWS Students<br>Community Day 2026</p><p class="mo">Ganpat University · Mehsana, Gujarat</p><p class="mo">@aws.sbg_guni · awscloudclub@ganpatuniversity.ac.in</p></div><div class="ph" style="width:70px;height:70px">MASCOT SM</div></div>
+    <div class="r"><div class="ph" style="flex:1;height:26px">GUNI</div><div class="ph" style="flex:1;height:26px">CoE</div><div class="ph" style="flex:1;height:26px">AWS SBG</div></div></div>
+</div></div>
+
+<div class="wf" style="width:250px"><div class="wfh"><span>Mobile 390</span><span>Home</span></div>
+<div class="wb gridbg" style="padding:10px;gap:10px">
+  <div class="r" style="justify-content:space-between;align-items:center"><div class="ph" style="width:80px;height:18px">LOCKUP</div><span class="mo">☰ Menu</span></div>
+  <p class="mo">8 Oct 2026 · Mehsana</p>
+  <p class="d1" style="font-size:26px">AWS <span class="scr" style="font-size:22px">Students</span><br>COMMUNITY DAY</p>
+  <div class="r" style="gap:4px"><div class="tile" style="flex:1;font-size:12px">08</div><div class="tile" style="flex:1;font-size:12px">14</div><div class="tile" style="flex:1;font-size:12px">32</div><div class="tile" style="flex:1;font-size:12px">09</div></div>
+  <div class="ph" style="height:90px">MASCOT</div>
+  <span class="btn o" style="justify-content:center">Register now →</span>
+  <div class="k"><div class="kd"><p class="mo">Date · Venue</p><p class="lbl">8 Oct · GUNI</p></div><div class="kd"><p class="mo">Mode · Seats</p><p class="lbl">In person · free</p></div></div>
+  <div class="k mut"><p class="mo">01 / About</p><p class="d3">What · Why · Who</p><p class="tx">Stacked, one open at a time</p></div>
+  <div class="k"><p class="mo">02 / Highlights</p><p class="tx">Horizontal swipe: Learn → Build → Connect →</p></div>
+  <div class="k"><p class="mo">03 / Speakers</p><div class="ph" style="height:70px">FEATURED 4:5</div><div class="r" style="gap:4px"><div class="ph" style="flex:1;height:30px">·</div><div class="ph" style="flex:1;height:30px">·</div><div class="ph" style="flex:1;height:30px">·</div></div></div>
+  <div class="k mut"><p class="mo">04 / Sessions</p><div class="r" style="gap:4px"><span class="chip on">All</span><span class="chip">AWS</span><span class="chip">AI/ML</span></div><div class="k" style="background:#fff"><p class="lbl">Session placeholder</p><p class="mo">Beginner · 45 min</p></div></div>
+  <div class="k"><p class="mo">05 / Timeline</p><p class="tx">Vertical spine, 8 stations</p></div>
+  <div class="k inv"><p class="d3">Meet. Build. Learn.</p><div class="ph" style="height:44px">COMMUNITY</div></div>
+  <div class="k"><p class="mo">07 / FAQ</p><p class="lbl">Can any student attend? +</p></div>
+  <div class="k inv"><p class="d2">Ready to build the future?</p><span class="btn o" style="justify-content:center">Register now →</span></div>
+  <div class="k inv"><p class="d3">AWS SCD 2026</p><p class="mo">@aws.sbg_guni</p></div>
+</div></div>
+
+<div class="notes">
+<h4>Callouts</h4>
+<p>§4.9 hero choreography: grid → display lines masked up → date → mono labels → mascot → CTA last</p>
+<p>Info strip overlaps hero bottom edge by 24px (nested white card)</p>
+<p>About = where nested-card grammar is set: outer muted panel → white card → dashed sub-card</p>
+<p>Highlights satellites overlap the central card; hover brings forward, siblings to 88%</p>
+<p>Section index rail 01→12 sits left on desktop; slim progress bar on mobile</p>
+<p>Crowd silhouette appears exactly twice: register panel + above footer</p>
+<p>Only two grounds per page + inverted secondary for community / register / footer</p>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Sessions + filters — /sessions</div>
+<div class="set">
+<div class="wf" style="width:420px"><div class="wfh"><span>Desktop 1440 · /sessions</span><span>Catalog</span></div>
+<div class="wb">
+  <div class="r" style="justify-content:space-between;align-items:center"><div class="ph" style="width:100px;height:20px">LOCKUP</div><div class="r" style="gap:8px;align-items:center"><span class="mo">Home</span><span class="mo">Agenda</span><span class="mo">Speakers</span><span class="btn o">Register</span></div></div>
+  <div class="c" style="gap:4px"><p class="mo">02 / Sessions</p><p class="d1" style="font-size:30px">Sessions &amp; workshops</p><p class="tx">Pick a level, pick a topic. Every session is free to attend.</p></div>
+  <div class="k mut" style="gap:6px"><p class="mo">Sticky filter bar</p>
+    <div class="r" style="flex-wrap:wrap;gap:5px"><span class="chip on">All</span><span class="chip">Beginner</span><span class="chip">Intermediate</span><span class="chip">Advanced</span><span class="chip">AWS</span><span class="chip">AI/ML</span><span class="chip">Cloud</span><span class="chip">DevOps</span><span class="chip">Community</span></div>
+    <div class="r"><div class="kd" style="flex:1;background:#fff"><p class="mo">⌕ Search sessions</p></div><span class="btn g">Clear all</span></div>
+    <p class="mo">12 sessions · 3 tracks</p>
+  </div>
+  <div class="k"><div class="r" style="justify-content:space-between;align-items:flex-start"><div class="c" style="gap:4px"><p class="lbl">Session title placeholder</p><p class="mo">Beginner · 45 min · AWS · Room TBA</p><p class="tx">One-line description of what students walk out able to do.</p></div><span class="lbl">−</span></div>
+    <div class="kd"><div class="r"><div class="c" style="flex:1;gap:4px"><p class="mo">Speaker</p><p class="lbl">TBA</p><p class="mo">Prerequisites</p><p class="tx">A laptop. Nothing else.</p></div><div class="c" style="flex:1;gap:6px"><p class="mo">Detail expands in place</p><span class="btn g">Open full page →</span><span class="btn">Add to my sessions</span></div></div></div>
+  </div>
+  <div class="k"><div class="r" style="justify-content:space-between"><div class="c" style="gap:4px"><p class="lbl">Session title placeholder</p><p class="mo">Advanced · 90 min · AI/ML · Lab 2</p></div><span class="lbl">+</span></div></div>
+  <div class="k"><div class="r" style="justify-content:space-between"><div class="c" style="gap:4px"><p class="lbl">Hands-on lab placeholder</p><p class="mo">Intermediate · 120 min · Cloud · Lab 1</p></div><span class="lbl">+</span></div></div>
+  <div class="k mut" style="align-items:center;text-align:center"><div class="ph" style="width:70px;height:70px">MASCOT</div><p class="lbl">Nothing matches those filters.</p><span class="btn g">Clear all filters</span><p class="mo">Empty state</p></div>
+</div></div>
+<div class="wf" style="width:250px"><div class="wfh"><span>Mobile 390 · /sessions</span><span>+ detail</span></div>
+<div class="wb" style="padding:10px">
+  <div class="r" style="justify-content:space-between;align-items:center"><span class="mo">← Back</span><span class="mo">☰</span></div>
+  <p class="d2">Sessions</p>
+  <div class="k mut" style="gap:5px"><p class="mo">Sticky · scrolls horizontally</p><div class="r" style="gap:4px;overflow:hidden"><span class="chip on">All</span><span class="chip">Beginner</span><span class="chip">AWS</span><span class="chip">AI/ML</span></div><div class="kd" style="background:#fff"><p class="mo">⌕ Search</p></div><p class="mo">12 sessions · 3 tracks</p></div>
+  <div class="k"><div class="r" style="justify-content:space-between"><p class="lbl">Session placeholder</p><span class="lbl">+</span></div><p class="mo">Beginner · 45 min · Room TBA</p></div>
+  <div class="k"><div class="r" style="justify-content:space-between"><p class="lbl">Session placeholder</p><span class="lbl">−</span></div><p class="mo">Advanced · 90 min · Lab 2</p><div class="kd"><p class="tx">Description, speaker, prerequisites.</p><span class="btn" style="justify-content:center">Add to my sessions</span></div></div>
+  <div class="k"><div class="r" style="justify-content:space-between"><p class="lbl">Lab placeholder</p><span class="lbl">+</span></div><p class="mo">Intermediate · 120 min</p></div>
+  <hr class="rule">
+  <p class="mo">Session detail page /sessions/:id</p>
+  <div class="k"><p class="d3">Session title</p><div class="r" style="gap:4px"><span class="chip on">AWS</span><span class="chip">Beginner</span></div><p class="mo">11:00 · 45 min · Room TBA</p><div class="kd"><div class="r" style="align-items:center;gap:6px"><div class="ph" style="width:32px;height:32px;border-radius:999px">👤</div><div class="c" style="gap:2px"><p class="lbl">Speaker TBA</p><p class="mo">Role · Company</p></div></div></div><p class="tx">Full description and what to bring.</p><span class="btn o" style="justify-content:center">Add to my sessions</span><p class="mo">Related sessions ↓</p></div>
+</div></div>
+<div class="notes"><h4>Callouts</h4>
+<p>Filter change = FLIP reposition + fade, never a hard swap (§4.13)</p>
+<p>Count line updates with every filter</p>
+<p>Rows expand in place; the full page still exists for sharing</p>
+<p>Filter bar sticks under the compacted header — 44px targets, 8px apart</p>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Agenda — /agenda</div>
+<div class="set">
+<div class="wf" style="width:420px"><div class="wfh"><span>Desktop 1440 · /agenda</span><span>Track × time</span></div>
+<div class="wb">
+  <div class="c" style="gap:4px"><p class="mo">03 / Agenda</p><p class="d1" style="font-size:30px">How the day runs</p></div>
+  <div class="r" style="gap:5px"><span class="chip on">All tracks</span><span class="chip">Main stage</span><span class="chip">Workshop</span><span class="chip">Lab</span></div>
+  <div class="k" style="padding:0;gap:0">
+    <div class="r mut" style="padding:6px 8px;gap:0"><p class="mo" style="width:50px">Time</p><p class="mo" style="flex:1">Main stage</p><p class="mo" style="flex:1">Workshop</p><p class="mo" style="flex:1">Lab</p></div>
+    <div class="r" style="padding:8px;gap:6px;border-top:1px solid #ddd8ce"><p class="mo" style="width:44px">09:00</p><div class="kd" style="flex:1"><p class="lbl">Registration &amp; check-in</p><p class="mo">Foyer · volunteers verify by name</p></div><div class="kd" style="flex:1;justify-content:center"><p class="mo">—</p></div><div class="kd" style="flex:1;justify-content:center"><p class="mo">—</p></div></div>
+    <div class="r" style="padding:8px;gap:6px;border-top:1px solid #ddd8ce;background:#f6f4f0"><p class="mo" style="width:44px">10:00</p><div class="kd" style="flex:1;background:#fff"><p class="lbl">Opening ceremony</p><p class="mo">Auditorium</p></div><div class="kd" style="flex:1;justify-content:center"><p class="mo">—</p></div><div class="kd" style="flex:1;justify-content:center"><p class="mo">—</p></div></div>
+    <div class="r" style="padding:4px 8px;gap:6px;border-top:1px solid #ddd8ce;align-items:center"><p class="mo" style="width:44px">10:45</p><div class="r" style="flex:1;align-items:center;gap:6px"><hr class="rule" style="flex:1"><p class="mo">Break · 15 min</p><hr class="rule" style="flex:1"></div></div>
+    <div class="r" style="padding:8px;gap:6px;border-top:1.5px solid #FF9900"><p class="mo" style="width:44px;color:#B36200">11:00</p><div class="k" style="flex:1;padding:8px"><p class="lbl">Keynote placeholder</p><p class="mo">Happening now ●</p></div><div class="kd" style="flex:1"><p class="lbl">Workshop placeholder</p><p class="mo">Lab 1 · 90 min</p></div><div class="kd" style="flex:1"><p class="lbl">Hands-on lab</p><p class="mo">Lab 2</p></div></div>
+    <div class="r" style="padding:4px 8px;gap:6px;border-top:1px solid #ddd8ce;align-items:center"><p class="mo" style="width:44px">13:00</p><div class="r" style="flex:1;align-items:center;gap:6px"><hr class="rule" style="flex:1"><p class="mo">Lunch</p><hr class="rule" style="flex:1"></div></div>
+    <div class="r" style="padding:8px;gap:6px;border-top:1px solid #ddd8ce"><p class="mo" style="width:44px">14:00</p><div class="kd" style="flex:1"><p class="lbl">Technical session</p></div><div class="kd" style="flex:1"><p class="lbl">Workshop 2</p></div><div class="kd" style="flex:1"><p class="lbl">Community activity</p></div></div>
+    <div class="r" style="padding:8px;gap:6px;border-top:1px solid #ddd8ce"><p class="mo" style="width:44px">17:30</p><div class="kd" style="flex:1"><p class="lbl">Closing &amp; networking</p></div><div class="kd" style="flex:1;justify-content:center"><p class="mo">—</p></div><div class="kd" style="flex:1;justify-content:center"><p class="mo">—</p></div></div>
+  </div>
+  <p class="mo">Row click → expands into nested detail inside the grid</p>
+</div></div>
+<div class="wf" style="width:250px"><div class="wfh"><span>Mobile 390 · /agenda</span><span>Time blocks</span></div>
+<div class="wb" style="padding:10px">
+  <p class="d2">How the day runs</p>
+  <div class="r" style="gap:4px;overflow:hidden"><span class="chip on">All</span><span class="chip">Main</span><span class="chip">Workshop</span><span class="chip">Lab</span></div>
+  <div class="k mut" style="padding:6px 8px"><p class="mo">09:00 — sticky time header</p></div>
+  <div class="k"><p class="lbl">Registration &amp; check-in</p><p class="mo">Foyer</p></div>
+  <div class="k mut" style="padding:6px 8px"><p class="mo">10:00</p></div>
+  <div class="k"><p class="lbl">Opening ceremony</p><p class="mo">Auditorium</p></div>
+  <div class="r" style="align-items:center;gap:6px"><hr class="rule" style="flex:1"><p class="mo">Break</p><hr class="rule" style="flex:1"></div>
+  <div class="k mut" style="padding:6px 8px"><p class="mo">11:00 · now ●</p></div>
+  <div class="k"><div class="r" style="justify-content:space-between"><p class="lbl">Keynote placeholder</p><span class="lbl">−</span></div><div class="kd"><p class="tx">Speaker TBA · Auditorium · 45 min</p><span class="btn g">Add to my sessions</span></div></div>
+  <div class="k"><p class="lbl">Workshop placeholder</p><p class="mo">Lab 1 · 90 min</p></div>
+</div></div>
+<div class="notes"><h4>Callouts</h4>
+<p>Track colour = purple tint steps only, no new hues</p>
+<p>"Happening now" = orange top rule + mono marker on the live row</p>
+<p>Breaks and lunch are slim orange-ruled dividers, never cards</p>
+<p>Mobile: sticky time headers, one column, no horizontal scroll at 320px</p>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1d">
+<div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>Speakers — /speakers and /speakers/:id</div>
+<div class="set">
+<div class="wf" style="width:400px"><div class="wfh"><span>Desktop 1440 · /speakers</span><span>Directory</span></div>
+<div class="wb">
+  <div class="c" style="gap:4px"><p class="mo">04 / Speakers</p><p class="d1" style="font-size:30px">See who's speaking</p><p class="tx">Line-up in progress. Placeholders stay until a speaker is confirmed.</p></div>
+  <div class="r" style="align-items:flex-start">
+    <div class="k" style="width:150px"><p class="mo">Featured speaker</p><div class="ph" style="height:150px">PORTRAIT 4:5<br>duotone → colour on hover</div><p class="d3">Speaker TBA</p><p class="mo">Role · Company</p><div class="r" style="gap:4px"><span class="chip">Cloud</span><span class="chip">Serverless</span></div></div>
+    <div class="c" style="flex:1">
+      <p class="tx">Bio fades up here; the featured portrait cross-fades when another card is picked.</p>
+      <div class="kd"><p class="mo">Their sessions</p><p class="lbl">Session placeholder →</p><p class="lbl">Workshop placeholder →</p></div>
+      <div class="r" style="flex-wrap:wrap;gap:8px">
+        <div class="kd" style="width:78px"><div class="ph" style="height:56px">4:5</div><p class="lbl">TBA</p><p class="mo">Role</p></div>
+        <div class="kd" style="width:78px"><div class="ph" style="height:56px">4:5</div><p class="lbl">TBA</p><p class="mo">Role</p></div>
+        <div class="kd" style="width:78px"><div class="ph" style="height:56px">4:5</div><p class="lbl">TBA</p><p class="mo">Role</p></div>
+        <div class="kd" style="width:78px"><div class="ph" style="height:56px">4:5</div><p class="lbl">TBA</p><p class="mo">Role</p></div>
+        <div class="kd mut" style="width:78px;justify-content:center;align-items:center"><p class="mo">Stay tuned…</p></div>
+      </div>
+    </div>
+  </div>
+</div></div>
+<div class="wf" style="width:300px"><div class="wfh"><span>Desktop · /speakers/:id</span><span>Detail</span></div>
+<div class="wb">
+  <p class="mo">Home / Speakers / Name</p>
+  <div class="r" style="align-items:flex-start">
+    <div class="c" style="width:110px"><p class="mo">Sticky column</p><div class="ph" style="height:130px">PORTRAIT 4:5</div><div class="r" style="gap:4px"><span class="chip">in</span><span class="chip">ig</span><span class="chip">↗</span></div></div>
+    <div class="c" style="flex:1"><p class="d2">Speaker TBA</p><p class="mo">Role · Company</p><hr class="rule" style="width:50px"><p class="tx">Bio paragraph. Real copy once confirmed — never invented.</p><div class="r" style="gap:4px"><span class="chip">AI/ML</span><span class="chip">Cloud</span></div>
+      <div class="k"><p class="mo">Sessions</p><div class="kd"><p class="lbl">Session placeholder</p><p class="mo">11:00 · Auditorium</p></div><div class="kd"><p class="lbl">Workshop placeholder</p><p class="mo">14:00 · Lab 1</p></div></div>
+    </div>
+  </div>
+</div></div>
+<div class="wf" style="width:220px"><div class="wfh"><span>Mobile 390</span><span>Speakers</span></div>
+<div class="wb" style="padding:10px">
+  <p class="d2">See who's speaking</p>
+  <div class="k"><div class="ph" style="height:110px">FEATURED 4:5</div><p class="d3">Speaker TBA</p><p class="mo">Role · Company</p><span class="btn g" style="justify-content:center">Read bio</span></div>
+  <p class="mo">Swipe row →</p>
+  <div class="r" style="gap:6px;overflow:hidden"><div class="kd" style="width:70px"><div class="ph" style="height:52px">4:5</div><p class="mo">TBA</p></div><div class="kd" style="width:70px"><div class="ph" style="height:52px">4:5</div><p class="mo">TBA</p></div><div class="kd" style="width:70px"><div class="ph" style="height:52px">4:5</div><p class="mo">TBA</p></div></div>
+</div></div>
+<div class="notes"><h4>Callouts</h4>
+<p>Editorial, not a 3-up grid: one big card carries the section</p>
+<p>Portraits 4:5, purple duotone resolving to colour on hover only</p>
+<p>Unconfirmed = explicit "TBA / Stay tuned…" placeholder, never a made-up name</p>
+<p>Detail page: sticky portrait left, bio + sessions right</p>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1e">
+<div class="dv-olabel"><a class="dv-oid" href="#1e">1e</a>Timeline — /timeline</div>
+<div class="set">
+<div class="wf" style="width:470px"><div class="wfh"><span>Desktop 1440 · /timeline</span><span>Day flow · 8 stations</span></div>
+<div class="wb">
+  <div class="c" style="gap:4px"><p class="mo">05 / Timeline</p><p class="d1" style="font-size:30px">08 October 2026</p><p class="tx">The whole day, station by station. Times are provisional until programming lands.</p></div>
+  <div style="position:relative;padding:14px 0">
+    <div class="r" style="align-items:flex-end;gap:8px">
+      <div class="kd" style="flex:1"><p class="mo">09:00</p><p class="lbl">Registration</p></div>
+      <div class="k" style="flex:1;margin-bottom:26px"><p class="mo">10:00</p><p class="lbl">Opening ceremony</p><p class="tx">Auditorium</p></div>
+      <div class="kd" style="flex:1"><p class="mo">11:00</p><p class="lbl">Keynote</p></div>
+      <div class="k" style="flex:1;margin-bottom:26px"><p class="mo">12:00</p><p class="lbl">Technical session</p></div>
+    </div>
+    <hr style="height:2px;background:#232F3E;border:0;margin:10px 0">
+    <div class="r" style="align-items:flex-start;gap:8px">
+      <div class="k" style="flex:1;margin-top:26px"><p class="mo">14:00</p><p class="lbl">Workshop</p></div>
+      <div class="kd" style="flex:1"><p class="mo">16:00</p><p class="lbl">Community activity</p></div>
+      <div class="k" style="flex:1;margin-top:26px"><p class="mo">17:30</p><p class="lbl">Closing &amp; networking</p></div>
+      <div class="kd mut" style="flex:1"><p class="mo">08 / TBA</p><p class="lbl">Stay tuned…</p></div>
+    </div>
+  </div>
+  <div class="k"><p class="mo">Station hover / tap reveals</p><div class="r"><div class="kd" style="flex:1"><p class="mo">Time</p><p class="lbl">14:00 – 16:00</p></div><div class="kd" style="flex:1"><p class="mo">Category</p><p class="lbl">Workshop</p></div><div class="kd" style="flex:1"><p class="mo">Location</p><p class="lbl">Lab 1</p></div><div class="kd" style="flex:1"><p class="mo">Speaker</p><p class="lbl">TBA</p></div></div><p class="tx">Description line about what happens in this block.</p></div>
+</div></div>
+<div class="wf" style="width:240px"><div class="wfh"><span>Mobile 390 · /timeline</span><span>Vertical spine</span></div>
+<div class="wb" style="padding:10px">
+  <p class="d2">08 October 2026</p>
+  <div class="r" style="gap:8px"><div style="width:2px;background:#232F3E;flex:none"></div>
+    <div class="c" style="flex:1">
+      <div class="kd"><p class="mo">09:00</p><p class="lbl">Registration</p></div>
+      <div class="k"><p class="mo">10:00</p><p class="lbl">Opening ceremony</p><div class="kd"><p class="tx">Auditorium · expanded row</p></div></div>
+      <div class="kd"><p class="mo">11:00</p><p class="lbl">Keynote</p></div>
+      <div class="kd"><p class="mo">12:00</p><p class="lbl">Technical session</p></div>
+      <div class="kd"><p class="mo">14:00</p><p class="lbl">Workshop</p></div>
+      <div class="kd"><p class="mo">16:00</p><p class="lbl">Community activity</p></div>
+      <div class="kd"><p class="mo">17:30</p><p class="lbl">Closing &amp; networking</p></div>
+    </div>
+  </div>
+</div></div>
+<div class="notes"><h4>Callouts</h4>
+<p>Asymmetric stations above/below a purple spine on desktop; plain vertical on mobile</p>
+<p>Content is swappable placeholder — structure survives real programming</p>
+<p>Cards enter from alternating depths on scroll (§4.5), 60ms stagger</p>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1f">
+<div class="dv-olabel"><a class="dv-oid" href="#1f">1f</a>Venue — /venue</div>
+<div class="set">
+<div class="wf" style="width:420px"><div class="wfh"><span>Desktop 1440 · /venue</span><span>Wayfinding</span></div>
+<div class="wb">
+  <div class="c" style="gap:4px"><p class="mo">06 / Venue</p><p class="d1" style="font-size:30px">Where to find us</p></div>
+  <div class="r" style="align-items:flex-start">
+    <div class="c" style="flex:1.2">
+      <div class="ph" style="height:110px">CAMPUS PHOTO 16:9</div>
+      <div class="k"><p class="d3">Ganpat University</p><p class="tx">Centre of Excellence, Ganpat Vidyanagar, Mehsana, Gujarat 384012</p><div class="r"><span class="btn g">Copy address</span><span class="btn o">Get directions →</span></div></div>
+      <div class="r"><div class="kd" style="flex:1"><p class="mo">Parking</p><p class="tx">Free, gate 2 lot</p></div><div class="kd" style="flex:1"><p class="mo">Food</p><p class="tx">Campus canteen open all day</p></div></div>
+    </div>
+    <div class="c" style="flex:1">
+      <div class="ph" style="height:130px">CONTAINED MAP AREA<br>(not a full-width slab)</div>
+      <div class="k mut"><p class="mo">How to reach</p><div class="r" style="gap:4px"><span class="chip on">Bus</span><span class="chip">Train</span><span class="chip">Car</span><span class="chip">Gate</span></div><div class="kd" style="background:#fff"><p class="tx">Tab panel: route, stop name, walking time to the Centre of Excellence.</p></div></div>
+      <div class="kd"><p class="mo">Campus info</p><p class="tx">Which gate, which block, where to check in.</p></div>
+    </div>
+  </div>
+</div></div>
+<div class="wf" style="width:240px"><div class="wfh"><span>Mobile 390 · /venue</span><span>Stacked</span></div>
+<div class="wb" style="padding:10px">
+  <p class="d2">Where to find us</p>
+  <div class="ph" style="height:80px">CAMPUS PHOTO</div>
+  <div class="k"><p class="d3">Ganpat University</p><p class="tx">Mehsana, Gujarat 384012</p><span class="btn g" style="justify-content:center">Copy address</span><span class="btn o" style="justify-content:center">Get directions →</span></div>
+  <div class="ph" style="height:90px">MAP</div>
+  <div class="k mut"><p class="mo">How to reach</p><div class="r" style="gap:4px;overflow:hidden"><span class="chip on">Bus</span><span class="chip">Train</span><span class="chip">Car</span></div><div class="kd" style="background:#fff"><p class="tx">Route detail</p></div></div>
+  <div class="kd"><p class="mo">Parking · Food</p></div>
+</div></div>
+<div class="notes"><h4>Callouts</h4>
+<p>Nested composition, not a full-bleed map slab</p>
+<p>Copy button gives a toast; directions opens the maps app</p>
+<p>Tabs use the ARIA tab pattern, arrow-key navigable</p>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1g">
+<div class="dv-olabel"><a class="dv-oid" href="#1g">1g</a>Register / auth — /register, /login, /reset</div>
+<div class="set">
+<div class="wf" style="width:440px"><div class="wfh"><span>Desktop 1440 · /register</span><span>3-step stepper</span></div>
+<div class="wb" style="padding:0;gap:0">
+  <div class="r" style="gap:0;align-items:stretch">
+    <div class="wb" style="flex:1.3">
+      <p class="mo">Home / Register</p>
+      <div class="r" style="gap:6px;align-items:center"><span class="chip on">1 Account</span><span class="mo">—</span><span class="chip">2 Student details</span><span class="mo">—</span><span class="chip">3 Confirm</span></div>
+      <p class="d2">Register free</p>
+      <div class="k">
+        <div class="kd" style="border-style:solid;border-color:#1a1a1a"><p class="mo">Full name</p><p class="lbl">Typed value</p></div>
+        <div class="kd"><p class="mo">Email</p><p class="tx">you@college.edu</p><p class="mo">Helper: we send your ticket here</p></div>
+        <div class="kd" style="border-color:#b3261e"><p class="mo" style="color:#b3261e">Password ⚠</p><p class="tx" style="color:#b3261e">Use at least 8 characters.</p><div class="r" style="gap:3px"><hr class="rule" style="flex:1"><hr style="flex:1;height:2px;border:0;background:#ddd8ce"><hr style="flex:1;height:2px;border:0;background:#ddd8ce"></div><p class="mo">Strength: weak</p></div>
+        <div class="r" style="align-items:center;gap:6px"><span class="chip">☐</span><p class="tx">I'm a student and I'll follow the code of conduct.</p></div>
+        <div class="r"><span class="btn o">Continue →</span><span class="btn g">Already registered? Log in</span></div>
+      </div>
+      <div class="kd mut"><p class="mo">Step 2 fields</p><p class="tx">College · course · year · city — select + text, on-blur validation</p></div>
+      <div class="kd mut"><p class="mo">Step 3 confirm</p><p class="tx">Read-back summary, edit links, "Confirm registration" → confetti ≤40 particles + ticket</p></div>
+    </div>
+    <div class="wb inv" style="flex:1;justify-content:space-between"><div class="c"><p class="d2">One day. Real cloud.</p><p class="tx">Free entry, limited seats.</p></div><div class="ph" style="height:120px">MASCOT</div><p class="mo">Panel → 96px header strip on mobile</p></div>
+  </div>
+</div></div>
+<div class="wf" style="width:300px"><div class="wfh"><span>States · /login · /reset</span><span>Every state</span></div>
+<div class="wb">
+  <div class="k"><p class="d3">Log in</p><div class="kd"><p class="mo">Email</p></div><div class="kd"><p class="mo">Password</p></div><span class="btn o" style="justify-content:center">Log in</span><span class="btn g" style="justify-content:center">Forgot password?</span></div>
+  <div class="k" style="border-color:#b3261e"><p class="mo" style="color:#b3261e">Error summary</p><p class="tx">That email and password don't match. Try again or reset it.</p></div>
+  <div class="k mut"><p class="mo">Rate limited</p><p class="tx">Too many tries. Wait 60s.</p></div>
+  <div class="k"><p class="mo">Submitting</p><div class="r" style="gap:4px"><div class="ph" style="flex:1;height:10px"></div></div><p class="tx">Button shows spinner, stays 44px</p></div>
+  <div class="k"><p class="d3">Check your email</p><p class="tx">We sent a verification link to your inbox.</p><span class="btn g" style="justify-content:center">Resend link</span><p class="mo">/verify-email pending</p></div>
+  <div class="k mut"><p class="mo">Expired token</p><p class="tx">This link has expired. Request a new one.</p><span class="btn" style="justify-content:center">Send new link</span></div>
+  <div class="k"><p class="mo">/reset-password</p><div class="kd"><p class="mo">New password</p></div><div class="kd"><p class="mo">Repeat</p></div><span class="btn o" style="justify-content:center">Save password</span></div>
+</div></div>
+<div class="notes"><h4>Callouts</h4>
+<p>Split layout: form card left, inverted mascot panel right; stacks on mobile</p>
+<p>Label above, helper below, inline error in error red + icon; error summary at top on submit</p>
+<p>Persistent summary rail keeps steps 1–2 visible while filling step 3</p>
+<p>Success = ticket card with name + registration number. No QR, no NFC anywhere</p>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1h">
+<div class="dv-olabel"><a class="dv-oid" href="#1h">1h</a>Dashboard home — /dashboard (3 variants)</div>
+<div class="set">
+<div class="wf" style="width:420px"><div class="wfh"><span>Desktop 1440 · /dashboard</span><span>Pre-event</span></div>
+<div class="wb" style="padding:0;gap:0">
+<div class="r" style="gap:0;align-items:stretch">
+  <div class="wb" style="width:110px;background:#f6f4f0;gap:6px"><div class="ph" style="height:20px">LOCKUP</div><p class="mo">● Home</p><p class="mo">Sessions</p><p class="mo">Progress</p><p class="mo">Certificate</p><p class="mo">Profile</p><p class="mo" style="margin-top:auto">Log out</p></div>
+  <div class="wb" style="flex:1">
+    <div class="r" style="justify-content:space-between;align-items:center"><div class="c" style="gap:2px"><p class="d2">Hey Riya.</p><p class="tx">18 days to go.</p></div><div class="ph" style="width:54px;height:54px">MASCOT WAVE</div></div>
+    <div class="k"><p class="mo">Your ticket</p><div class="r" style="justify-content:space-between;align-items:flex-start"><div class="c" style="gap:2px"><p class="d3">Riya Patel</p><p class="mo">Reg. no. SCD26-0417</p><p class="tx">Ganpat University · CE, 3rd year</p></div><div class="c" style="gap:4px;align-items:flex-end"><span class="chip on">Confirmed</span><p class="mo">Show name at check-in</p></div></div>
+      <div class="r" style="gap:3px"><div class="kd" style="flex:1;padding:4px"><p class="mo">Check-in</p></div><div class="kd" style="flex:1;padding:4px"><p class="mo">Keynote</p></div><div class="kd" style="flex:1;padding:4px"><p class="mo">Workshop</p></div><div class="kd" style="flex:1;padding:4px"><p class="mo">Closing</p></div></div>
+    </div>
+    <div class="r"><div class="k" style="flex:1;align-items:center"><div class="ph" style="width:56px;height:56px;border-radius:999px">RING 0/4</div><p class="mo">Checkpoints</p></div>
+      <div class="k" style="flex:1.4"><p class="mo">Your next session</p><p class="lbl">Nothing yet — pick sessions</p><span class="btn g">Browse sessions →</span></div></div>
+    <div class="k mut"><p class="mo">Announcements</p><p class="tx">Agenda goes live next week. Stay tuned.</p></div>
+    <div class="r"><div class="k" style="flex:1"><p class="d3">Achievements</p><p class="mo">0 of 8</p></div><div class="k" style="flex:1;opacity:.5"><p class="d3">Certificate</p><p class="mo">After the event</p></div></div>
+    <div class="r"><div class="k" style="flex:1"><p class="d3">Social post</p><p class="mo">"I'm attending"</p></div><div class="k" style="flex:1;opacity:.5"><p class="d3">Wrapped</p><p class="mo">After the event</p></div></div>
+  </div>
+</div></div></div>
+<div class="wf" style="width:230px"><div class="wfh"><span>Mobile · event day</span><span>+ post-event</span></div>
+<div class="wb" style="padding:10px">
+  <div class="r" style="justify-content:space-between;align-items:center"><p class="d3">Hey Riya.</p><div class="ph" style="width:34px;height:34px">MASCOT</div></div>
+  <div class="k" style="border-width:2px"><p class="mo">Happening now · 11:00</p><p class="lbl">Keynote · Auditorium</p><span class="btn o" style="justify-content:center">Find my room</span></div>
+  <div class="k"><p class="mo">Ticket</p><p class="d3">Riya Patel</p><p class="mo">SCD26-0417</p><div class="r" style="gap:3px"><div class="kd" style="flex:1;padding:3px;background:#FF9900"><p class="mo">✓</p></div><div class="kd" style="flex:1;padding:3px;background:#FF9900"><p class="mo">✓</p></div><div class="kd" style="flex:1;padding:3px"><p class="mo">3</p></div><div class="kd" style="flex:1;padding:3px"><p class="mo">4</p></div></div></div>
+  <div class="k"><div class="r" style="align-items:center;gap:8px"><div class="ph" style="width:44px;height:44px;border-radius:999px">2/4</div><p class="tx">Two checkpoints to go.</p></div></div>
+  <hr class="rule">
+  <p class="mo">Post-event variant</p>
+  <div class="k" style="border-width:2px"><p class="d3">Your certificate is ready</p><span class="btn o" style="justify-content:center">Download PDF</span></div>
+  <div class="k"><p class="d3">Your Wrapped</p><span class="btn" style="justify-content:center">Play →</span></div>
+  <div class="r mut" style="padding:6px;gap:0;justify-content:space-around"><p class="mo">Home</p><p class="mo">Sessions</p><p class="mo">Progress</p><p class="mo">Profile</p></div>
+</div></div>
+<div class="notes"><h4>Callouts</h4>
+<p>Three variants: pre-event (countdown + pick sessions), event day ("happening now" first), post-event (certificate + Wrapped promoted to top)</p>
+<p>Ticket card first, always. Name + registration number only — volunteers verify by lookup</p>
+<p>Progress ring draws on mount, pulses once per new checkpoint</p>
+<p>Mobile bottom tab bar: Home · Sessions · Progress · Profile</p>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1i">
+<div class="dv-olabel"><a class="dv-oid" href="#1i">1i</a>Wrapped — /dashboard/wrapped</div>
+<div class="set">
+<div class="wf" style="width:410px"><div class="wfh"><span>Desktop 1440 · /dashboard/wrapped</span><span>6 slides · framed</span></div>
+<div class="wb">
+  <p class="mo">Desktop: story frame centred on a secondary ground, arrows either side</p>
+  <div class="r" style="align-items:center">
+    <span class="btn g">←</span>
+    <div class="wf" style="flex:1;border-width:2px"><div class="wb inv" style="min-height:180px;justify-content:center;align-items:center">
+      <div class="r" style="gap:3px;width:100%"><hr class="rule" style="flex:1"><hr class="rule" style="flex:1"><hr style="flex:1;height:2px;border:0;background:#5a544a"><hr style="flex:1;height:2px;border:0;background:#5a544a"><hr style="flex:1;height:2px;border:0;background:#5a544a"><hr style="flex:1;height:2px;border:0;background:#5a544a"></div>
+      <p class="d1" style="font-size:52px;text-align:center">07</p><p class="lbl" style="color:#fff">sessions attended</p><p class="mo">Numeral counts up on entry</p>
+    </div></div>
+    <span class="btn g">→</span>
+  </div>
+  <div class="r" style="gap:6px">
+    <div class="kd" style="flex:1"><p class="mo">01</p><p class="lbl">Sessions attended</p></div>
+    <div class="kd" style="flex:1"><p class="mo">02</p><p class="lbl">Hours in the room</p></div>
+    <div class="kd" style="flex:1"><p class="mo">03</p><p class="lbl">Top track</p></div>
+    <div class="kd" style="flex:1"><p class="mo">04</p><p class="lbl">Checkpoints</p></div>
+    <div class="kd" style="flex:1"><p class="mo">05</p><p class="lbl">Badges</p></div>
+    <div class="kd" style="flex:1"><p class="mo">06</p><p class="lbl">Thank you</p></div>
+  </div>
+  <div class="k mut"><p class="mo">Final slide</p><div class="r" style="align-items:center"><div class="ph" style="width:80px;height:100px">SHAREABLE CARD 4:5</div><div class="c"><p class="tx">Your day at AWS Students Community Day 2026.</p><span class="btn o">Download PNG</span><span class="btn g">Copy caption</span></div></div></div>
+</div></div>
+<div class="wf" style="width:210px"><div class="wfh"><span>Mobile 390</span><span>Full-screen story</span></div>
+<div class="wb inv" style="padding:10px;min-height:340px;justify-content:space-between">
+  <div class="c" style="gap:8px"><div class="r" style="gap:3px"><hr class="rule" style="flex:1"><hr class="rule" style="flex:1"><hr style="flex:1;height:2px;border:0;background:#5a544a"><hr style="flex:1;height:2px;border:0;background:#5a544a"><hr style="flex:1;height:2px;border:0;background:#5a544a"><hr style="flex:1;height:2px;border:0;background:#5a544a"></div><p class="mo">02 / 06 · hold to pause</p></div>
+  <div class="c" style="align-items:center;gap:6px"><p class="d1" style="font-size:60px">6.5</p><p class="lbl" style="color:#fff">hours in the room</p><p class="tx">More than most. Nice.</p></div>
+  <div class="c" style="gap:6px"><div class="ph" style="height:70px">MASCOT</div><p class="mo">Tap right → next · tap left → back · 5s auto-advance</p></div>
+</div></div>
+<div class="notes"><h4>Callouts</h4>
+<p>Six slides, big display numerals counting up, top progress bars</p>
+<p>5s auto-advance, hold-to-pause, tap zones for back/next</p>
+<p>Reduced motion: numbers land immediately, no auto-advance</p>
+<p>Final card is the only shareable — download PNG + copy caption with handles</p>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1j">
+<div class="dv-olabel"><a class="dv-oid" href="#1j">1j</a>Achievements + certificate + social post</div>
+<div class="set">
+<div class="wf" style="width:300px"><div class="wfh"><span>/dashboard/achievements</span><span>Badges</span></div>
+<div class="wb">
+  <p class="d2">Achievements</p>
+  <div class="r" style="gap:5px"><span class="chip on">All</span><span class="chip">Earned</span><span class="chip">Locked</span></div>
+  <p class="mo">3 of 8 earned</p>
+  <div class="r" style="flex-wrap:wrap;gap:8px">
+    <div class="k" style="width:66px;align-items:center;padding:8px"><div class="ph" style="width:34px;height:34px">◆</div><p class="mo">Checked in</p></div>
+    <div class="k" style="width:66px;align-items:center;padding:8px"><div class="ph" style="width:34px;height:34px">◆</div><p class="mo">First session</p></div>
+    <div class="k" style="width:66px;align-items:center;padding:8px"><div class="ph" style="width:34px;height:34px">◆</div><p class="mo">Lab done</p></div>
+    <div class="kd" style="width:66px;align-items:center;padding:8px;opacity:.3"><div class="ph" style="width:34px;height:34px">◆</div><p class="mo">Locked</p></div>
+    <div class="kd" style="width:66px;align-items:center;padding:8px;opacity:.3"><div class="ph" style="width:34px;height:34px">◆</div><p class="mo">Locked</p></div>
+    <div class="kd" style="width:66px;align-items:center;padding:8px;opacity:.3"><div class="ph" style="width:34px;height:34px">◆</div><p class="mo">Locked</p></div>
+  </div>
+  <div class="k" style="border-width:2px"><p class="mo">Unlock modal</p><div class="ph" style="width:50px;height:50px;align-self:center">◆</div><p class="d3">Lab finisher</p><p class="tx">You finished a hands-on lab.</p><div class="r"><span class="btn o">Share</span><span class="btn g">Close</span></div></div>
+</div></div>
+<div class="wf" style="width:280px"><div class="wfh"><span>/dashboard/certificates</span><span>Gated → ready</span></div>
+<div class="wb">
+  <p class="d2">Certificate</p>
+  <div class="k mut" style="align-items:center;text-align:center"><div class="ph" style="width:60px;height:60px">MASCOT</div><p class="lbl">Not available yet.</p><p class="tx">Your certificate unlocks once attendance is marked on 8 October.</p><p class="mo">Gated state</p></div>
+  <div class="k"><div class="ph" style="height:150px">A4 CERTIFICATE PREVIEW<br>event identity · name · reg. no.</div><div class="r"><span class="btn o">Download PDF</span><span class="btn g">Share to LinkedIn</span></div></div>
+</div></div>
+<div class="wf" style="width:250px"><div class="wfh"><span>/dashboard/social-post</span><span>Composer</span></div>
+<div class="wb">
+  <p class="d2">Social post</p>
+  <div class="r" style="gap:5px"><span class="chip on">I'm attending</span><span class="chip">I attended</span><span class="chip">I spoke</span></div>
+  <div class="r" style="align-items:flex-start">
+    <div class="ph" style="width:110px;height:138px">LIVE PREVIEW<br>1080×1350</div>
+    <div class="c" style="flex:1"><div class="kd"><p class="mo">Your name</p><p class="lbl">Riya Patel</p></div><div class="kd"><p class="mo">College</p><p class="lbl">Ganpat University</p></div><span class="btn o">Download PNG</span><span class="btn g">Copy caption</span><p class="mo">Caption includes @aws.sbg_guni</p></div>
+  </div>
+</div></div>
+<div class="notes"><h4>Callouts</h4>
+<p>Locked badge = 20% opacity + dashed hairline; unlock = 400ms scale-in + shine sweep</p>
+<p>Certificate has a real gated state, not a dead button</p>
+<p>Social preview renders live as fields change; poster layout, event identity</p>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1k">
+<div class="dv-olabel"><a class="dv-oid" href="#1k">1k</a>Gallery + past events</div>
+<div class="set">
+<div class="wf" style="width:330px"><div class="wfh"><span>Desktop · /gallery</span><span>Masonry + lightbox</span></div>
+<div class="wb">
+  <p class="d2">Gallery</p>
+  <div class="r" style="gap:5px"><span class="chip on">All</span><span class="chip">2026</span><span class="chip">2025</span><span class="chip">2024</span></div>
+  <div class="r" style="align-items:flex-start">
+    <div class="c" style="flex:1"><div class="ph" style="height:96px">4:5</div><div class="ph" style="height:74px">1:1</div></div>
+    <div class="c" style="flex:1"><div class="ph" style="height:74px">1:1</div><div class="ph" style="height:96px">4:5</div></div>
+    <div class="c" style="flex:1"><div class="ph" style="height:96px">4:5</div><div class="ph" style="height:74px">1:1</div></div>
+  </div>
+  <div class="k inv"><p class="mo">Lightbox</p><div class="r" style="align-items:center"><span class="btn g" style="color:#fff;border-color:#fff">←</span><div class="ph" style="flex:1;height:90px">FULL IMAGE</div><span class="btn g" style="color:#fff;border-color:#fff">→</span></div><p class="tx">Caption · arrow keys navigate · Esc closes</p></div>
+</div></div>
+<div class="wf" style="width:290px"><div class="wfh"><span>Desktop · /past-events</span><span>Previous editions</span></div>
+<div class="wb">
+  <div class="c" style="gap:4px"><p class="mo">Past editions</p><p class="d1" style="font-size:26px">We've done this before</p></div>
+  <div class="r"><div class="k" style="flex:1;align-items:center"><p class="d1" style="font-size:30px">480</p><p class="mo">Attendees</p></div><div class="k" style="flex:1;align-items:center"><p class="d1" style="font-size:30px">14</p><p class="mo">Sessions</p></div><div class="k" style="flex:1;align-items:center"><p class="d1" style="font-size:30px">22</p><p class="mo">Colleges</p></div></div>
+  <p class="mo">Numbers are placeholders — replace with real figures, never invented</p>
+  <div class="k"><div class="r"><div class="ph" style="width:90px;height:70px">EDITION PHOTO</div><div class="c" style="flex:1;gap:4px"><p class="d3">2025 edition</p><p class="tx">What happened, who came, what students built.</p><span class="btn g">See photos →</span></div></div></div>
+  <div class="k mut"><div class="r"><div class="ph" style="width:90px;height:70px">EDITION PHOTO</div><div class="c" style="flex:1;gap:4px"><p class="d3">2024 edition</p><p class="tx">Short recap line.</p><span class="btn g">See photos →</span></div></div></div>
+</div></div>
+<div class="wf" style="width:210px"><div class="wfh"><span>Mobile</span><span>Gallery</span></div>
+<div class="wb" style="padding:10px">
+  <p class="d3">Gallery</p>
+  <div class="r" style="gap:4px;overflow:hidden"><span class="chip on">All</span><span class="chip">2025</span><span class="chip">2024</span></div>
+  <div class="r"><div class="c" style="flex:1"><div class="ph" style="height:70px">4:5</div><div class="ph" style="height:56px">1:1</div></div><div class="c" style="flex:1"><div class="ph" style="height:56px">1:1</div><div class="ph" style="height:70px">4:5</div></div></div>
+  <p class="mo">Lazy-loaded, AVIF/WebP srcset</p>
+</div></div>
+<div class="notes"><h4>Callouts</h4>
+<p>Two tile ratios only: 4:5 and 1:1</p>
+<p>Lightbox: arrow keys, Esc, focus restore to the tile</p>
+<p>Past events opens with three StatCards in display numerals</p>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1l">
+<div class="dv-olabel"><a class="dv-oid" href="#1l">1l</a>Nav overlay · 404 · empty · loading · offline</div>
+<div class="set">
+<div class="wf" style="width:300px"><div class="wfh"><span>Nav overlay</span><span>Full viewport</span></div>
+<div class="wb inv" style="min-height:300px;justify-content:space-between">
+  <div class="r" style="justify-content:space-between;align-items:center"><div class="ph" style="width:80px;height:20px">LOCKUP</div><span class="lbl" style="color:#fff">Close ✕</span></div>
+  <div class="c" style="gap:2px">
+    <div class="r" style="align-items:baseline;gap:8px"><p class="mo">01</p><p class="d1" style="font-size:28px">Home</p></div>
+    <div class="r" style="align-items:baseline;gap:8px"><p class="mo">02</p><p class="d1" style="font-size:28px">About</p></div>
+    <div class="r" style="align-items:baseline;gap:8px"><p class="mo">03</p><p class="d1" style="font-size:28px;padding-left:12px">Sessions</p><span class="scr">›</span></div>
+    <div class="r" style="align-items:baseline;gap:8px"><p class="mo">04</p><p class="d1" style="font-size:28px">Agenda</p></div>
+    <div class="r" style="align-items:baseline;gap:8px"><p class="mo">05</p><p class="d1" style="font-size:28px">Speakers</p></div>
+    <div class="r" style="align-items:baseline;gap:8px"><p class="mo">06</p><p class="d1" style="font-size:28px">Venue</p></div>
+    <div class="r" style="align-items:baseline;gap:8px"><p class="mo">07</p><p class="d1" style="font-size:28px">FAQ</p></div>
+  </div>
+  <div class="r" style="justify-content:space-between;align-items:flex-end"><div class="c" style="gap:4px"><span class="btn o">Register now →</span><p class="mo">@aws.sbg_guni</p></div><div class="ph" style="width:74px;height:74px">MASCOT</div></div>
+</div></div>
+<div class="wf" style="width:300px"><div class="wfh"><span>404 · error · empty</span><span>States</span></div>
+<div class="wb">
+  <div class="k" style="align-items:center;text-align:center"><div class="ph" style="width:70px;height:70px">MASCOT</div><p class="d2">This page took a wrong turn</p><p class="tx">The link may be old or mistyped.</p><div class="r"><span class="btn o">Back home</span><span class="btn g">Report it</span></div><p class="mo">404</p></div>
+  <div class="k mut" style="align-items:center;text-align:center"><div class="ph" style="width:56px;height:56px">MASCOT</div><p class="lbl">Something broke on our side.</p><div class="r"><span class="btn">Reload</span><span class="btn g">Report</span></div><p class="mo">Error boundary</p></div>
+  <div class="k"><p class="mo">Loading skeleton</p><div class="kd"><div class="ph" style="height:9px;width:60%"></div><div class="ph" style="height:9px;width:90%"></div><div class="ph" style="height:9px;width:75%"></div></div><p class="mo">Purple-tinted shimmer, no layout shift</p></div>
+  <div class="k" style="border-color:#97650c"><p class="mo" style="color:#97650c">Offline banner — sits above the header</p><p class="tx">You're offline. Showing the last loaded agenda.</p></div>
+  <div class="k mut"><p class="mo">Announcement popup · once per session</p><div class="r" style="justify-content:space-between;align-items:flex-start"><div class="c" style="gap:3px"><p class="d3">Agenda is live</p><p class="tx">Sessions and rooms are published.</p><span class="btn g">See the agenda</span></div><span class="lbl">✕</span></div></div>
+  <div class="k"><p class="mo">Toast</p><p class="tx">Address copied.</p></div>
+</div></div>
+<div class="wf" style="width:230px"><div class="wfh"><span>Header states</span><span>Floating</span></div>
+<div class="wb">
+  <div class="k" style="border-style:dashed"><p class="mo">Over hero — transparent</p><div class="r" style="justify-content:space-between;align-items:center"><div class="ph" style="width:60px;height:16px">LOCKUP</div><span class="mo">☰</span></div></div>
+  <div class="k"><p class="mo">Past 80px — compacted, blur, hairline</p><div class="r" style="justify-content:space-between;align-items:center"><div class="ph" style="width:50px;height:14px">LOCKUP</div><div class="r" style="gap:5px;align-items:center"><span class="mo" style="color:#B36200">● Sessions</span><span class="btn o">Register</span></div></div></div>
+  <div class="k mut"><p class="mo">Scroll down (mobile) — hidden, returns on scroll-up</p></div>
+  <div class="k"><p class="mo">Skip to content · scroll progress</p><hr class="rule" style="width:40%"></div>
+  <div class="k"><p class="mo">Section index rail (desktop)</p><div class="c" style="gap:2px"><p class="mo" style="color:#B36200">01 ●</p><p class="mo">02</p><p class="mo">03</p><p class="mo">04</p></div></div>
+</div></div>
+<div class="notes"><h4>Callouts</h4>
+<p>Overlay: display rows stagger 40ms, hover slides label right 12px + orange caret, focus trapped, Esc closes, body scroll locked</p>
+<p>Every empty state = mascot + one line + one action</p>
+<p>Authenticated header swaps Register for Dashboard</p>
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "take <a class="dv-oid" href="#1a">1a</a> to high fidelity with the poster palette" · "3 alternative structures for <a class="dv-oid" href="#1h">1h</a>" · "add the session detail + profile screens"</p>
+</section>
+</x-dc>
+</body>
+</html>

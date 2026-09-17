@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
+import { renderWithProviders } from '../test-utils.js';
 import type { Session } from '@scd/types';
 import { SessionCard } from '../../src/components/sessions/SessionCard.js';
 
@@ -33,7 +34,7 @@ const SESSION: Session = {
 
 describe('SessionCard', () => {
   it('renders the title, type badge, track, duration, description, and speakers', () => {
-    render(<SessionCard session={SESSION} />);
+    renderWithProviders(<SessionCard session={SESSION} />);
     expect(screen.getByRole('heading', { name: 'Serverless from Scratch' })).toBeInTheDocument();
     expect(screen.getByText('Workshop')).toBeInTheDocument();
     expect(screen.getByText('Technical')).toBeInTheDocument();
@@ -43,7 +44,7 @@ describe('SessionCard', () => {
   });
 
   it('falls back to the raw sessionType label for an unmapped type', () => {
-    render(<SessionCard session={{ ...SESSION, sessionType: 'KEYNOTE' }} />);
+    renderWithProviders(<SessionCard session={{ ...SESSION, sessionType: 'KEYNOTE' }} />);
     expect(screen.getByText('Keynote')).toBeInTheDocument();
   });
 });

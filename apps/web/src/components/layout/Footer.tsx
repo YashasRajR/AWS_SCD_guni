@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useEvent, useSocialLinks } from '../../lib/queries.js';
+import { Mascot } from '../ui/Mascot.js';
 
 const FOOTER_LINKS: { to: string; label: string }[] = [
   { to: '/', label: 'Home' },
@@ -14,79 +15,104 @@ const FOOTER_LINKS: { to: string; label: string }[] = [
   { to: '/faq', label: 'FAQ' },
 ];
 
-const DEFAULT_TAGLINE =
-  'A student-run, community-organized day of AWS talks, workshops, and networking — built by and for the campus developer community.';
-
 export function Footer() {
   const year = new Date().getFullYear();
   const { data: event } = useEvent();
   const { items: socialLinks } = useSocialLinks();
 
   return (
-    <footer className="site-footer">
-      <div className="site-footer-inner">
-        <div>
-          <div className="footer-brand">
-            <span className="brand-mark">SCD</span>
-            <span>AWS Student Community Day 2026</span>
+    <footer className="site-footer inv" style={{ borderTop: '2px solid var(--accent)', padding: '48px 0 24px' }}>
+      <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+        {/* Top Lockup Row */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
+          <div style={{ maxWidth: '520px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <p className="d2" style={{ color: '#fff', fontSize: '24px' }}>
+              AWS Students<br />Community Day 2026
+            </p>
+            <p className="mo" style={{ color: '#FF9900' }}>
+              Ganpat University · Mehsana, Gujarat · 8 October 2026
+            </p>
+            <p className="mo" style={{ color: '#cfc9be' }}>
+              @aws.sbg_guni · {event?.contactEmail || 'awscloudclub@ganpatuniversity.ac.in'}
+            </p>
           </div>
-          <p className="footer-tagline">{event?.footerText || DEFAULT_TAGLINE}</p>
-          {(event?.contactEmail || event?.contactPhone) && (
-            <ul className="footer-links footer-contact">
-              {event.contactEmail && (
-                <li>
-                  <a href={`mailto:${event.contactEmail}`}>{event.contactEmail}</a>
-                </li>
-              )}
-              {event.contactPhone && (
-                <li>
-                  <a href={`tel:${event.contactPhone}`}>{event.contactPhone}</a>
-                </li>
-              )}
-            </ul>
-          )}
-          {socialLinks.length > 0 && (
-            <ul className="footer-links footer-social">
-              {socialLinks.map((link) => (
-                <li key={link.id}>
-                  <a href={link.url} target={link.openNewTab ? '_blank' : undefined} rel="noopener noreferrer">
+          <Mascot variant="wave" size={68} />
+        </div>
+
+        {/* Partner / Organization Badges */}
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <div className="kd" style={{ flex: 1, minWidth: '120px', alignItems: 'center', textAlign: 'center', borderColor: 'rgba(255,255,255,0.25)', padding: '10px' }}>
+            <p className="lbl" style={{ color: '#fff' }}>GUNI</p>
+            <p className="mo" style={{ fontSize: '0.65rem', color: '#cfc9be' }}>Ganpat University</p>
+          </div>
+          <div className="kd" style={{ flex: 1, minWidth: '120px', alignItems: 'center', textAlign: 'center', borderColor: 'rgba(255,255,255,0.25)', padding: '10px' }}>
+            <p className="lbl" style={{ color: '#fff' }}>CoE</p>
+            <p className="mo" style={{ fontSize: '0.65rem', color: '#cfc9be' }}>Centre of Excellence</p>
+          </div>
+          <div className="kd" style={{ flex: 1, minWidth: '120px', alignItems: 'center', textAlign: 'center', borderColor: 'rgba(255,255,255,0.25)', padding: '10px' }}>
+            <p className="lbl" style={{ color: '#fff' }}>AWS SBG</p>
+            <p className="mo" style={{ fontSize: '0.65rem', color: '#FF9900' }}>Student Builders Group</p>
+          </div>
+        </div>
+
+        {/* Link Columns */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '24px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.12)' }}>
+          <div>
+            <p className="mo" style={{ color: '#FF9900', marginBottom: '10px' }}>Explore</p>
+            <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexWrap: 'wrap', gap: '14px' }}>
+              {FOOTER_LINKS.slice(0, 5).map((link) => (
+                <li key={link.to}>
+                  <Link to={link.to} style={{ color: '#cfc9be', textDecoration: 'none', fontSize: '0.88rem' }} className="footer-nav-link">
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
+          </div>
+
+          <div>
+            <p className="mo" style={{ color: '#FF9900', marginBottom: '10px' }}>Event</p>
+            <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexWrap: 'wrap', gap: '14px' }}>
+              {FOOTER_LINKS.slice(5).map((link) => (
+                <li key={link.to}>
+                  <Link to={link.to} style={{ color: '#cfc9be', textDecoration: 'none', fontSize: '0.88rem' }} className="footer-nav-link">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link to="/register" style={{ color: '#FF9900', textDecoration: 'none', fontSize: '0.88rem', fontWeight: 600 }}>
+                  Register →
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {socialLinks.length > 0 && (
+            <div>
+              <p className="mo" style={{ color: '#FF9900', marginBottom: '10px' }}>Community</p>
+              <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+                {socialLinks.map((link) => (
+                  <li key={link.id}>
+                    <a href={link.url} target="_blank" rel="noopener noreferrer" style={{ color: '#cfc9be', textDecoration: 'none', fontSize: '0.85rem' }}>
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
 
-        <div>
-          <h3 className="footer-heading">Explore</h3>
-          <ul className="footer-links">
-            {FOOTER_LINKS.slice(0, 5).map((link) => (
-              <li key={link.to}>
-                <Link to={link.to}>{link.label}</Link>
-              </li>
-            ))}
-          </ul>
+        {/* Bottom Legal / Disclaimer */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          <p className="mo" style={{ color: 'rgba(207, 201, 190, 0.7)', fontSize: '0.72rem' }}>
+            © {year} AWS Student Community Day. Organized by the student community — not an official AWS event.
+          </p>
+          <p className="mo" style={{ color: 'rgba(207, 201, 190, 0.7)', fontSize: '0.72rem' }}>
+            Ganpat Vidyanagar, Mehsana, Gujarat 384012
+          </p>
         </div>
-
-        <div>
-          <h3 className="footer-heading">Event</h3>
-          <ul className="footer-links">
-            {FOOTER_LINKS.slice(5).map((link) => (
-              <li key={link.to}>
-                <Link to={link.to}>{link.label}</Link>
-              </li>
-            ))}
-            <li>
-              <Link to="/register">Register Now</Link>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <div className="site-footer-bottom">
-        <span>© {year} AWS Student Community Day. Organized by the student community — not an official AWS event.</span>
-        <span>Ganpat University</span>
       </div>
     </footer>
   );
