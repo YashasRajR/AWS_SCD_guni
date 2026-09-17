@@ -1,11 +1,20 @@
-import type { EventConfig, SocialPost } from '@scd/types';
+import type { EventConfig, SocialPost, SocialPostSettings } from '@scd/types';
 import { getEnv } from '../../config/env.js';
 import { eventService } from '../event/event.service.js';
+import { socialPostSettingsService } from '../social-post-settings/social-post-settings.service.js';
 import { socialPostsRepository } from './social-posts.repository.js';
 import { toSocialPost } from './social-posts.types.js';
 import { AppError } from '../../utils/errors.js';
 
-const BASE_HASHTAGS = ['#AWSStudentCommunityDay', '#AWSSCD2026', '#AWSCloud'];
+/** Deterministic pick so the same attendee's opening line stays stable
+ * between page loads, but different attendees (and a regenerate after the
+ * bio changes) land on different lines -- the closest this template-based
+ * generator gets to "AI variety" without calling an LLM. */
+function pickIntroLine(introLines: string[], seed: string): string {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  return introLines[hash % introLines.length]!;
+}
 
 function slugifyHashtag(interest: string): string {
   return (
@@ -36,15 +45,28 @@ function formatEventDate(event: EventConfig): string {
  * step that could add a fact the caller didn't already provide. No AI
  * model is called.
  */
-export function buildCopy(input: { bio: string; interests: string[]; fullName: string; event: EventConfig; eventUrl: string }) {
-  const { bio, interests, fullName, event, eventUrl } = input;
+const DEFAULT_SETTINGS: Pick<SocialPostSettings, 'baseHashtags' | 'introLines'> = {
+  baseHashtags: ['#AWSStudentCommunityDay', '#AWSSCD2026', '#AWSCloud'],
+  introLines: [`🚀 I'm attending {event}!`],
+};
+
+export function buildCopy(input: {
+  bio: string;
+  interests: string[];
+  fullName: string;
+  event: EventConfig;
+  eventUrl: string;
+  settings?: Pick<SocialPostSettings, 'baseHashtags' | 'introLines'>;
+}) {
+  const { bio, interests, fullName, event, eventUrl, settings = DEFAULT_SETTINGS } = input;
   const dateStr = formatEventDate(event);
   const interestHashtags = interests.slice(0, 5).map(slugifyHashtag);
-  const hashtags = [...new Set([...BASE_HASHTAGS, ...interestHashtags])].slice(0, 8);
+  const hashtags = [...new Set([...settings.baseHashtags, ...interestHashtags])].slice(0, 8);
   const interestsLine = interests.length > 0 ? `Excited about: ${interests.join(', ')}.` : '';
+  const introLine = pickIntroLine(settings.introLines, bio + fullName).replace('{event}', event.name);
 
   const linkedinText = [
-    `🚀 I'm attending ${event.name}!`,
+    introLine,
     bio,
     interestsLine,
     [`📅 ${dateStr}`, event.venue ? `📍 ${event.venue}` : null].filter(Boolean).join('  ·  '),
@@ -80,7 +102,7 @@ export const socialPostsService = {
     fullName: string,
     input: { bio: string; interests: string[]; photoUrl?: string },
   ): Promise<SocialPost> {
-    const event = await eventService.getCurrent();
+    const [event, settings] = await Promise.all([eventService.getCurrent(), socialPostSettingsService.get()]);
     const eventUrl = getEnv().PUBLIC_APP_URL;
     const { linkedinText, instagramText, hashtags } = buildCopy({
       bio: input.bio,
@@ -88,6 +110,7 @@ export const socialPostsService = {
       fullName,
       event,
       eventUrl,
+      settings,
     });
     const row = await socialPostsRepository.upsert({
       attendeeId,

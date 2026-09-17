@@ -19,6 +19,7 @@ import { PastEventsPage } from './pages/content/PastEventsPage.js';
 import { NavLinksPage } from './pages/content/NavLinksPage.js';
 import { SocialLinksPage } from './pages/content/SocialLinksPage.js';
 import { AnnouncementsPage } from './pages/content/AnnouncementsPage.js';
+import { SocialPostSettingsPage } from './pages/content/SocialPostSettingsPage.js';
 import { RegistrationsPage } from './pages/RegistrationsPage.js';
 import { AttendeesPage } from './pages/AttendeesPage.js';
 import { AttendeeDetailPage } from './pages/AttendeeDetailPage.js';
@@ -77,6 +78,7 @@ function AppRoutes() {
         <Route path="content/nav-links" element={<NavLinksPage />} />
         <Route path="content/social-links" element={<SocialLinksPage />} />
         <Route path="content/announcements" element={<AnnouncementsPage />} />
+        <Route path="content/social-post-settings" element={<SocialPostSettingsPage />} />
         <Route path="registrations" element={<RegistrationsPage />} />
         <Route path="attendees" element={<AttendeesPage />} />
         <Route path="attendees/:id" element={<AttendeeDetailPage />} />

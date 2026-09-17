@@ -13,6 +13,7 @@ import { schedulePdfRouter, schedulePdfAdminRouter } from '../modules/schedule-p
 import { pastEventsRouter, pastEventsAdminRouter } from '../modules/past-events/past-events.routes.js';
 import { createSiteLinksRouters } from '../modules/site-links/site-links.routes.js';
 import { ticketPlansRouter, ticketPlansAdminRouter } from '../modules/ticket-plans/ticket-plans.routes.js';
+import { socialPostSettingsAdminRouter } from '../modules/social-post-settings/social-post-settings.routes.js';
 import { couponsAdminRouter } from '../modules/coupons/coupons.routes.js';
 import {
   announcementsRouter,
@@ -113,4 +114,5 @@ apiRouter.use('/admin/content/nav-links', navLinks.adminRouter);
 apiRouter.use('/admin/content/social-links', socialLinks.adminRouter);
 apiRouter.use('/admin/content/ticket-plans', ticketPlansAdminRouter);
 apiRouter.use('/admin/content/coupons', couponsAdminRouter);
+apiRouter.use('/admin/content/social-post-settings', socialPostSettingsAdminRouter);
 apiRouter.use('/admin/content/announcements', announcementsAdminRouter);

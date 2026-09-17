@@ -35,6 +35,11 @@ const NAV_SECTIONS: {
         label: 'Announcements',
         permission: PERMISSIONS.MANAGE_ANNOUNCEMENTS,
       },
+      {
+        to: '/content/social-post-settings',
+        label: 'Social post settings',
+        permission: PERMISSIONS.MANAGE_SETTINGS,
+      },
     ],
   },
   {

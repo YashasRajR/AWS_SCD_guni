@@ -89,6 +89,15 @@ export interface SocialPost {
   updatedAt: string;
 }
 
+/** Admin-editable config for "Create My SCD Post" -- singleton (one row). */
+export interface SocialPostSettings {
+  linkedinEnabled: boolean;
+  instagramEnabled: boolean;
+  baseHashtags: string[];
+  introLines: string[];
+  updatedAt: string;
+}
+
 export interface EmailRecord {
   id: string;
   userId: string | null;
