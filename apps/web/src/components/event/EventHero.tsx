@@ -4,6 +4,7 @@ import { useEvent, useSessions, useSpeakers, useVenues } from '../../lib/queries
 import { formatDate } from '../../lib/format.js';
 import { CountdownTimer } from './CountdownTimer.js';
 import { Mascot } from '../ui/Mascot.js';
+import { ShapeGrid } from '../ui/ShapeGrid.js';
 
 export function EventHero() {
   const { data: event, loading: eventLoading, notFound } = useEvent();
@@ -28,8 +29,19 @@ export function EventHero() {
     : undefined;
 
   return (
-    <section className="hero gridbg" style={{ ...heroStyle, padding: '48px 0 36px', borderBottom: '1px solid var(--border)' }}>
-      <div className="container">
+    <section className="hero" style={{ ...heroStyle, padding: '48px 0 36px', borderBottom: '1px solid var(--border)' }}>
+      <div className="hero-shapegrid">
+        <ShapeGrid
+          direction="diagonal"
+          speed={0.4}
+          squareSize={40}
+          shape="square"
+          borderColor="rgba(80, 55, 122, 0.15)"
+          hoverFillColor="rgba(255, 153, 0, 0.35)"
+          hoverTrailAmount={4}
+        />
+      </div>
+      <div className="container" style={{ position: 'relative', zIndex: 1 }}>
         {eventLoading ? (
           <div style={{ minHeight: '260px', display: 'flex', alignItems: 'center' }}>
             <p className="mo">Loading event details…</p>
