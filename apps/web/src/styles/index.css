@@ -282,6 +282,11 @@ ol {
   object-fit: contain;
 }
 
+.brand-builder-mark {
+  color: #a855f7;
+  flex-shrink: 0;
+}
+
 .brand-name {
   font-size: var(--text-body);
   white-space: nowrap;

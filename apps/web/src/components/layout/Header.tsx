@@ -4,6 +4,7 @@ import type { SiteLink } from '@scd/types';
 import { useAuth } from '../../lib/auth.js';
 import { useNavLinks, useSocialLinks } from '../../lib/queries.js';
 import { Mascot } from '../ui/Mascot.js';
+import { BuilderMark } from '../ui/BuilderMark.js';
 
 interface NavLinkDef {
   to: string;
@@ -126,6 +127,8 @@ export function Header() {
         </a>
         <div className="site-header-row">
           <NavLink to="/" className="brand" onClick={closeMenu} aria-label="AWS Student Community Day Home">
+            <BuilderMark size={22} className="brand-builder-mark" />
+            <img src="/guni-logo.png" alt="Ganpat University Centre of Excellence" className="brand-logo" />
             <Mascot variant="lockup" size={30} />
           </NavLink>
 
