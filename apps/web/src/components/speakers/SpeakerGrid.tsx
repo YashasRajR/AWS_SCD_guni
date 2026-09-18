@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSpeakers } from '../../lib/queries.js';
 import { SpeakerCard } from './SpeakerCard.js';
+import { SpeakerDetailOverlay } from './SpeakerDetailOverlay.js';
 import { SkeletonGrid } from '../ui/Skeleton.js';
 import { ErrorState } from '../ui/ErrorState.js';
 import { EmptyState } from '../ui/EmptyState.js';
@@ -12,15 +13,16 @@ interface SpeakerGridProps {
 
 export function SpeakerGrid({ limit }: SpeakerGridProps) {
   const { items: speakers, loading, error, reload } = useSpeakers();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   if (loading) return <SkeletonGrid count={limit ?? 4} />;
   if (error) return <ErrorState onRetry={reload} />;
   if (speakers.length === 0) return <EmptyState message="Speakers will be announced soon." />;
 
   const shown = limit ? speakers.slice(0, limit) : speakers;
-  const activeSpeaker = (selectedId ? shown.find((s) => s.id === selectedId) : null) ?? shown[0]!;
+  const activeSpeaker = shown[0]!;
   const supportingSpeakers = shown.filter((s) => s.id !== activeSpeaker.id);
+  const openSpeaker = openId ? (shown.find((s) => s.id === openId) ?? null) : null;
 
   // Placeholder slots to complete the line-up per wireframe 1d callout:
   // "Unconfirmed = explicit TBA / Stay tuned… placeholder, never a made-up name"
@@ -121,12 +123,7 @@ export function SpeakerGrid({ limit }: SpeakerGridProps) {
             }}
           >
             {supportingSpeakers.map((speaker) => (
-              <SpeakerCard
-                key={speaker.id}
-                speaker={speaker}
-                isSelected={speaker.id === activeSpeaker.id}
-                onSelect={() => setSelectedId(speaker.id)}
-              />
+              <SpeakerCard key={speaker.id} speaker={speaker} onSelect={() => setOpenId(speaker.id)} />
             ))}
 
             {/* TBA placeholders */}
@@ -170,6 +167,8 @@ export function SpeakerGrid({ limit }: SpeakerGridProps) {
           </div>
         </div>
       </div>
+
+      <SpeakerDetailOverlay speaker={openSpeaker} onClose={() => setOpenId(null)} />
     </div>
   );
 }

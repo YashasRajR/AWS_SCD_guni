@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import type { MouseEvent } from 'react';
 import type { Session } from '@scd/types';
 import { useSavedSessions } from '../../lib/useSavedSessions.js';
 import { useToast } from '../../lib/toast.js';
@@ -12,13 +11,13 @@ const TYPE_LABELS: Record<string, string> = {
   BREAK: 'Break',
 };
 
-export function SessionCard({ session }: { session: Session }) {
-  const [expanded, setExpanded] = useState(false);
+export function SessionCard({ session, onOpen }: { session: Session; onOpen: () => void }) {
   const { isSaved, toggleSession } = useSavedSessions();
   const { addToast } = useToast();
   const saved = isSaved(session.id);
 
-  const handleSaveToggle = () => {
+  const handleSaveToggle = (e: MouseEvent) => {
+    e.stopPropagation();
     toggleSession(session.id);
     if (!saved) {
       addToast('Added to your saved sessions', 'success');
@@ -34,7 +33,18 @@ export function SessionCard({ session }: { session: Session }) {
       : 'TBA';
 
   return (
-    <article className={`k session-card ${expanded ? 'session-card-expanded' : ''}`} style={{ transition: 'all 0.2s ease' }}>
+    <article
+      className="k session-card card-clickable"
+      onClick={onOpen}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onOpen();
+        }
+      }}
+    >
       <div className="r" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div className="c" style={{ gap: '6px', flex: 1 }}>
           <div className="session-card-head r" style={{ gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -70,61 +80,14 @@ export function SessionCard({ session }: { session: Session }) {
         </div>
         <button
           type="button"
-          onClick={() => setExpanded((prev) => !prev)}
-          className="lbl"
-          style={{
-            background: 'transparent',
-            border: '1px solid var(--scd-border)',
-            borderRadius: '4px',
-            width: '28px',
-            height: '28px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            fontSize: '16px',
-            lineHeight: 1,
-            color: 'var(--scd-primary)',
-          }}
-          aria-expanded={expanded}
-          aria-label={expanded ? 'Collapse session details' : 'Expand session details'}
+          onClick={handleSaveToggle}
+          className={`btn ${saved ? 'o' : ''}`}
+          style={{ padding: '6px 10px', fontSize: '11px', minHeight: 'auto' }}
+          aria-pressed={saved}
         >
-          {expanded ? '−' : '+'}
+          {saved ? '✓ Saved' : 'Save'}
         </button>
       </div>
-
-      {expanded && (
-        <div className="kd" style={{ marginTop: '10px', background: 'var(--scd-surface-muted)' }}>
-          <div className="r" style={{ flexWrap: 'wrap', gap: '12px' }}>
-            <div className="c" style={{ flex: '1 1 200px', gap: '6px' }}>
-              <div>
-                <p className="mo" style={{ fontSize: '11px' }}>Speaker</p>
-                <p className="lbl">{speakerNames}</p>
-              </div>
-              <div>
-                <p className="mo" style={{ fontSize: '11px' }}>Prerequisites</p>
-                <p className="tx">A laptop with a modern web browser. Nothing else.</p>
-              </div>
-            </div>
-            <div className="c" style={{ flex: '1 1 200px', gap: '8px', justifyContent: 'flex-end', alignItems: 'flex-start' }}>
-              <p className="mo" style={{ fontSize: '11px' }}>Detail expands in place</p>
-              <div className="r" style={{ gap: '8px', flexWrap: 'wrap' }}>
-                <Link to={`/sessions/${session.id}`} className="btn g btn-link" style={{ textDecoration: 'none' }}>
-                  Open full page →
-                </Link>
-                <button
-                  type="button"
-                  onClick={handleSaveToggle}
-                  className={`btn ${saved ? 'o' : ''}`}
-                  aria-pressed={saved}
-                >
-                  {saved ? '✓ In my sessions' : 'Add to my sessions'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </article>
   );
 }

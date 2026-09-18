@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { useSessions } from '../../lib/queries.js';
 import { SessionCard } from './SessionCard.js';
+import { SessionDetailOverlay } from './SessionDetailOverlay.js';
 import { SessionFilters } from './SessionFilters.js';
 import { SkeletonGrid } from '../ui/Skeleton.js';
 import { ErrorState } from '../ui/ErrorState.js';
@@ -17,6 +18,7 @@ export function SessionGrid({ limit, filterable }: SessionGridProps) {
   const { items: sessions, loading, error, reload } = useSessions();
   const [activeType, setActiveType] = useState('ALL');
   const [search, setSearch] = useState('');
+  const [openId, setOpenId] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
   const typeOptions = useMemo(() => {
@@ -120,11 +122,16 @@ export function SessionGrid({ limit, filterable }: SessionGridProps) {
         <div className="session-list c" ref={listRef} style={{ gap: '12px' }}>
           {shown.map((session) => (
             <div key={session.id} data-flip-id={session.id}>
-              <SessionCard session={session} />
+              <SessionCard session={session} onOpen={() => setOpenId(session.id)} />
             </div>
           ))}
         </div>
       )}
+
+      <SessionDetailOverlay
+        session={openId ? (sessions.find((s) => s.id === openId) ?? null) : null}
+        onClose={() => setOpenId(null)}
+      />
     </div>
   );
 }

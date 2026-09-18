@@ -734,6 +734,66 @@ ol {
   animation: none;
 }
 
+/* --- SlideOver: right-edge detail panel (card click-through) ---------- */
+@keyframes slideover-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.slideover-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 13, 18, 0.55);
+  z-index: var(--z-overlay);
+  display: flex;
+  justify-content: flex-end;
+  animation: fadeIn 200ms var(--ease-standard) both;
+}
+
+.slideover-panel {
+  position: relative;
+  background: var(--surface);
+  width: min(560px, 100%);
+  height: 100%;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-6);
+  animation: slideover-in 340ms var(--ease-standard) both;
+}
+
+.slideover-close {
+  position: sticky;
+  top: 0;
+  float: right;
+  background: var(--surface-muted);
+  border: none;
+  border-radius: 999px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--foreground);
+  z-index: 1;
+}
+
+.slideover-body {
+  clear: both;
+}
+
+/* Cards that open a SlideOver on click, not just their inner links. */
+.card-clickable {
+  cursor: pointer;
+}
+
+
 .card-grid {
   display: grid;
   grid-template-columns: 1fr;
