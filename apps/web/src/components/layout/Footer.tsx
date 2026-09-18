@@ -42,7 +42,11 @@ export function Footer() {
         {/* Partner / Organization Badges */}
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           <div className="kd" style={{ flex: 1, minWidth: '120px', alignItems: 'center', textAlign: 'center', borderColor: 'rgba(255,255,255,0.25)', padding: '10px' }}>
-            <p className="lbl" style={{ color: '#fff' }}>GUNI</p>
+            <img
+              src="/guni-logo.png"
+              alt="Ganpat University Centre of Excellence"
+              style={{ height: '28px', objectFit: 'contain', marginBottom: '4px' }}
+            />
             <p className="mo" style={{ fontSize: '0.65rem', color: '#cfc9be' }}>Ganpat University</p>
           </div>
           <div className="kd" style={{ flex: 1, minWidth: '120px', alignItems: 'center', textAlign: 'center', borderColor: 'rgba(255,255,255,0.25)', padding: '10px' }}>
