@@ -586,6 +586,46 @@ ol {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: var(--space-6);
+  transition: transform var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--border-strong);
+}
+
+/* Scroll-reveal: fades/rises an element into place the first time it
+   crosses into view. Applied via data-reveal (see lib/scroll-reveal.ts);
+   .is-revealed is added once and never removed, so it never re-hides
+   content a screen reader or search engine already surfaced. */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 520ms var(--ease-standard), transform 520ms var(--ease-standard);
+}
+
+[data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Page-enter: replayed on every route change (Layout keys this div by
+   pathname), same treatment as the hero's own entrance. */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.page-transition {
+  animation: page-enter 420ms var(--ease-standard) both;
 }
 
 .card-grid {

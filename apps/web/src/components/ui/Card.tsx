@@ -7,7 +7,7 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 /** Base surface used by every card-shaped component — one border/radius/padding definition. */
 export function Card({ children, className, ...rest }: CardProps) {
   return (
-    <div className={className ? `card ${className}` : 'card'} {...rest}>
+    <div className={className ? `card ${className}` : 'card'} data-reveal {...rest}>
       {children}
     </div>
   );
