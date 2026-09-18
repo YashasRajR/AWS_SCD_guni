@@ -263,6 +263,9 @@ ol {
      viewport on narrow screens. */
   min-width: 0;
   flex-shrink: 1;
+  /* Pull the logo lockup flush against the browser edge, past the header
+     row's own side padding. */
+  margin-left: calc(-1 * var(--container-pad));
 }
 
 .brand-mark {
@@ -276,14 +279,18 @@ ol {
 }
 
 .brand-logo {
-  height: 2rem;
+  height: 1.75rem;
   width: auto;
   flex-shrink: 0;
   object-fit: contain;
+  /* guni-logo.png is white-on-transparent (made for a dark footer);
+     invert it to black-on-transparent so it reads on the light header
+     without needing a background chip. */
+  filter: invert(1);
 }
 
 .brand-builder-mark {
-  color: #a855f7;
+  color: var(--foreground);
   flex-shrink: 0;
 }
 

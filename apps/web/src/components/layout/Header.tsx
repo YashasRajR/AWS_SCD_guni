@@ -128,6 +128,7 @@ export function Header() {
         <div className="site-header-row">
           <NavLink to="/" className="brand" onClick={closeMenu} aria-label="AWS Student Community Day Home">
             <BuilderMark size={22} className="brand-builder-mark" />
+            <span className="brand-name">AWS Student Builder Group</span>
             <img src="/guni-logo.png" alt="Ganpat University Centre of Excellence" className="brand-logo" />
             <Mascot variant="lockup" size={30} />
           </NavLink>
