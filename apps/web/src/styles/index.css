@@ -297,9 +297,24 @@ ol {
 .brand-name {
   font-size: var(--text-body);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
+  flex-shrink: 0;
+}
+
+.brand-name-full {
+  display: none;
+}
+
+.brand-name-short {
+  display: inline;
+}
+
+@media (min-width: 900px) {
+  .brand-name-full {
+    display: inline;
+  }
+  .brand-name-short {
+    display: none;
+  }
 }
 
 .desktop-nav {
