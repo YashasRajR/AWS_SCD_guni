@@ -54,7 +54,7 @@ export function EventHero() {
               you&apos;re ready to register the moment it opens.
             </p>
             <div className="r" style={{ marginTop: '20px', gap: '10px' }}>
-              <Link to="/register" className="btn o">
+              <Link to="/register" className="btn o hero-cta-pulse">
                 Register Now →
               </Link>
               <Link to="/agenda" className="btn g">
@@ -96,15 +96,15 @@ export function EventHero() {
               {/* Action Buttons */}
               <div className="r" style={{ gap: '10px', flexWrap: 'wrap', marginTop: '6px' }}>
                 {event?.primaryCtaUrl ? (
-                  <a href={event.primaryCtaUrl} className="btn o">
+                  <a href={event.primaryCtaUrl} className="btn o hero-cta-pulse">
                     {event.primaryCtaLabel || 'Register Now →'}
                   </a>
                 ) : status === 'signed-in' ? (
-                  <Link to="/dashboard" className="btn o">
+                  <Link to="/dashboard" className="btn o hero-cta-pulse">
                     Go to my dashboard →
                   </Link>
                 ) : (
-                  <Link to="/register" className="btn o">
+                  <Link to="/register" className="btn o hero-cta-pulse">
                     Register Now →
                   </Link>
                 )}

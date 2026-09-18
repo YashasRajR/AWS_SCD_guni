@@ -17,8 +17,10 @@
 
   /* --- Typography -------------------------------------------------- */
   --font-sans:
-    'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-display: 'Inter', system-ui, -apple-system, sans-serif;
+    'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  /* Bold poster voice, per Mood Indigo's typography (see file header) --
+     Rowdies over the previous Inter/Anton stand-in. */
+  --font-display: 'Rowdies', 'Outfit', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
   --tracking-tight: -0.02em;

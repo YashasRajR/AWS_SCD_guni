@@ -29,10 +29,9 @@ h4 {
   line-height: var(--lh-tight);
   font-weight: var(--fw-bold);
   margin: 0;
-  /* The bold condensed all-caps "poster" voice used across the whole
-     site, not just the hero -- Anton has no italic/weight variants, so
-     font-weight above is a no-op for it but still applies to the
-     '--font-display' fallback fonts. */
+  /* The bold all-caps "poster" voice used across the whole site, not
+     just the hero -- see tokens.css for the --font-display stack
+     (Rowdies, Mood-Indigo-inspired). */
   font-family: var(--font-display);
   text-transform: uppercase;
   letter-spacing: 0.01em;
@@ -626,6 +625,113 @@ ol {
 
 .page-transition {
   animation: page-enter 420ms var(--ease-standard) both;
+}
+
+/* --- Mood Indigo-inspired motion (see tokens.css header) ---------------
+   Ported keyframes, not colors: a punchier overshoot entrance, a
+   squash-and-stretch "jelly" hover, and a slow attention pulse. */
+@keyframes slide-up-punch {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-6px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.55) translateY(28px);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.08) translateY(-6px);
+  }
+  75% {
+    transform: scale(0.97) translateY(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes jelly-wobble {
+  0%,
+  83%,
+  100% {
+    transform: scale(1) rotate(0);
+  }
+  85% {
+    transform: scale(1.25, 0.75) rotate(-5deg);
+  }
+  87% {
+    transform: scale(0.75, 1.1) rotate(5deg);
+  }
+  89% {
+    transform: scale(1.15, 0.85) rotate(-3deg);
+  }
+  91% {
+    transform: scale(0.9, 1.1) rotate(2deg);
+  }
+  94% {
+    transform: scale(1.05, 0.95) rotate(-1deg);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.045);
+  }
+}
+
+/* Hero content now punches up into place instead of a plain fade. */
+.hero-inner {
+  animation-name: slide-up-punch;
+}
+
+/* Scroll-reveal now pops in with a small overshoot instead of a flat
+   rise -- same [data-reveal]/.is-revealed hook from lib/scroll-reveal.ts. */
+[data-reveal] {
+  opacity: 0;
+  transform: none;
+  transition: none;
+}
+
+[data-reveal].is-revealed {
+  animation: pop-in 600ms var(--ease-standard) both;
+}
+
+/* Playful squash-and-stretch on hover -- used on the mascot. */
+.mascot-container {
+  display: inline-block;
+}
+
+.mascot-container:hover {
+  animation: jelly-wobble 900ms ease-in-out;
+}
+
+/* Slow breathing pulse for the hero's one flagship CTA -- scoped to a
+   dedicated class rather than .btn.o/.btn-primary broadly, since those
+   also style ordinary form-submit buttons (login, reset password, ...)
+   where a permanent pulse would just be noise. */
+.hero-cta-pulse {
+  animation: pulse-glow 2.6s ease-in-out infinite;
+}
+
+.hero-cta-pulse:hover {
+  animation: none;
 }
 
 .card-grid {
