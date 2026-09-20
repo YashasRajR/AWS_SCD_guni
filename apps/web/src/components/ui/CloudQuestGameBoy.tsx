@@ -1282,23 +1282,23 @@ export function CloudQuestGameBoy() {
       }}
     >
       {/* =========================================================================
-          HANDHELD CONSOLE CASING (Responsive up to 392px with BIG 340×210 screen)
+          HANDHELD CONSOLE CASING (Responsive 380px, optimized for single-screen view)
           ========================================================================= */}
       <div
         className="gameboy-body-card"
         style={{
           position: 'relative',
           width: '100%',
-          maxWidth: '392px',
+          maxWidth: '380px',
           background: '#FAFAFC',
           border: '3px solid #232F3E',
-          borderRadius: '20px 20px 48px 20px',
-          boxShadow: '8px 10px 0 rgba(35, 47, 62, 0.16)',
-          padding: '14px 16px 20px',
+          borderRadius: '18px 18px 44px 18px',
+          boxShadow: '6px 8px 0 rgba(35, 47, 62, 0.16)',
+          padding: '10px 14px 14px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '10px',
+          gap: '6px',
           boxSizing: 'border-box',
         }}
       >
@@ -1335,7 +1335,7 @@ export function CloudQuestGameBoy() {
             justifyContent: 'space-between',
             alignItems: 'center',
             borderBottom: '2px solid #232F3E',
-            paddingBottom: '6px',
+            paddingBottom: '4px',
           }}
         >
           <button
@@ -1384,9 +1384,9 @@ export function CloudQuestGameBoy() {
           <span
             style={{
               fontFamily: 'var(--font-mono, monospace)',
-              fontSize: '0.65rem',
+              fontSize: '0.62rem',
               fontWeight: 800,
-              letterSpacing: '0.12em',
+              letterSpacing: '0.1em',
               color: '#232F3E',
               textTransform: 'uppercase',
             }}
@@ -1402,17 +1402,17 @@ export function CloudQuestGameBoy() {
               border: '1.5px solid #232F3E',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '0.75rem',
-              padding: '2px 6px',
+              fontSize: '0.7rem',
+              padding: '2px 5px',
             }}
             title={soundEnabled ? 'Mute 8-bit sound' : 'Enable 8-bit sound'}
           >
-            {soundEnabled ? '🔊 SOUND ON' : '🔇 MUTED'}
+            {soundEnabled ? '🔊 ON' : '🔇 OFF'}
           </button>
         </div>
 
         {/* =========================================================================
-            BIG 360×235 SCREEN HOUSING BEZEL (No text collision, ample room!)
+            SCREEN HOUSING BEZEL (Big 340×210 game display)
             ========================================================================= */}
         <div
           className="gameboy-screen-bezel"
@@ -1420,33 +1420,33 @@ export function CloudQuestGameBoy() {
             width: '100%',
             background: '#E2E8F0',
             border: '2.5px solid #232F3E',
-            borderRadius: '12px 12px 28px 12px',
-            padding: '8px 10px 10px',
+            borderRadius: '10px 10px 24px 10px',
+            padding: '5px 8px 7px',
             boxShadow: 'inset 2px 2px 0 rgba(0,0,0,0.08)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '8px',
+            gap: '4px',
             boxSizing: 'border-box',
           }}
         >
-          {/* Bezel Title Header: "═══ CLOUD QUEST: STUDENT EDITION ═══" */}
+          {/* Bezel Title Header */}
           <div
             style={{
               width: '100%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px',
+              gap: '6px',
             }}
           >
             <div style={{ height: '2px', background: '#232F3E', flex: 1 }} />
             <span
               style={{
                 fontFamily: 'var(--font-mono, monospace)',
-                fontSize: '0.68rem',
+                fontSize: '0.64rem',
                 fontWeight: 800,
-                letterSpacing: '0.12em',
+                letterSpacing: '0.1em',
                 color: '#232F3E',
                 textTransform: 'uppercase',
               }}
@@ -1460,9 +1460,9 @@ export function CloudQuestGameBoy() {
           <div
             style={{
               width: '100%',
-              height: '210px',
+              height: '185px',
               border: '2.5px solid #232F3E',
-              borderRadius: '6px',
+              borderRadius: '5px',
               overflow: 'hidden',
               cursor: 'pointer',
               background: '#FFFFFF',
@@ -1485,11 +1485,11 @@ export function CloudQuestGameBoy() {
         </div>
 
         {/* Branding under screen */}
-        <div style={{ textAlign: 'center', marginTop: '2px' }}>
+        <div style={{ textAlign: 'center', margin: '0' }}>
           <span
             style={{
               fontFamily: 'var(--font-display, Anton, sans-serif)',
-              fontSize: '1.25rem',
+              fontSize: '1.02rem',
               letterSpacing: '0.06em',
               color: '#232F3E',
               fontWeight: 800,
@@ -1600,18 +1600,18 @@ export function CloudQuestGameBoy() {
             className="gameboy-dpad-container"
             style={{
               position: 'relative',
-              width: '110px',
-              height: '110px',
+              width: '90px',
+              height: '90px',
             }}
           >
             {/* Center block */}
             <div
               style={{
                 position: 'absolute',
-                top: '35px',
-                left: '35px',
-                width: '40px',
-                height: '40px',
+                top: '30px',
+                left: '30px',
+                width: '30px',
+                height: '30px',
                 background: '#334155',
                 border: '2px solid #232F3E',
                 display: 'flex',
@@ -1621,8 +1621,8 @@ export function CloudQuestGameBoy() {
             >
               <div
                 style={{
-                  width: '18px',
-                  height: '18px',
+                  width: '14px',
+                  height: '14px',
                   borderRadius: '50%',
                   background: '#1E293B',
                   opacity: 0.6,
@@ -1636,16 +1636,16 @@ export function CloudQuestGameBoy() {
               style={{
                 position: 'absolute',
                 top: '0',
-                left: '35px',
-                width: '40px',
-                height: '37px',
+                left: '30px',
+                width: '30px',
+                height: '30px',
                 background: pressedBtn === 'up' ? '#0F172A' : '#334155',
                 border: '2px solid #232F3E',
                 borderBottom: 'none',
-                borderRadius: '6px 6px 0 0',
+                borderRadius: '5px 5px 0 0',
                 cursor: 'pointer',
                 color: '#94A3B8',
-                fontSize: '13px',
+                fontSize: '11px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1661,16 +1661,16 @@ export function CloudQuestGameBoy() {
               style={{
                 position: 'absolute',
                 bottom: '0',
-                left: '35px',
-                width: '40px',
-                height: '37px',
+                left: '30px',
+                width: '30px',
+                height: '30px',
                 background: pressedBtn === 'down' ? '#0F172A' : '#334155',
                 border: '2px solid #232F3E',
                 borderTop: 'none',
-                borderRadius: '0 0 6px 6px',
+                borderRadius: '0 0 5px 5px',
                 cursor: 'pointer',
                 color: '#94A3B8',
-                fontSize: '13px',
+                fontSize: '11px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1689,17 +1689,17 @@ export function CloudQuestGameBoy() {
               onTouchEnd={() => { keys.current.left = false; setPressedBtn(null); }}
               style={{
                 position: 'absolute',
-                top: '35px',
+                top: '30px',
                 left: '0',
-                width: '37px',
-                height: '40px',
+                width: '30px',
+                height: '30px',
                 background: pressedBtn === 'left' ? '#0F172A' : '#334155',
                 border: '2px solid #232F3E',
                 borderRight: 'none',
-                borderRadius: '6px 0 0 6px',
+                borderRadius: '5px 0 0 5px',
                 cursor: 'pointer',
                 color: '#94A3B8',
-                fontSize: '13px',
+                fontSize: '11px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1718,17 +1718,17 @@ export function CloudQuestGameBoy() {
               onTouchEnd={() => { keys.current.right = false; setPressedBtn(null); }}
               style={{
                 position: 'absolute',
-                top: '35px',
+                top: '30px',
                 right: '0',
-                width: '37px',
-                height: '40px',
+                width: '30px',
+                height: '30px',
                 background: pressedBtn === 'right' ? '#0F172A' : '#334155',
                 border: '2px solid #232F3E',
                 borderLeft: 'none',
-                borderRadius: '0 6px 6px 0',
+                borderRadius: '0 5px 5px 0',
                 cursor: 'pointer',
                 color: '#94A3B8',
-                fontSize: '13px',
+                fontSize: '11px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1745,26 +1745,26 @@ export function CloudQuestGameBoy() {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '18px',
+              gap: '12px',
               transform: 'rotate(-25deg)',
               background: '#E2E8F0',
-              border: '2.5px solid #232F3E',
-              borderRadius: '32px',
-              padding: '8px 14px',
-              boxShadow: 'inset 2px 2px 0 rgba(0,0,0,0.06)',
+              border: '2px solid #232F3E',
+              borderRadius: '26px',
+              padding: '5px 10px',
+              boxShadow: 'inset 1.5px 1.5px 0 rgba(0,0,0,0.06)',
             }}
           >
             {/* Button B (Invoke / Dash) */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
               <button
                 onClick={handleInvoke}
                 style={{
-                  width: '46px',
-                  height: '46px',
+                  width: '38px',
+                  height: '38px',
                   borderRadius: '50%',
                   background: pressedBtn === 'b' ? '#334155' : '#475569',
-                  border: '2.5px solid #232F3E',
-                  boxShadow: pressedBtn === 'b' ? 'inset 1px 1px 2px #1E293B' : '3px 3px 0 #232F3E',
+                  border: '2px solid #232F3E',
+                  boxShadow: pressedBtn === 'b' ? 'inset 1px 1px 2px #1E293B' : '2.5px 2.5px 0 #232F3E',
                   cursor: 'pointer',
                   outline: 'none',
                 }}
@@ -1773,7 +1773,7 @@ export function CloudQuestGameBoy() {
               <span
                 style={{
                   fontFamily: 'var(--font-display, sans-serif)',
-                  fontSize: '1rem',
+                  fontSize: '0.85rem',
                   fontWeight: 800,
                   color: '#232F3E',
                   transform: 'rotate(25deg)',
@@ -1784,16 +1784,16 @@ export function CloudQuestGameBoy() {
             </div>
 
             {/* Button A (Jump) */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
               <button
                 onClick={handleJump}
                 style={{
-                  width: '46px',
-                  height: '46px',
+                  width: '38px',
+                  height: '38px',
                   borderRadius: '50%',
                   background: pressedBtn === 'a' ? '#334155' : '#475569',
-                  border: '2.5px solid #232F3E',
-                  boxShadow: pressedBtn === 'a' ? 'inset 1px 1px 2px #1E293B' : '3px 3px 0 #232F3E',
+                  border: '2px solid #232F3E',
+                  boxShadow: pressedBtn === 'a' ? 'inset 1px 1px 2px #1E293B' : '2.5px 2.5px 0 #232F3E',
                   cursor: 'pointer',
                   outline: 'none',
                 }}
@@ -1802,7 +1802,7 @@ export function CloudQuestGameBoy() {
               <span
                 style={{
                   fontFamily: 'var(--font-display, sans-serif)',
-                  fontSize: '1rem',
+                  fontSize: '0.85rem',
                   fontWeight: 800,
                   color: '#232F3E',
                   transform: 'rotate(25deg)',
@@ -1823,22 +1823,22 @@ export function CloudQuestGameBoy() {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            padding: '2px 14px 0',
+            padding: '1px 12px 0',
           }}
         >
           {/* FUNCTION PILLS: DEPLOY & INVOKE */}
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
             {/* DEPLOY */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', transform: 'rotate(-25deg)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', transform: 'rotate(-25deg)' }}>
               <button
                 onClick={handleDeploy}
                 style={{
-                  width: '42px',
-                  height: '13px',
-                  borderRadius: '7px',
+                  width: '38px',
+                  height: '11px',
+                  borderRadius: '6px',
                   background: pressedBtn === 'deploy' ? '#1E293B' : '#475569',
-                  border: '2px solid #232F3E',
-                  boxShadow: '1px 1.5px 0 #232F3E',
+                  border: '1.5px solid #232F3E',
+                  boxShadow: '1px 1px 0 #232F3E',
                   cursor: 'pointer',
                   padding: 0,
                   outline: 'none',
@@ -1848,7 +1848,7 @@ export function CloudQuestGameBoy() {
               <span
                 style={{
                   fontFamily: 'var(--font-display, sans-serif)',
-                  fontSize: '0.72rem',
+                  fontSize: '0.64rem',
                   fontWeight: 800,
                   color: '#232F3E',
                   letterSpacing: '0.04em',
@@ -1859,16 +1859,16 @@ export function CloudQuestGameBoy() {
             </div>
 
             {/* INVOKE */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', transform: 'rotate(-25deg)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', transform: 'rotate(-25deg)' }}>
               <button
                 onClick={handleInvoke}
                 style={{
-                  width: '42px',
-                  height: '13px',
-                  borderRadius: '7px',
+                  width: '38px',
+                  height: '11px',
+                  borderRadius: '6px',
                   background: pressedBtn === 'invoke' ? '#1E293B' : '#475569',
-                  border: '2px solid #232F3E',
-                  boxShadow: '1px 1.5px 0 #232F3E',
+                  border: '1.5px solid #232F3E',
+                  boxShadow: '1px 1px 0 #232F3E',
                   cursor: 'pointer',
                   padding: 0,
                   outline: 'none',
@@ -1878,7 +1878,7 @@ export function CloudQuestGameBoy() {
               <span
                 style={{
                   fontFamily: 'var(--font-display, sans-serif)',
-                  fontSize: '0.72rem',
+                  fontSize: '0.64rem',
                   fontWeight: 800,
                   color: '#232F3E',
                   letterSpacing: '0.04em',
@@ -1893,20 +1893,20 @@ export function CloudQuestGameBoy() {
           <div
             style={{
               display: 'flex',
-              gap: '5px',
+              gap: '4px',
               transform: 'rotate(-25deg)',
             }}
             aria-hidden="true"
           >
-            {[20, 26, 32, 32, 26, 20].map((h, i) => (
+            {[14, 18, 22, 22, 18, 14].map((h, i) => (
               <div
                 key={i}
                 style={{
-                  width: '5px',
+                  width: '4px',
                   height: `${h}px`,
                   background: '#334155',
-                  borderRadius: '2.5px',
-                  border: '1.5px solid #232F3E',
+                  borderRadius: '2px',
+                  border: '1px solid #232F3E',
                 }}
               />
             ))}
@@ -1919,16 +1919,16 @@ export function CloudQuestGameBoy() {
           ========================================================================= */}
       <div
         style={{
-          marginTop: '12px',
+          marginTop: '6px',
           textAlign: 'center',
-          maxWidth: '392px',
+          maxWidth: '380px',
           width: '100%',
         }}
       >
         <p
           style={{
             fontFamily: 'var(--font-display, Anton, sans-serif)',
-            fontSize: '1.2rem',
+            fontSize: '0.98rem',
             letterSpacing: '0.04em',
             color: '#232F3E',
             fontWeight: 800,
@@ -1941,7 +1941,7 @@ export function CloudQuestGameBoy() {
         <span
           style={{
             fontFamily: "'Caveat', cursive",
-            fontSize: '1.05rem',
+            fontSize: '0.88rem',
             color: '#C2702C',
             fontWeight: 700,
             display: 'block',
@@ -1953,10 +1953,10 @@ export function CloudQuestGameBoy() {
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-            gap: '6px 10px',
-            marginTop: '8px',
+            gap: '3px 8px',
+            marginTop: '4px',
             fontFamily: 'var(--font-mono, monospace)',
-            fontSize: '0.68rem',
+            fontSize: '0.62rem',
             fontWeight: 700,
             color: '#64748B',
             textAlign: 'left',

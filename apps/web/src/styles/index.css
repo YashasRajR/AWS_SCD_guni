@@ -3183,8 +3183,8 @@ img.speaker-photo {
 .hero-title {
   font-family: Anton, 'Arial Narrow', var(--font-display);
   font-weight: 400;
-  font-size: clamp(38px, 5.5vw, 62px);
-  line-height: 0.94;
+  font-size: clamp(32px, 4.2vw, 50px);
+  line-height: 0.92;
   letter-spacing: -0.01em;
   text-transform: uppercase;
   color: var(--primary);
@@ -3199,9 +3199,9 @@ img.speaker-photo {
 .hero-title-accent {
   display: block;
   font-family: Caveat, cursive;
-  font-size: clamp(48px, 6.8vw, 76px);
+  font-size: clamp(40px, 5.2vw, 62px);
   font-weight: 700;
-  line-height: 0.95;
+  line-height: 0.92;
   text-transform: capitalize;
   color: #c2702c;
 }
@@ -3938,7 +3938,7 @@ img.speaker-photo {
   max-width: 580px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
 }
 
 .hero-game-wrapper {
@@ -3946,7 +3946,7 @@ img.speaker-photo {
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 14px;
   flex: 0 0 auto;
   align-self: center;
 }
@@ -3958,7 +3958,7 @@ img.speaker-photo {
   justify-content: center;
   font-family: Anton, 'Arial Narrow', var(--font-display, sans-serif);
   font-weight: 400;
-  font-size: clamp(38px, 4vw, 56px);
+  font-size: clamp(30px, 3.4vw, 46px);
   line-height: 0.94;
   letter-spacing: 0.02em;
   color: var(--primary, #232F3E);
@@ -3974,13 +3974,20 @@ img.speaker-photo {
 
 .gameboy-presentation-wrapper {
   width: 100%;
-  max-width: 392px;
+  max-width: 380px;
 }
 
 .gameboy-body-card {
   width: 100% !important;
-  max-width: 392px !important;
+  max-width: 380px !important;
   box-sizing: border-box !important;
+}
+
+.info-strip-overlap {
+  margin-top: 10px;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 2;
 }
 
 @media (max-width: 960px) {

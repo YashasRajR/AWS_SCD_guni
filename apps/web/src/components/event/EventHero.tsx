@@ -20,7 +20,7 @@ export function EventHero() {
     : undefined;
 
   return (
-    <section className="hero" style={{ ...heroStyle, padding: '48px 0 36px', borderBottom: '1px solid var(--border)' }}>
+    <section className="hero" style={{ ...heroStyle, padding: '16px 0 10px', borderBottom: '1px solid var(--border)' }}>
       <div className="hero-shapegrid">
         <ShapeGrid
           direction="diagonal"
@@ -68,19 +68,19 @@ export function EventHero() {
                   <span className="hero-title-line">DAY</span>
                 </h1>
                 {event.description && (
-                  <p className="tx" style={{ marginTop: '12px', color: 'var(--muted)', maxWidth: '54ch' }}>
+                  <p className="tx" style={{ marginTop: '6px', color: 'var(--muted)', maxWidth: '48ch', fontSize: '0.92rem', lineHeight: 1.4 }}>
                     {event.description}
                   </p>
                 )}
               </div>
 
               {/* Countdown Flip Tiles */}
-              <div style={{ marginTop: '4px' }}>
+              <div style={{ marginTop: '2px' }}>
                 <CountdownTimer targetDate={event.eventDate} />
               </div>
 
               {/* Action Buttons */}
-              <div className="r" style={{ gap: '10px', flexWrap: 'wrap', marginTop: '6px' }}>
+              <div className="r" style={{ gap: '10px', flexWrap: 'wrap', marginTop: '2px' }}>
                 {event?.primaryCtaUrl ? (
                   <a href={event.primaryCtaUrl} className="btn o hero-cta-pulse">
                     {event.primaryCtaLabel || 'Register Now →'}
