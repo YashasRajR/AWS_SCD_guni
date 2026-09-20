@@ -60,9 +60,6 @@ export function CountdownTimer({ targetDate }: CountdownTimerProps) {
             <span className="mo" style={{ fontSize: '0.62rem', letterSpacing: '0.04em', color: 'var(--muted)', marginTop: '2px' }}>{label}</span>
           </div>
         ))}
-        <p className="mo" style={{ alignSelf: 'flex-end', marginLeft: '6px', color: 'var(--muted)' }}>
-          days hrs min sec — flip tiles
-        </p>
       </div>
     </div>
   );

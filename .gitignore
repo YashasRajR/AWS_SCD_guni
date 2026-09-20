@@ -19,3 +19,4 @@ playwright-report/
 blob-report/
 backend/uploads/*
 !backend/uploads/.gitkeep
+.claude/

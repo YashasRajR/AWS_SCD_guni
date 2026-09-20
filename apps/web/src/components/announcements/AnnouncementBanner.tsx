@@ -20,9 +20,9 @@ export function AnnouncementBanner() {
   const { status } = useAuth();
   const [dismissed, setDismissed] = useState(false);
 
-  if (dismissed) return null;
-
   const announcement = filterByAudience(items, status).find((a) => !a.showAsPopup);
+
+  if (dismissed || !announcement) return null;
 
   return (
     <aside
@@ -42,13 +42,7 @@ export function AnnouncementBanner() {
         role="status"
       >
         <span className="mo" style={{ color: 'var(--primary)', fontWeight: 700 }}>
-          {announcement ? (
-            <>
-              <strong>{announcement.title}:</strong> {announcement.message}
-            </>
-          ) : (
-            'Seats filling · register free · Ganpat University · 8 Oct 2026'
-          )}
+          <strong>{announcement.title}:</strong> {announcement.message}
         </span>
         <button
           type="button"

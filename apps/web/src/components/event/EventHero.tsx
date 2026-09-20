@@ -1,23 +1,14 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth.js';
-import { useEvent, useSessions, useSpeakers, useVenues } from '../../lib/queries.js';
+import { useEvent } from '../../lib/queries.js';
 import { formatDate } from '../../lib/format.js';
 import { CountdownTimer } from './CountdownTimer.js';
-import { Mascot } from '../ui/Mascot.js';
+import { CloudQuestGameBoy } from '../ui/CloudQuestGameBoy.js';
 import { ShapeGrid } from '../ui/ShapeGrid.js';
 
 export function EventHero() {
   const { data: event, loading: eventLoading, notFound } = useEvent();
   const { status } = useAuth();
-  const { items: speakers } = useSpeakers();
-  const { items: sessions } = useSessions();
-  const { items: venues } = useVenues();
-
-  const stats = [
-    { label: 'Speakers', value: speakers.length },
-    { label: 'Sessions', value: sessions.length },
-    { label: 'Venues', value: venues.length },
-  ].filter((s) => s.value > 0);
 
   const heroStyle = event?.heroBackgroundImage
     ? {
@@ -66,10 +57,6 @@ export function EventHero() {
           <div className="r" style={{ justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '24px' }}>
             {/* Left Column: Heading, Countdown, Actions */}
             <div className="c" style={{ flex: '1 1 500px', maxWidth: '640px', gap: '18px' }}>
-              <p className="mo" style={{ color: 'var(--primary)', fontWeight: 700 }}>
-                {event.eventDate ? formatDate(event.eventDate) : '8 October 2026'} · {event.venue || 'Ganpat University, Mehsana'}
-              </p>
-
               <div>
                 <h1
                   className="hero-title"
@@ -118,47 +105,19 @@ export function EventHero() {
                   </Link>
                 )}
               </div>
-
-              {/* Stats badges if populated */}
-              {stats.length > 0 && (
-                <div className="r" style={{ gap: '16px', marginTop: '8px' }}>
-                  {stats.map((s) => (
-                    <div key={s.label} className="kd" style={{ padding: '6px 12px' }}>
-                      <p className="d3" style={{ fontSize: '18px', color: 'var(--accent)' }}>{s.value}+</p>
-                      <p className="mo" style={{ fontSize: '0.65rem' }}>{s.label}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
 
-            {/* Right Column: Vertical Year & Mascot */}
-            <div
-              className="c"
-              style={{
-                alignItems: 'flex-end',
-                justifyContent: 'space-between',
-                minWidth: '180px',
-                height: '100%',
-                display: 'flex',
-              }}
-            >
-              <div
-                className="d2"
-                style={{
-                  writingMode: 'vertical-rl',
-                  fontSize: 'clamp(28px, 4vw, 42px)',
-                  letterSpacing: '0.12em',
-                  color: 'var(--primary)',
-                  opacity: 0.85,
-                  alignSelf: 'flex-end',
-                }}
-              >
-                2026
+            {/* Right Column: 2026 with each number on a newline beside the Playable Game Boy Console */}
+            <div className="hero-game-wrapper">
+              <div className="hero-vertical-year" aria-label="2026">
+                <span>2</span>
+                <span>0</span>
+                <span>2</span>
+                <span>6</span>
               </div>
-              <div style={{ marginTop: '16px' }}>
-                <Mascot variant="wave" size={135} />
-              </div>
+
+              {/* Playable Cloud Quest Game Boy Console */}
+              <CloudQuestGameBoy />
             </div>
           </div>
         )}
