@@ -265,11 +265,21 @@ export function CloudQuestGameBoy() {
 
     let animId: number;
     let tick = 0;
+    let buildingScrollX = 0;
     const groundY = 135;
 
     const gameLoop = () => {
       tick++;
       const p = player.current;
+
+      // Parallax Building Movement (Smooth continuous motion + reactive to player)
+      let buildingSpeed = 0.65;
+      if (keys.current.right) {
+        buildingSpeed = 1.65;
+      } else if (keys.current.left) {
+        buildingSpeed = -0.35;
+      }
+      buildingScrollX = (buildingScrollX + buildingSpeed + 536) % 536;
 
       // 1. Physics & Movement
       if (keys.current.left) {
@@ -458,47 +468,141 @@ export function CloudQuestGameBoy() {
       drawCloud(540 - cloudOffset, 55, 1.1, 'AWS CLOUD');
       ctx.restore();
 
-      // --- 3. CAMPUS ROOFTOP BUILDINGS ---
-      // Left Building (GUNI Campus Hall with windows)
-      ctx.fillStyle = '#E6DECE';
-      ctx.strokeStyle = '#232F3E';
-      ctx.lineWidth = 2;
-      ctx.fillRect(8, 145, 76, 65);
-      ctx.strokeRect(8, 145, 76, 65);
-      // Windows
-      ctx.fillStyle = '#FEF08A';
-      for (let r = 0; r < 2; r++) {
-        for (let c = 0; c < 3; c++) {
-          ctx.strokeRect(18 + c * 20, 155 + r * 16, 11, 10);
-          ctx.fillRect(18 + c * 20, 155 + r * 16, 11, 10);
-        }
-      }
-      // "CAMPUS" label
-      ctx.fillStyle = '#232F3E';
-      ctx.font = 'bold 9px monospace';
-      ctx.textAlign = 'left';
-      ctx.fillText('CAMPUS', 14, 198);
+      // --- 3. CAMPUS ROOFTOP BUILDINGS (Smooth infinite parallax scrolling) ---
+      const campusBuildings = [
+        {
+          w: 80,
+          y: 145,
+          label: 'CAMPUS',
+          windowRows: 2,
+          windowCols: 3,
+          roofFeature: 'antenna' as const,
+        },
+        {
+          w: 82,
+          y: 122,
+          label: 'GUNI TECH',
+          windowRows: 3,
+          windowCols: 3,
+          roofFeature: 'satellite' as const,
+        },
+        {
+          w: 120,
+          y: 148,
+          label: 'AWS CLOUD LAB',
+          windowRows: 1,
+          windowCols: 5,
+          roofFeature: 'beacon' as const,
+        },
+        {
+          w: 86,
+          y: 134,
+          label: 'LIBRARY',
+          windowRows: 2,
+          windowCols: 3,
+          roofFeature: 'ac' as const,
+        },
+        {
+          w: 92,
+          y: 138,
+          label: 'SCD 2026',
+          windowRows: 2,
+          windowCols: 4,
+          roofFeature: 'flag' as const,
+        },
+      ];
+      const buildingGap = 16;
+      const totalSkylineWidth = campusBuildings.reduce((acc, b) => acc + b.w + buildingGap, 0); // 536px
 
-      // Center High-Rise (Engineering Dept)
-      ctx.fillStyle = '#E6DECE';
-      ctx.fillRect(90, 125, 78, 85);
-      ctx.strokeRect(90, 125, 78, 85);
-      ctx.fillStyle = '#FEF08A';
-      for (let r = 0; r < 3; r++) {
-        for (let c = 0; c < 3; c++) {
-          ctx.strokeRect(102 + c * 22, 135 + r * 16, 12, 10);
-          ctx.fillRect(102 + c * 22, 135 + r * 16, 12, 10);
-        }
-      }
+      let startX = -(buildingScrollX % totalSkylineWidth);
+      while (startX < 340 + 120) {
+        let curX = startX;
+        for (const b of campusBuildings) {
+          if (curX + b.w > -30 && curX < 340 + 30) {
+            // Draw building body
+            ctx.fillStyle = '#E6DECE';
+            ctx.strokeStyle = '#232F3E';
+            ctx.lineWidth = 2;
+            ctx.fillRect(curX, b.y, b.w, 210 - b.y);
+            ctx.strokeRect(curX, b.y, b.w, 210 - b.y);
 
-      // Right Building (Cloud Computing Lab)
-      ctx.fillStyle = '#E6DECE';
-      ctx.fillRect(174, 148, 158, 62);
-      ctx.strokeRect(174, 148, 158, 62);
-      ctx.fillStyle = '#FEF08A';
-      for (let c = 0; c < 5; c++) {
-        ctx.strokeRect(188 + c * 26, 158, 12, 10);
-        ctx.fillRect(188 + c * 26, 158, 12, 10);
+            // Roof Features (Antenna, Satellite dish, Blinking Beacon, AC unit, Flag)
+            if (b.roofFeature === 'antenna') {
+              ctx.strokeStyle = '#232F3E';
+              ctx.lineWidth = 1.5;
+              ctx.beginPath();
+              ctx.moveTo(curX + b.w / 2, b.y);
+              ctx.lineTo(curX + b.w / 2, b.y - 12);
+              ctx.moveTo(curX + b.w / 2 - 4, b.y - 8);
+              ctx.lineTo(curX + b.w / 2 + 4, b.y - 8);
+              ctx.stroke();
+              // Red beacon dot
+              ctx.fillStyle = tick % 40 < 20 ? '#EF4444' : '#991B1B';
+              ctx.beginPath();
+              ctx.arc(curX + b.w / 2, b.y - 13, 2, 0, Math.PI * 2);
+              ctx.fill();
+            } else if (b.roofFeature === 'satellite') {
+              ctx.strokeStyle = '#232F3E';
+              ctx.lineWidth = 1.5;
+              ctx.beginPath();
+              ctx.arc(curX + 22, b.y - 6, 6, 1.2 * Math.PI, 1.9 * Math.PI);
+              ctx.lineTo(curX + 22, b.y);
+              ctx.stroke();
+            } else if (b.roofFeature === 'beacon') {
+              // AWS Orange beacon
+              ctx.fillStyle = tick % 30 < 15 ? '#FF9900' : '#D97706';
+              ctx.fillRect(curX + 16, b.y - 6, 6, 6);
+              ctx.strokeRect(curX + 16, b.y - 6, 6, 6);
+            } else if (b.roofFeature === 'flag') {
+              // Little AWS flag
+              ctx.strokeStyle = '#232F3E';
+              ctx.lineWidth = 1.5;
+              ctx.beginPath();
+              ctx.moveTo(curX + 14, b.y);
+              ctx.lineTo(curX + 14, b.y - 14);
+              ctx.stroke();
+              ctx.fillStyle = '#FF9900';
+              ctx.beginPath();
+              ctx.moveTo(curX + 14, b.y - 14);
+              ctx.lineTo(curX + 24, b.y - 10);
+              ctx.lineTo(curX + 14, b.y - 6);
+              ctx.closePath();
+              ctx.fill();
+            }
+
+            // Windows
+            const marginX = (b.w - b.windowCols * 18) / 2;
+            ctx.fillStyle = '#FEF08A';
+            for (let r = 0; r < b.windowRows; r++) {
+              for (let c = 0; c < b.windowCols; c++) {
+                const wx = curX + marginX + c * 18;
+                const wy = b.y + 10 + r * 16;
+                // Only draw if within building bounds above floor
+                if (wy + 10 < 205) {
+                  ctx.fillRect(wx, wy, 12, 10);
+                  ctx.strokeRect(wx, wy, 12, 10);
+                  // Window pane cross
+                  ctx.strokeStyle = '#232F3E';
+                  ctx.lineWidth = 0.75;
+                  ctx.beginPath();
+                  ctx.moveTo(wx + 6, wy);
+                  ctx.lineTo(wx + 6, wy + 10);
+                  ctx.stroke();
+                }
+              }
+            }
+
+            // Building Label at bottom
+            if (b.label) {
+              ctx.fillStyle = '#232F3E';
+              ctx.font = 'bold 8px monospace';
+              ctx.textAlign = 'left';
+              ctx.fillText(b.label, curX + 6, 198);
+            }
+          }
+          curX += b.w + buildingGap;
+        }
+        startX += totalSkylineWidth;
       }
 
       // Solid Rooftop Walking Platform
@@ -509,10 +613,11 @@ export function CloudQuestGameBoy() {
       ctx.lineTo(340, 165);
       ctx.stroke();
 
-      // Rooftop warning hash marks
+      // Rooftop warning hash marks (moving in sync with the buildings)
       ctx.strokeStyle = '#FF9900';
       ctx.lineWidth = 2;
-      for (let i = 0; i < 340; i += 24) {
+      const hashOffset = buildingScrollX % 24;
+      for (let i = -hashOffset; i < 340 + 24; i += 24) {
         ctx.beginPath();
         ctx.moveTo(i, 165);
         ctx.lineTo(i + 8, 172);
