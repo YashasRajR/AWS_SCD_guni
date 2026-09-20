@@ -127,12 +127,11 @@ export function Header() {
         </a>
         <div className="site-header-row">
           <NavLink to="/" className="brand" onClick={closeMenu} aria-label="AWS Student Community Day Home">
-            <BuilderMark size={22} className="brand-builder-mark" />
+            <BuilderMark size={28} className="brand-builder-mark" />
             <span className="brand-name">
               <span className="brand-name-full">AWS Student Builder Group</span>
               <span className="brand-name-short">AWS SBG</span>
             </span>
-            <Mascot variant="lockup" size={30} />
           </NavLink>
 
           <nav className="desktop-nav" aria-label="Primary">
