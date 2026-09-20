@@ -184,6 +184,7 @@ export function CloudQuestGameBoy() {
   const [confettiBlown, setConfettiBlown] = useState(false);
   const [pressedBtn, setPressedBtn] = useState<string | null>(null);
   const [cyberMode, setCyberMode] = useState(false);
+  const [copiedCoupon, setCopiedCoupon] = useState(false);
   const screenShake = useRef(0);
   const konamiSeq = useRef<string[]>([]);
   const hasMovedRef = useRef(false);
@@ -375,6 +376,26 @@ export function CloudQuestGameBoy() {
       vy: -1.2,
     });
     if (soundEnabled) playChiptune('powerup');
+  }, [soundEnabled]);
+
+  // Action: Copy Surprise Coupon "AWS-SCD-P2026"
+  const handleCopyCoupon = useCallback(() => {
+    navigator.clipboard.writeText('AWS-SCD-P2026').catch(() => {});
+    try {
+      localStorage.setItem('scd_saved_coupon', 'AWS-SCD-P2026');
+    } catch {}
+    setCopiedCoupon(true);
+    if (soundEnabled) playChiptune('powerup');
+    floatingScores.current.push({
+      id: Math.random(),
+      text: '📋 AWS-SCD-P2026 COPIED! PASTE AT CHECKOUT',
+      x: 18,
+      y: 90,
+      color: '#16A34A',
+      opacity: 1,
+      vy: -1.2,
+    });
+    setTimeout(() => setCopiedCoupon(false), 4000);
   }, [soundEnabled]);
 
   // Keyboard controls
@@ -1244,19 +1265,19 @@ export function CloudQuestGameBoy() {
       if (victoryCelebration) {
         ctx.save();
         ctx.fillStyle = cyberMode ? 'rgba(15, 23, 42, 0.94)' : 'rgba(35, 47, 62, 0.92)';
-        ctx.fillRect(16, 22, 308, 38);
+        ctx.fillRect(16, 18, 308, 42);
         ctx.strokeStyle = '#FF9900';
         ctx.lineWidth = 2;
-        ctx.strokeRect(16, 22, 308, 38);
+        ctx.strokeRect(16, 18, 308, 42);
 
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = "bold 12px 'Anton', monospace";
+        ctx.font = "bold 11px 'Anton', monospace";
         ctx.textAlign = 'center';
-        ctx.fillText('🎓 AWS CERTIFIED BUILDER! 🎓', 170, 37);
+        ctx.fillText('🎓 AWS BUILDER! SURPRISE COUPON UNLOCKED! 🎓', 170, 33);
 
         ctx.fillStyle = '#FDE68A';
-        ctx.font = "bold 9.5px 'Caveat', cursive, monospace";
-        ctx.fillText('Ganpat University SCD 2026 Ready! 🚀 (Try Deploy & Invoke!)', 170, 52);
+        ctx.font = "bold 9px monospace";
+        ctx.fillText('CODE: AWS-SCD-P2026 (Copy below & paste at checkout!) 🎟️', 170, 48);
         ctx.restore();
       }
 
@@ -1498,57 +1519,157 @@ export function CloudQuestGameBoy() {
           </span>
         </div>
 
-        {/* Victory Celebration CTA Actions */}
+        {/* Victory Celebration Surprise Coupon Card */}
         {unlockedServices.size === 4 && (
           <div
             style={{
+              width: '100%',
               display: 'flex',
-              gap: '10px',
-              justifyContent: 'center',
+              flexDirection: 'column',
               alignItems: 'center',
+              gap: '5px',
               marginTop: '4px',
-              marginBottom: '2px',
+              marginBottom: '3px',
+              padding: '7px 9px',
+              background: '#FFFBEB',
+              border: '2px dashed #F59E0B',
+              borderRadius: '8px',
+              boxShadow: 'inset 0 1px 3px rgba(245, 158, 11, 0.15)',
+              boxSizing: 'border-box',
             }}
           >
-            <Link
-              to="/register"
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', width: '100%', justifyContent: 'space-between' }}>
+              <span
+                style={{
+                  fontFamily: 'var(--font-mono, monospace)',
+                  fontSize: '0.62rem',
+                  fontWeight: 800,
+                  color: '#92400E',
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                🎁 SURPRISE COUPON UNLOCKED!
+              </span>
+              <span
+                style={{
+                  fontFamily: 'var(--font-mono, monospace)',
+                  fontSize: '0.58rem',
+                  fontWeight: 700,
+                  color: '#B45309',
+                }}
+              >
+                PASTE AT CHECKOUT
+              </span>
+            </div>
+
+            {/* Coupon Code Pill + Actions */}
+            <div style={{ display: 'flex', gap: '5px', width: '100%', alignItems: 'center' }}>
+              {/* Clickable Coupon Code Pill */}
+              <button
+                type="button"
+                onClick={handleCopyCoupon}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '5px 8px',
+                  background: copiedCoupon ? '#DCFCE7' : '#FFFFFF',
+                  border: copiedCoupon ? '2px solid #16A34A' : '2px solid #232F3E',
+                  borderRadius: '6px',
+                  boxShadow: '2px 2px 0 #232F3E',
+                  cursor: 'pointer',
+                  outline: 'none',
+                }}
+                title="Click to copy coupon code AWS-SCD-P2026"
+              >
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono, monospace)',
+                    fontSize: '0.8rem',
+                    fontWeight: 800,
+                    letterSpacing: '0.06em',
+                    color: copiedCoupon ? '#166534' : '#232F3E',
+                  }}
+                >
+                  AWS-SCD-P2026
+                </span>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono, monospace)',
+                    fontSize: '0.62rem',
+                    fontWeight: 800,
+                    color: copiedCoupon ? '#166534' : '#0284C7',
+                  }}
+                >
+                  {copiedCoupon ? '✓ COPIED!' : '📋 COPY'}
+                </span>
+              </button>
+
+              {/* Link to Checkout / Register with coupon prefilled */}
+              <Link
+                to="/register?coupon=AWS-SCD-P2026"
+                onClick={handleCopyCoupon}
+                style={{
+                  background: '#FF9900',
+                  color: '#232F3E',
+                  fontFamily: 'var(--font-display, Anton, sans-serif)',
+                  fontSize: '0.78rem',
+                  fontWeight: 800,
+                  letterSpacing: '0.04em',
+                  padding: '6px 9px',
+                  borderRadius: '6px',
+                  border: '2px solid #232F3E',
+                  boxShadow: '2px 2px 0 #232F3E',
+                  textDecoration: 'none',
+                  whiteSpace: 'nowrap',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '2px',
+                }}
+                title="Go to checkout to paste coupon"
+              >
+                CHECKOUT →
+              </Link>
+
+              {/* Replay Run */}
+              <button
+                type="button"
+                onClick={resetGame}
+                style={{
+                  background: '#FFFFFF',
+                  color: '#232F3E',
+                  fontFamily: 'var(--font-mono, monospace)',
+                  fontSize: '0.72rem',
+                  fontWeight: 800,
+                  padding: '6px 8px',
+                  borderRadius: '6px',
+                  border: '2px solid #232F3E',
+                  boxShadow: '2px 2px 0 #232F3E',
+                  cursor: 'pointer',
+                }}
+                title="Replay game run"
+              >
+                ↻
+              </button>
+            </div>
+
+            {/* Instruction status note */}
+            <span
               style={{
-                background: '#FF9900',
-                color: '#232F3E',
-                fontFamily: 'var(--font-display, Anton, sans-serif)',
-                fontSize: '0.88rem',
-                fontWeight: 800,
-                letterSpacing: '0.04em',
-                padding: '6px 14px',
-                borderRadius: '6px',
-                border: '2px solid #232F3E',
-                boxShadow: '2px 2px 0 #232F3E',
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                cursor: 'pointer',
-              }}
-            >
-              🎟️ CLAIM PASS →
-            </Link>
-            <button
-              onClick={resetGame}
-              style={{
-                background: '#FFFFFF',
-                color: '#232F3E',
                 fontFamily: 'var(--font-mono, monospace)',
-                fontSize: '0.72rem',
-                fontWeight: 800,
-                padding: '6px 10px',
-                borderRadius: '6px',
-                border: '2px solid #232F3E',
-                boxShadow: '2px 2px 0 #232F3E',
-                cursor: 'pointer',
+                fontSize: '0.6rem',
+                fontWeight: 700,
+                color: copiedCoupon ? '#15803D' : '#92400E',
+                textAlign: 'center',
               }}
             >
-              ↻ REPLAY
-            </button>
+              {copiedCoupon
+                ? '🎉 Copied! Paste AWS-SCD-P2026 during checkout for surprise discount!'
+                : '💡 Click to copy AWS-SCD-P2026, then paste during checkout!'}
+            </span>
           </div>
         )}
 

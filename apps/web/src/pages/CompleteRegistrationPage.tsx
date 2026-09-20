@@ -44,7 +44,15 @@ export function CompleteRegistrationPage() {
   const { data: me } = useResource<MeData>('/me', isConfirmed);
   const { data: ticket } = useResource<Ticket>('/me/ticket', isConfirmed);
 
-  const [couponCode, setCouponCode] = useState('');
+  const [couponCode, setCouponCode] = useState(() => {
+    try {
+      const urlCoupon = new URLSearchParams(window.location.search).get('coupon');
+      if (urlCoupon) return urlCoupon.trim();
+      return localStorage.getItem('scd_saved_coupon') || '';
+    } catch {
+      return '';
+    }
+  });
   const [couponPricing, setCouponPricing] = useState<CouponPricing | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
   const [applyingCoupon, setApplyingCoupon] = useState(false);
@@ -254,7 +262,7 @@ export function CompleteRegistrationPage() {
                     setCouponPricing(null);
                     setCouponError(null);
                   }}
-                  placeholder="e.g. AWSGUNI25"
+                  placeholder="e.g. AWS-SCD-P2026"
                 />
               </label>
               <button
@@ -266,6 +274,25 @@ export function CompleteRegistrationPage() {
                 {applyingCoupon ? 'Applying…' : 'Apply'}
               </button>
             </div>
+            {!couponCode && (
+              <div style={{ marginTop: '4px', fontSize: '0.8rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setCouponCode('AWS-SCD-P2026')}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: 'var(--primary, #232F3E)',
+                    fontWeight: 600,
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                  }}
+                >
+                  📋 Paste Cloud Quest coupon &ldquo;AWS-SCD-P2026&rdquo;
+                </button>
+              </div>
+            )}
             {couponError && <p className="form-error">{couponError}</p>}
 
             {Number(discountAmount) > 0 && (

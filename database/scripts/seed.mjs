@@ -172,6 +172,13 @@ async function main() {
        ON CONFLICT (UPPER(code)) DO NOTHING`,
     );
 
+    // --- Surprise Cloud Quest Game Boy coupon ---
+    await client.query(
+      `INSERT INTO coupons (code, name, discount_type, discount_value, currency, per_user_limit, is_active)
+       VALUES ('AWS-SCD-P2026', 'Cloud Quest Surprise Pass Discount', 'PERCENT', 50, 'INR', 1, TRUE)
+       ON CONFLICT (UPPER(code)) DO NOTHING`,
+    );
+
     // --- Dev users (CLEARLY FAKE — never real people) ----------------------
     await upsertUser(client, { email: 'superadmin@dev.local', roleName: 'SUPER_ADMIN' });
     await upsertUser(client, { email: 'admin@dev.local', roleName: 'ADMIN' });
