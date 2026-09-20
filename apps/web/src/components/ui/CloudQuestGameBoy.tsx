@@ -181,7 +181,6 @@ export function CloudQuestGameBoy() {
   const [unlockedServices, setUnlockedServices] = useState<Set<string>>(new Set(['lambda']));
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [victoryCelebration, setVictoryCelebration] = useState(false);
-  const [confettiBlown, setConfettiBlown] = useState(false);
   const [pressedBtn, setPressedBtn] = useState<string | null>(null);
   const [cyberMode, setCyberMode] = useState(false);
   const [copiedCoupon, setCopiedCoupon] = useState(false);
@@ -332,7 +331,6 @@ export function CloudQuestGameBoy() {
   // Action: Deploy Rocket & Screen Shake
   const handleDeploy = useCallback(() => {
     hasMovedRef.current = true;
-    setConfettiBlown(true);
     setVictoryCelebration(true);
     if (soundEnabled) playChiptune('rocket');
     setScore((s) => s + 500);
@@ -355,7 +353,6 @@ export function CloudQuestGameBoy() {
       vy: -1.4,
     });
 
-    window.setTimeout(() => setConfettiBlown(false), 2400);
     window.setTimeout(() => setVictoryCelebration(false), 4500);
   }, [soundEnabled]);
 
@@ -555,7 +552,6 @@ export function CloudQuestGameBoy() {
             next.add(blk.id);
             if (next.size === 4 && !victoryCelebration) {
               setVictoryCelebration(true);
-              setConfettiBlown(true);
               if (soundEnabled) playChiptune('victory');
             }
             return next;
@@ -1302,31 +1298,6 @@ export function CloudQuestGameBoy() {
           boxSizing: 'border-box',
         }}
       >
-        {/* --- TOP-RIGHT EXPLOSIVE CONFETTI BURST --- */}
-        <div
-          className={`top-confetti-burst ${confettiBlown ? 'is-exploding' : ''}`}
-          aria-hidden="true"
-          style={{
-            position: 'absolute',
-            top: '-32px',
-            right: '-16px',
-            width: '110px',
-            height: '100px',
-            pointerEvents: 'none',
-            zIndex: 20,
-          }}
-        >
-          <svg viewBox="0 0 110 100" width="100%" height="100%" fill="none">
-            <path d="M 15,95 Q 35,55 70,35 Q 85,20 105,5" stroke="#FF9900" strokeWidth="3" strokeLinecap="round" />
-            <path d="M 30,98 Q 50,70 60,45 Q 65,20 85,10" stroke="#06B6D4" strokeWidth="2.5" strokeLinecap="round" />
-            <path d="M 40,95 Q 70,75 85,55 Q 98,35 105,25" stroke="#8C52FF" strokeWidth="3" strokeLinecap="round" />
-            <polygon points="60,18 64,28 75,28 66,35 70,45 60,38 50,45 54,35 45,28 56,28" fill="#FBBF24" stroke="#232F3E" strokeWidth="1.2" />
-            <polygon points="90,36 93,42 100,42 94,47 96,54 90,50 84,54 87,47 81,42 88,42" fill="#EF4444" stroke="#232F3E" strokeWidth="1.2" />
-            <circle cx="32" cy="50" r="3.5" fill="#10B981" />
-            <circle cx="80" cy="65" r="3" fill="#FF9900" />
-          </svg>
-        </div>
-
         {/* Top Cartridge Notch Header */}
         <div
           style={{

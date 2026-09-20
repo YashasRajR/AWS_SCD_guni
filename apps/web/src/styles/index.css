@@ -3903,21 +3903,6 @@ img.speaker-photo {
   transform: rotate(-2deg) translateY(-4px) scale(1.01) !important;
 }
 
-.top-right-confetti-burst {
-  opacity: 0.9;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
-}
-
-.top-right-confetti-burst.is-exploding {
-  animation: confetti-cannon 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-@keyframes confetti-cannon {
-  0% { transform: scale(0.4) translate(20px, 20px); opacity: 0; }
-  45% { transform: scale(1.4) translate(-14px, -18px); opacity: 1; }
-  100% { transform: scale(1) translate(0, 0); opacity: 0.95; }
-}
-
 /* Hero Container & Side-by-Side 2-Column Row */
 .hero-container {
   max-width: 1260px;
