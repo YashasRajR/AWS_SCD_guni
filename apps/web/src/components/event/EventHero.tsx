@@ -72,14 +72,13 @@ export function EventHero() {
 
               <div>
                 <h1
-                  className="d1"
+                  className="hero-title"
                   aria-label={event.name || 'AWS Student Community Day 2026'}
-                  style={{ fontSize: 'clamp(32px, 5.5vw, 54px)', lineHeight: 0.98, margin: 0 }}
                 >
-                  AWS<br />
-                  <span className="scr" style={{ fontSize: 'clamp(30px, 5vw, 50px)' }}>Students</span><br />
-                  COMMUNITY<br />
-                  DAY
+                  <span className="hero-title-line">AWS</span>
+                  <span className="hero-title-accent">Students</span>
+                  <span className="hero-title-line">COMMUNITY</span>
+                  <span className="hero-title-line">DAY</span>
                 </h1>
                 {event.description && (
                   <p className="tx" style={{ marginTop: '12px', color: 'var(--muted)', maxWidth: '54ch' }}>

@@ -3178,6 +3178,32 @@ img.speaker-photo {
   color: var(--accent);
 }
 
+/* Hero title lockup, matching the Mood Indigo reference's exact type
+   spec: condensed display face for the headline, handwritten accent
+   for the callout word. Scoped here rather than changed on the shared
+   .d1/.scr classes those also style elsewhere. */
+.hero-title {
+  font: 400 34px/0.92 Anton, 'Arial Narrow', sans-serif;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* Each line is its own block so the small accent line doesn't inherit
+   the headline's 34px line-box height (a block's line box is at least
+   as tall as its own font's line-height, "strut" per CSS2.1 10.8 --
+   without this, "Students" sat inside a line sized for Anton 34px). */
+.hero-title-line {
+  display: block;
+}
+
+.hero-title-accent {
+  display: block;
+  font: 600 15px/1 Caveat, cursive;
+  text-transform: capitalize;
+  color: #c2702c;
+}
+
 /* --- Container & Card Grammar --- */
 .wf {
   background: var(--surface);
