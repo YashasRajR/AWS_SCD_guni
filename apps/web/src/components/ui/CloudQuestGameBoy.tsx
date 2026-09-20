@@ -1281,22 +1281,24 @@ export function CloudQuestGameBoy() {
       }}
     >
       {/* =========================================================================
-          HANDHELD CONSOLE CASING (420px wide with BIG 340×210 screen)
+          HANDHELD CONSOLE CASING (Responsive up to 392px with BIG 340×210 screen)
           ========================================================================= */}
       <div
         className="gameboy-body-card"
         style={{
           position: 'relative',
-          width: '420px',
+          width: '100%',
+          maxWidth: '392px',
           background: '#FAFAFC',
           border: '3px solid #232F3E',
           borderRadius: '20px 20px 48px 20px',
           boxShadow: '8px 10px 0 rgba(35, 47, 62, 0.16)',
-          padding: '16px 20px 24px',
+          padding: '14px 16px 20px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '12px',
+          gap: '10px',
+          boxSizing: 'border-box',
         }}
       >
         {/* --- TOP-RIGHT EXPLOSIVE CONFETTI BURST --- */}
@@ -1418,12 +1420,13 @@ export function CloudQuestGameBoy() {
             background: '#E2E8F0',
             border: '2.5px solid #232F3E',
             borderRadius: '12px 12px 28px 12px',
-            padding: '10px 14px 14px',
+            padding: '8px 10px 10px',
             boxShadow: 'inset 2px 2px 0 rgba(0,0,0,0.08)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '8px',
+            boxSizing: 'border-box',
           }}
         >
           {/* Bezel Title Header: "═══ CLOUD QUEST: STUDENT EDITION ═══" */}
@@ -1881,18 +1884,20 @@ export function CloudQuestGameBoy() {
       </div>
 
       {/* =========================================================================
-          CALLOUT TEXT UNDERNEATH
+          CALLOUT TEXT UNDERNEATH (Neatly bounded within console width)
           ========================================================================= */}
       <div
         style={{
-          marginTop: '16px',
+          marginTop: '12px',
           textAlign: 'center',
+          maxWidth: '392px',
+          width: '100%',
         }}
       >
         <p
           style={{
             fontFamily: 'var(--font-display, Anton, sans-serif)',
-            fontSize: '1.35rem',
+            fontSize: '1.2rem',
             letterSpacing: '0.04em',
             color: '#232F3E',
             fontWeight: 800,
@@ -1905,7 +1910,7 @@ export function CloudQuestGameBoy() {
         <span
           style={{
             fontFamily: "'Caveat', cursive",
-            fontSize: '1.1rem',
+            fontSize: '1.05rem',
             color: '#C2702C',
             fontWeight: 700,
             display: 'block',
@@ -1915,21 +1920,21 @@ export function CloudQuestGameBoy() {
         </span>
         <div
           style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            gap: '12px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+            gap: '6px 10px',
             marginTop: '8px',
             fontFamily: 'var(--font-mono, monospace)',
             fontSize: '0.68rem',
             fontWeight: 700,
             color: '#64748B',
+            textAlign: 'left',
           }}
         >
-          <span>🚀 Press <b>DEPLOY</b> for Rocket</span>
-          <span>⚡ Press <b>INVOKE</b> for Coin Shower</span>
+          <span>🚀 Press <b>DEPLOY</b>: Rocket</span>
+          <span>⚡ Press <b>INVOKE</b>: Coins</span>
           <span>👾 Stomp the <b>500 Bug</b></span>
-          <span>✨ Tap <b>POWER ON</b> for Jetpack</span>
+          <span>✨ Tap <b>POWER ON</b>: Jetpack</span>
         </div>
       </div>
     </div>

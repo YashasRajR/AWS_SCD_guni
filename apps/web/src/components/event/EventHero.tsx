@@ -32,7 +32,7 @@ export function EventHero() {
           hoverTrailAmount={4}
         />
       </div>
-      <div className="container" style={{ position: 'relative', zIndex: 1 }}>
+      <div className="container hero-container" style={{ position: 'relative', zIndex: 1 }}>
         {eventLoading ? (
           <div style={{ minHeight: '260px', display: 'flex', alignItems: 'center' }}>
             <p className="mo">Loading event details…</p>
@@ -54,9 +54,9 @@ export function EventHero() {
             </div>
           </div>
         ) : (
-          <div className="r" style={{ justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '24px' }}>
+          <div className="hero-layout-row">
             {/* Left Column: Heading, Countdown, Actions */}
-            <div className="c" style={{ flex: '1 1 500px', maxWidth: '640px', gap: '18px' }}>
+            <div className="hero-content-col">
               <div>
                 <h1
                   className="hero-title"
