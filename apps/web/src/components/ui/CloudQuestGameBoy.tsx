@@ -1,25 +1,22 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 
 /**
  * CloudQuestGameBoy — Expanded, Highly Playable Handheld Console
  * 
- * Major Improvements:
- * 1. BIG, prominent 340×210 game screen (over 2.5× the previous screen area).
- * 2. Real arcade platformer game feel:
- *    - 28px tall animated student builder with idle, run, jump, and fall poses.
- *    - 4 bumpable AWS blocks: [ λ Lambda ], [ S3 ], [ EC2 ], [ DynamoDB ].
- *    - Floating golden AWS smile coins to collect in mid-air.
- *    - Drifting parallax clouds with "AWS CLOUD" and AWS smile logo.
- *    - Campus rooftop with lit classroom windows and Ganpat University banner.
- *    - Bumping blocks squishes them, pops XP badges, coins, and sparkles.
- *    - Collecting all 4 services triggers "AWS CERTIFIED BUILDER!" victory fanfare!
- * 3. Pixel-perfect bezel framing — zero overlapping text, zero clipping.
- * 4. Chunky, tactile D-Pad and large A/B buttons with satisfying press feedback.
- * 5. Full keyboard (Arrows / WASD / Space / Enter) + Direct touchscreen tapping.
- * 6. Authentic 8-bit Web Audio chiptune sound effects.
+ * Major Features:
+ * 1. BIG, prominent 340×210 game screen with seamless parallax scrolling campus.
+ * 2. Superpower Hardware Buttons:
+ *    - [ DEPLOY ]: Launches retro pixel AWS Rocket with screen rumble and smoke!
+ *    - [ INVOKE ]: Strikes lightning on Lambda and rains golden coin shower!
+ * 3. Secret Cyberpunk Synthwave Night Mode (click LED or Konami code):
+ *    - Jetpack flight mode with animated flame particles!
+ *    - Glowing neon purple/cyan sky and illuminated buildings.
+ * 4. Stompable 8-Bit "500 Error" Bug Monster across the rooftop (+500 XP).
+ * 5. Actionable Victory State with "Claim Student Ticket" and "Play Again".
  */
 
-function playChiptune(type: 'jump' | 'coin' | 'powerup' | 'victory') {
+function playChiptune(type: 'jump' | 'coin' | 'powerup' | 'victory' | 'rocket' | 'zap' | 'stomp' | 'cyber') {
   try {
     const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AudioCtx) return;
@@ -87,6 +84,60 @@ function playChiptune(type: 'jump' | 'coin' | 'powerup' | 'victory') {
         osc.start(start);
         osc.stop(start + 0.26);
       });
+    } else if (type === 'rocket') {
+      // Rocket thruster sweep with low frequency rumble
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(90, t);
+      osc.frequency.exponentialRampToValueAtTime(340, t + 0.45);
+      gain.gain.setValueAtTime(0.18, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.5);
+    } else if (type === 'zap') {
+      // Electric lightning zap
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(1200, t);
+      osc.frequency.exponentialRampToValueAtTime(140, t + 0.18);
+      gain.gain.setValueAtTime(0.16, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.18);
+    } else if (type === 'stomp') {
+      // Crunch stomp
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(320, t);
+      osc.frequency.exponentialRampToValueAtTime(70, t + 0.14);
+      gain.gain.setValueAtTime(0.2, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.14);
+    } else if (type === 'cyber') {
+      // Synthwave arpeggio
+      [440, 523.25, 659.25, 783.99, 880].forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'square';
+        const start = t + idx * 0.05;
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.12, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.14);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.14);
+      });
     }
   } catch {
     // Audio silently ignored if not permitted
@@ -132,6 +183,10 @@ export function CloudQuestGameBoy() {
   const [victoryCelebration, setVictoryCelebration] = useState(false);
   const [confettiBlown, setConfettiBlown] = useState(false);
   const [pressedBtn, setPressedBtn] = useState<string | null>(null);
+  const [cyberMode, setCyberMode] = useState(false);
+  const screenShake = useRef(0);
+  const konamiSeq = useRef<string[]>([]);
+  const hasMovedRef = useRef(false);
 
   // Key controls
   const keys = useRef({ left: false, right: false, jump: false });
@@ -166,30 +221,106 @@ export function CloudQuestGameBoy() {
     { x: 295, y: 88, baseY: 88, collected: false },
   ]);
 
+  // Rocket for DEPLOY
+  const rocket = useRef<{
+    active: boolean;
+    x: number;
+    y: number;
+    vy: number;
+    smoke: Array<{ x: number; y: number; r: number; alpha: number; vx: number }>;
+  }>({
+    active: false,
+    x: 170,
+    y: 155,
+    vy: 0,
+    smoke: [],
+  });
+
+  // Lightning & Rain Coins for INVOKE
+  const lightningStrike = useRef<{ active: boolean; frame: number; x: number; y: number }>({
+    active: false,
+    frame: 0,
+    x: 79,
+    y: 55,
+  });
+  const rainCoins = useRef<Array<{ x: number; y: number; vy: number; spin: number; collected: boolean }>>([]);
+
+  // 8-Bit 500 Bug Monster
+  const bug = useRef<{
+    active: boolean;
+    x: number;
+    y: number;
+    vx: number;
+    squished: boolean;
+    squishTimer: number;
+    legsFrame: number;
+  }>({
+    active: false,
+    x: 350,
+    y: 153,
+    vx: -1.05,
+    squished: false,
+    squishTimer: 0,
+    legsFrame: 0,
+  });
+
   const floatingScores = useRef<FloatingScore[]>([]);
   const sparkles = useRef<Sparkle[]>([]);
 
   // Action: Jump
   const handleJump = useCallback(() => {
-    if (player.current.isGrounded) {
-      player.current.vy = -8.2;
-      player.current.isGrounded = false;
+    hasMovedRef.current = true;
+    const p = player.current;
+    if (p.isGrounded) {
+      p.vy = -8.2;
+      p.isGrounded = false;
       if (soundEnabled) playChiptune('jump');
+    } else if (cyberMode) {
+      // Jetpack thrust in Cyberpunk Mode!
+      p.vy = Math.max(-6.2, p.vy - 4.5);
+      if (soundEnabled) playChiptune('rocket');
+      for (let i = 0; i < 4; i++) {
+        sparkles.current.push({
+          id: Math.random(),
+          x: p.x + (p.facingRight ? 4 : 18),
+          y: p.y + 24,
+          vx: (Math.random() - 0.5) * 2,
+          vy: Math.random() * 3 + 2,
+          size: Math.random() * 3 + 2,
+          color: ['#38BDF8', '#F97316', '#FBBF24'][Math.floor(Math.random() * 3)] || '#38BDF8',
+          life: 0.8,
+        });
+      }
     }
-  }, [soundEnabled]);
+  }, [soundEnabled, cyberMode]);
 
-  // Action: Invoke Lambda / Dash
+  // Action: Invoke Lambda / Lightning & Coin Shower
   const handleInvoke = useCallback(() => {
-    if (soundEnabled) playChiptune('powerup');
-    setScore((s) => s + 200);
+    hasMovedRef.current = true;
+    if (soundEnabled) playChiptune('zap');
+    setScore((s) => s + 250);
 
     const lambda = blocks.current.find((b) => b.id === 'lambda');
-    if (lambda) lambda.bounce = 10;
+    if (lambda) lambda.bounce = 12;
+
+    lightningStrike.current = { active: true, frame: 12, x: 79, y: 55 };
+    screenShake.current = 6;
+
+    // Rain golden coins from the sky!
+    for (let i = 0; i < 7; i++) {
+      rainCoins.current.push({
+        x: 40 + Math.random() * 260,
+        y: -10 - Math.random() * 50,
+        vy: 1.8 + Math.random() * 1.6,
+        spin: Math.random() * Math.PI,
+        collected: false,
+      });
+    }
 
     floatingScores.current.push({
       id: Math.random(),
-      text: '⚡ INVOKED: 200 OK',
-      x: 60,
+      text: '⚡ LAMBDA INVOCATION: +250 XP',
+      x: 40,
       y: 75,
       color: '#EA580C',
       opacity: 1,
@@ -197,17 +328,26 @@ export function CloudQuestGameBoy() {
     });
   }, [soundEnabled]);
 
-  // Action: Deploy Confetti Cannon
+  // Action: Deploy Rocket & Screen Shake
   const handleDeploy = useCallback(() => {
+    hasMovedRef.current = true;
     setConfettiBlown(true);
     setVictoryCelebration(true);
-    if (soundEnabled) playChiptune('victory');
+    if (soundEnabled) playChiptune('rocket');
     setScore((s) => s + 500);
+
+    // Blast off the AWS Rocket!
+    rocket.current.active = true;
+    rocket.current.x = 170;
+    rocket.current.y = 155;
+    rocket.current.vy = -3.2;
+    rocket.current.smoke = [];
+    screenShake.current = 14;
 
     floatingScores.current.push({
       id: Math.random(),
-      text: '🚀 LIVE ON AWS!',
-      x: 110,
+      text: '🚀 ROCKET DEPLOYED! +500 XP',
+      x: 75,
       y: 90,
       color: '#16A34A',
       opacity: 1,
@@ -215,12 +355,43 @@ export function CloudQuestGameBoy() {
     });
 
     window.setTimeout(() => setConfettiBlown(false), 2400);
-    window.setTimeout(() => setVictoryCelebration(false), 3800);
+    window.setTimeout(() => setVictoryCelebration(false), 4500);
+  }, [soundEnabled]);
+
+  // Action: Replay Game
+  const resetGame = useCallback(() => {
+    setUnlockedServices(new Set());
+    setVictoryCelebration(false);
+    setScore(0);
+    setCoinsCollected(0);
+    airCoins.current.forEach((c) => { c.collected = false; });
+    floatingScores.current.push({
+      id: Math.random(),
+      text: '↻ NEW RUN STARTED!',
+      x: 100,
+      y: 90,
+      color: '#2563EB',
+      opacity: 1,
+      vy: -1.2,
+    });
+    if (soundEnabled) playChiptune('powerup');
   }, [soundEnabled]);
 
   // Keyboard controls
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      hasMovedRef.current = true;
+
+      // Konami code check (↑ ↑ ↓ ↓ ← → ← → B A)
+      konamiSeq.current.push(e.code);
+      if (konamiSeq.current.length > 10) konamiSeq.current.shift();
+      const codeStr = konamiSeq.current.join(',');
+      const KONAMI = 'ArrowUp,ArrowUp,ArrowDown,ArrowDown,ArrowLeft,ArrowRight,ArrowLeft,ArrowRight,KeyB,KeyA';
+      if (codeStr === KONAMI) {
+        setCyberMode((prev) => !prev);
+        if (soundEnabled) playChiptune('cyber');
+      }
+
       if (['ArrowLeft', 'KeyA'].includes(e.code)) {
         keys.current.left = true;
         setPressedBtn('left');
@@ -254,7 +425,7 @@ export function CloudQuestGameBoy() {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
     };
-  }, [handleJump, handleInvoke, handleDeploy]);
+  }, [handleJump, handleInvoke, handleDeploy, soundEnabled]);
 
   // Main 60 FPS Canvas Game Engine
   useEffect(() => {
@@ -398,12 +569,22 @@ export function CloudQuestGameBoy() {
       // =========================================================
       // RENDER GAME CANVAS (340px × 210px)
       // =========================================================
-      // Clear Canvas with clean white paper
-      ctx.fillStyle = '#FFFFFF';
+      ctx.save();
+
+      // Screen Shake (Rocket launch / Bug stomp)
+      if (screenShake.current > 0) {
+        const sx = (Math.random() - 0.5) * screenShake.current;
+        const sy = (Math.random() - 0.5) * screenShake.current;
+        ctx.translate(sx, sy);
+        screenShake.current = Math.max(0, screenShake.current - 0.7);
+      }
+
+      // Clear Canvas: Day Paper vs Cyberpunk Dark Synthwave
+      ctx.fillStyle = cyberMode ? '#0B0F19' : '#FFFFFF';
       ctx.fillRect(0, 0, 340, 210);
 
-      // Subtle sketch blueprint grid
-      ctx.strokeStyle = '#F1F5F9';
+      // Blueprint / Synthwave Grid
+      ctx.strokeStyle = cyberMode ? 'rgba(99, 102, 241, 0.18)' : '#F1F5F9';
       ctx.lineWidth = 1;
       for (let x = 0; x < 340; x += 17) {
         ctx.beginPath();
@@ -419,27 +600,34 @@ export function CloudQuestGameBoy() {
       }
 
       // --- 1. TOP HUD STATUS BAR ---
-      ctx.fillStyle = '#1E293B';
+      ctx.fillStyle = cyberMode ? '#38BDF8' : '#1E293B';
       ctx.font = 'bold 10px monospace';
       ctx.textAlign = 'left';
       ctx.fillText(`SCORE: ${String(score).padStart(5, '0')}`, 12, 16);
 
-      ctx.fillStyle = '#D97706';
-      ctx.fillText(`🪙 x${coinsCollected}`, 125, 16);
+      ctx.fillStyle = cyberMode ? '#FBBF24' : '#D97706';
+      ctx.fillText(`🪙 x${coinsCollected}`, 115, 16);
+
+      if (cyberMode) {
+        ctx.fillStyle = '#A855F7';
+        ctx.font = 'bold 8.5px monospace';
+        ctx.fillText('⚡CYBER', 165, 16);
+      }
 
       ctx.textAlign = 'right';
-      ctx.fillStyle = unlockedServices.size === 4 ? '#16A34A' : '#7C3AED';
+      ctx.fillStyle = unlockedServices.size === 4 ? '#10B981' : (cyberMode ? '#C084FC' : '#7C3AED');
+      ctx.font = 'bold 10px monospace';
       ctx.fillText(`AWS_CERT: ${unlockedServices.size}/4 🎓`, 328, 16);
 
-      // --- 2. FLOATING AWS CLOUDS IN BACKGROUND (Drifting with parallax) ---
+      // --- 2. FLOATING AWS CLOUDS IN BACKGROUND ---
       ctx.save();
       const cloudOffset = (tick * 0.4) % 400;
       const drawCloud = (cx: number, cy: number, scale: number, label?: string) => {
         ctx.save();
         ctx.translate(cx, cy);
         ctx.scale(scale, scale);
-        ctx.fillStyle = '#EDE9FE';
-        ctx.strokeStyle = '#8B5CF6';
+        ctx.fillStyle = cyberMode ? 'rgba(30, 27, 75, 0.85)' : '#EDE9FE';
+        ctx.strokeStyle = cyberMode ? '#818CF8' : '#8B5CF6';
         ctx.lineWidth = 1.75;
         ctx.beginPath();
         ctx.arc(-20, 0, 16, 0, Math.PI * 2);
@@ -450,7 +638,7 @@ export function CloudQuestGameBoy() {
         ctx.stroke();
 
         if (label) {
-          ctx.fillStyle = '#5B21B6';
+          ctx.fillStyle = cyberMode ? '#38BDF8' : '#5B21B6';
           ctx.font = 'bold 8px monospace';
           ctx.textAlign = 'center';
           ctx.fillText(label, 2, 3);
@@ -519,16 +707,16 @@ export function CloudQuestGameBoy() {
         let curX = startX;
         for (const b of campusBuildings) {
           if (curX + b.w > -30 && curX < 340 + 30) {
-            // Draw building body
-            ctx.fillStyle = '#E6DECE';
-            ctx.strokeStyle = '#232F3E';
+            // Draw building body (Dark synthwave in Cyber mode)
+            ctx.fillStyle = cyberMode ? '#1E293B' : '#E6DECE';
+            ctx.strokeStyle = cyberMode ? '#38BDF8' : '#232F3E';
             ctx.lineWidth = 2;
             ctx.fillRect(curX, b.y, b.w, 210 - b.y);
             ctx.strokeRect(curX, b.y, b.w, 210 - b.y);
 
             // Roof Features (Antenna, Satellite dish, Blinking Beacon, AC unit, Flag)
             if (b.roofFeature === 'antenna') {
-              ctx.strokeStyle = '#232F3E';
+              ctx.strokeStyle = cyberMode ? '#38BDF8' : '#232F3E';
               ctx.lineWidth = 1.5;
               ctx.beginPath();
               ctx.moveTo(curX + b.w / 2, b.y);
@@ -542,7 +730,7 @@ export function CloudQuestGameBoy() {
               ctx.arc(curX + b.w / 2, b.y - 13, 2, 0, Math.PI * 2);
               ctx.fill();
             } else if (b.roofFeature === 'satellite') {
-              ctx.strokeStyle = '#232F3E';
+              ctx.strokeStyle = cyberMode ? '#A855F7' : '#232F3E';
               ctx.lineWidth = 1.5;
               ctx.beginPath();
               ctx.arc(curX + 22, b.y - 6, 6, 1.2 * Math.PI, 1.9 * Math.PI);
@@ -554,8 +742,8 @@ export function CloudQuestGameBoy() {
               ctx.fillRect(curX + 16, b.y - 6, 6, 6);
               ctx.strokeRect(curX + 16, b.y - 6, 6, 6);
             } else if (b.roofFeature === 'flag') {
-              // Little AWS flag
-              ctx.strokeStyle = '#232F3E';
+              // AWS SCD flag
+              ctx.strokeStyle = cyberMode ? '#38BDF8' : '#232F3E';
               ctx.lineWidth = 1.5;
               ctx.beginPath();
               ctx.moveTo(curX + 14, b.y);
@@ -572,18 +760,17 @@ export function CloudQuestGameBoy() {
 
             // Windows
             const marginX = (b.w - b.windowCols * 18) / 2;
-            ctx.fillStyle = '#FEF08A';
+            ctx.fillStyle = cyberMode ? '#38BDF8' : '#FEF08A';
             for (let r = 0; r < b.windowRows; r++) {
               for (let c = 0; c < b.windowCols; c++) {
                 const wx = curX + marginX + c * 18;
                 const wy = b.y + 10 + r * 16;
-                // Only draw if within building bounds above floor
                 if (wy + 10 < 205) {
                   ctx.fillRect(wx, wy, 12, 10);
+                  ctx.strokeStyle = cyberMode ? '#0F172A' : '#232F3E';
+                  ctx.lineWidth = 1.2;
                   ctx.strokeRect(wx, wy, 12, 10);
-                  // Window pane cross
-                  ctx.strokeStyle = '#232F3E';
-                  ctx.lineWidth = 0.75;
+                  // Window cross
                   ctx.beginPath();
                   ctx.moveTo(wx + 6, wy);
                   ctx.lineTo(wx + 6, wy + 10);
@@ -594,7 +781,7 @@ export function CloudQuestGameBoy() {
 
             // Building Label at bottom
             if (b.label) {
-              ctx.fillStyle = '#232F3E';
+              ctx.fillStyle = cyberMode ? '#94A3B8' : '#232F3E';
               ctx.font = 'bold 8px monospace';
               ctx.textAlign = 'left';
               ctx.fillText(b.label, curX + 6, 198);
@@ -606,14 +793,14 @@ export function CloudQuestGameBoy() {
       }
 
       // Solid Rooftop Walking Platform
-      ctx.strokeStyle = '#232F3E';
+      ctx.strokeStyle = cyberMode ? '#38BDF8' : '#232F3E';
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(0, 165);
       ctx.lineTo(340, 165);
       ctx.stroke();
 
-      // Rooftop warning hash marks (moving in sync with the buildings)
+      // Rooftop warning hash marks
       ctx.strokeStyle = '#FF9900';
       ctx.lineWidth = 2;
       const hashOffset = buildingScrollX % 24;
@@ -638,7 +825,6 @@ export function CloudQuestGameBoy() {
           ctx.arc(0, 0, 7, 0, Math.PI * 2);
           ctx.fill();
           ctx.stroke();
-          // Inner core
           ctx.fillStyle = '#FEF08A';
           ctx.beginPath();
           ctx.arc(0, 0, 4.5, 0, Math.PI * 2);
@@ -647,15 +833,60 @@ export function CloudQuestGameBoy() {
         }
       });
 
+      // --- 4B. RAIN BONUS COINS (Invoked by [ INVOKE ]) ---
+      rainCoins.current.forEach((coin) => {
+        coin.y += coin.vy;
+        coin.spin += 0.12;
+
+        // Player collection
+        if (
+          !coin.collected &&
+          p.x + p.w > coin.x - 8 &&
+          p.x < coin.x + 8 &&
+          p.y + p.h > coin.y - 8 &&
+          p.y < coin.y + 8
+        ) {
+          coin.collected = true;
+          setScore((s) => s + 50);
+          setCoinsCollected((c) => c + 1);
+          if (soundEnabled) playChiptune('coin');
+          floatingScores.current.push({
+            id: Math.random(),
+            text: '+50 XP',
+            x: coin.x,
+            y: coin.y,
+            color: '#F59E0B',
+            opacity: 1,
+            vy: -1.2,
+          });
+        }
+
+        if (!coin.collected) {
+          ctx.save();
+          const squish = Math.abs(Math.sin(coin.spin));
+          ctx.translate(coin.x, coin.y);
+          ctx.scale(squish > 0.2 ? squish : 0.2, 1);
+          ctx.fillStyle = '#F59E0B';
+          ctx.strokeStyle = '#B45309';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(0, 0, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
+      });
+      rainCoins.current = rainCoins.current.filter((c) => !c.collected && c.y < 210);
+
       // --- 5. 4 FLOATING AWS SERVICE CARDS ---
       blocks.current.forEach((blk) => {
         const by = blk.y - blk.bounce;
         // Block drop shadow
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
         ctx.fillRect(blk.x + 2, by + 3, blk.w, blk.h);
 
         // Block Face
-        ctx.fillStyle = blk.bg;
+        ctx.fillStyle = cyberMode ? '#0F172A' : blk.bg;
         ctx.fillRect(blk.x, by, blk.w, blk.h);
         ctx.strokeStyle = blk.color;
         ctx.lineWidth = 2.2;
@@ -668,7 +899,7 @@ export function CloudQuestGameBoy() {
         ctx.fillText(blk.name, blk.x + blk.w / 2, by + 19);
 
         // Text label underneath
-        ctx.fillStyle = '#334155';
+        ctx.fillStyle = cyberMode ? '#94A3B8' : '#334155';
         ctx.font = 'bold 7.5px monospace';
         ctx.fillText(blk.label, blk.x + blk.w / 2, by + 30);
 
@@ -681,7 +912,215 @@ export function CloudQuestGameBoy() {
         }
       });
 
-      // --- 6. 8-BIT STUDENT BUILDER (Chunky 28px Character) ---
+      // --- 5B. LIGHTNING BOLT ON LAMBDA BLOCK (Invoked) ---
+      if (lightningStrike.current.active) {
+        lightningStrike.current.frame--;
+        if (lightningStrike.current.frame <= 0) {
+          lightningStrike.current.active = false;
+        } else {
+          ctx.save();
+          ctx.strokeStyle = tick % 2 === 0 ? '#38BDF8' : '#FBBF24';
+          ctx.lineWidth = 3;
+          ctx.shadowColor = '#38BDF8';
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+          ctx.moveTo(80, 0);
+          ctx.lineTo(84, 18);
+          ctx.lineTo(76, 30);
+          ctx.lineTo(82, 42);
+          ctx.lineTo(79, 56);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      // --- 5C. 8-BIT "500 ERROR" BUG MONSTER ---
+      // Spawn bug periodically
+      if (!bug.current.active && tick % 700 === 240) {
+        bug.current.active = true;
+        bug.current.x = 345;
+        bug.current.y = 153;
+        bug.current.squished = false;
+        bug.current.squishTimer = 0;
+      }
+
+      if (bug.current.active) {
+        if (!bug.current.squished) {
+          bug.current.x += bug.current.vx;
+          bug.current.legsFrame = (bug.current.legsFrame + 1) % 16;
+
+          // Player jump-stomp check
+          if (
+            p.vy > 0 &&
+            p.x + p.w >= bug.current.x &&
+            p.x <= bug.current.x + 18 &&
+            p.y + p.h >= bug.current.y &&
+            p.y + p.h <= bug.current.y + 14
+          ) {
+            bug.current.squished = true;
+            bug.current.squishTimer = 35;
+            p.vy = -7.2; // Bounce player high!
+            setScore((s) => s + 500);
+            if (soundEnabled) playChiptune('stomp');
+
+            floatingScores.current.push({
+              id: Math.random(),
+              text: '🐛 BUG RESOLVED! +500 XP',
+              x: bug.current.x - 20,
+              y: bug.current.y - 12,
+              color: '#10B981',
+              opacity: 1,
+              vy: -1.3,
+            });
+
+            for (let i = 0; i < 8; i++) {
+              sparkles.current.push({
+                id: Math.random(),
+                x: bug.current.x + 9,
+                y: bug.current.y + 6,
+                vx: (Math.random() - 0.5) * 6,
+                vy: -Math.random() * 4 - 1,
+                size: Math.random() * 3 + 2,
+                color: ['#EF4444', '#10B981', '#FBBF24'][Math.floor(Math.random() * 3)] || '#EF4444',
+                life: 1,
+              });
+            }
+          }
+
+          if (bug.current.x < -30) {
+            bug.current.active = false;
+          }
+        } else {
+          bug.current.squishTimer--;
+          if (bug.current.squishTimer <= 0) {
+            bug.current.active = false;
+          }
+        }
+
+        // Draw Bug
+        ctx.save();
+        const bx = Math.floor(bug.current.x);
+        const by = Math.floor(bug.current.y);
+        if (bug.current.squished) {
+          ctx.fillStyle = '#10B981';
+          ctx.fillRect(bx, by + 7, 18, 4);
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = 'bold 7px monospace';
+          ctx.fillText('FIXED', bx + 1, by + 5);
+        } else {
+          ctx.fillStyle = '#EF4444';
+          ctx.fillRect(bx + 2, by + 2, 14, 8);
+          ctx.strokeStyle = '#232F3E';
+          ctx.lineWidth = 1.2;
+          ctx.strokeRect(bx + 2, by + 2, 14, 8);
+
+          // Head & Antennae
+          ctx.fillStyle = '#991B1B';
+          ctx.fillRect(bx, by + 4, 3, 5);
+          ctx.beginPath();
+          ctx.moveTo(bx + 2, by + 2);
+          ctx.lineTo(bx - 2, by - 2);
+          ctx.moveTo(bx + 5, by + 2);
+          ctx.lineTo(bx + 4, by - 2);
+          ctx.stroke();
+
+          // Crawling Legs
+          const legWiggle = bug.current.legsFrame > 8 ? 2 : -2;
+          ctx.beginPath();
+          ctx.moveTo(bx + 4, by + 10);
+          ctx.lineTo(bx + 3 + legWiggle, by + 13);
+          ctx.moveTo(bx + 9, by + 10);
+          ctx.lineTo(bx + 9 - legWiggle, by + 13);
+          ctx.moveTo(bx + 14, by + 10);
+          ctx.lineTo(bx + 15 + legWiggle, by + 13);
+          ctx.stroke();
+
+          // Badge 500
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = 'bold 6.5px monospace';
+          ctx.fillText('500', bx + 4, by + 8.5);
+        }
+        ctx.restore();
+      }
+
+      // --- 5D. ROCKET LAUNCH & SMOKE (Deployed by [ DEPLOY ]) ---
+      if (rocket.current.active) {
+        rocket.current.vy -= 0.18;
+        rocket.current.y += rocket.current.vy;
+
+        // Smoke puff emitter
+        for (let i = 0; i < 2; i++) {
+          rocket.current.smoke.push({
+            x: rocket.current.x + (Math.random() - 0.5) * 8,
+            y: rocket.current.y + 24,
+            r: 3 + Math.random() * 3,
+            alpha: 0.8,
+            vx: (Math.random() - 0.5) * 1.5,
+          });
+        }
+
+        ctx.save();
+        const rx = rocket.current.x;
+        const ry = rocket.current.y;
+        // Exhaust Flame
+        ctx.fillStyle = tick % 2 === 0 ? '#FF9900' : '#EF4444';
+        ctx.beginPath();
+        ctx.moveTo(rx - 5, ry + 22);
+        ctx.lineTo(rx + 5, ry + 22);
+        ctx.lineTo(rx, ry + 34 + Math.random() * 6);
+        ctx.closePath();
+        ctx.fill();
+
+        // Saturn-V Style Rocket Body
+        ctx.fillStyle = '#FAFAFC';
+        ctx.strokeStyle = '#232F3E';
+        ctx.lineWidth = 1.5;
+        ctx.fillRect(rx - 6, ry, 12, 22);
+        ctx.strokeRect(rx - 6, ry, 12, 22);
+
+        // Nosecone
+        ctx.fillStyle = '#EF4444';
+        ctx.beginPath();
+        ctx.moveTo(rx - 6, ry);
+        ctx.lineTo(rx + 6, ry);
+        ctx.lineTo(rx, ry - 10);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Boosters
+        ctx.fillStyle = '#FF9900';
+        ctx.fillRect(rx - 9, ry + 15, 3, 7);
+        ctx.fillRect(rx + 6, ry + 15, 3, 7);
+
+        // AWS Sign
+        ctx.fillStyle = '#FF9900';
+        ctx.font = 'bold 5px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('AWS', rx, ry + 13);
+        ctx.restore();
+
+        if (rocket.current.y < -60) {
+          rocket.current.active = false;
+        }
+      }
+
+      // Render Rocket Smoke
+      rocket.current.smoke.forEach((smk) => {
+        smk.x += smk.vx;
+        smk.y += 0.6;
+        smk.r += 0.25;
+        smk.alpha -= 0.02;
+        ctx.save();
+        ctx.fillStyle = `rgba(203, 213, 225, ${Math.max(0, smk.alpha)})`;
+        ctx.beginPath();
+        ctx.arc(smk.x, smk.y, smk.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+      rocket.current.smoke = rocket.current.smoke.filter((s) => s.alpha > 0);
+
+      // --- 6. 8-BIT STUDENT BUILDER (With Cyber Jetpack in Cyber Mode!) ---
       const px = Math.floor(p.x);
       const py = Math.floor(p.y);
 
@@ -690,6 +1129,26 @@ export function CloudQuestGameBoy() {
       ctx.beginPath();
       ctx.ellipse(px + 11, groundY + 30, 12, 4, 0, 0, Math.PI * 2);
       ctx.fill();
+
+      // Cyber Jetpack on character's back
+      if (cyberMode) {
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(p.facingRight ? px + 1 : px + 17, py + 14, 5, 12);
+        ctx.fillStyle = '#38BDF8';
+        ctx.fillRect(p.facingRight ? px + 2 : px + 18, py + 16, 3, 4);
+
+        // Animated Thruster Flame when jumping or flying
+        if (!p.isGrounded) {
+          ctx.fillStyle = tick % 2 === 0 ? '#38BDF8' : '#F97316';
+          ctx.beginPath();
+          const jx = p.facingRight ? px + 3 : px + 19;
+          ctx.moveTo(jx - 3, py + 26);
+          ctx.lineTo(jx + 3, py + 26);
+          ctx.lineTo(jx, py + 36 + Math.random() * 4);
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
 
       // Hair (Brown #78350F)
       ctx.fillStyle = '#78350F';
@@ -703,8 +1162,8 @@ export function CloudQuestGameBoy() {
       ctx.fillStyle = '#1E293B';
       ctx.fillRect(p.facingRight ? px + 13 : px + 7, py + 10, 2.5, 3);
 
-      // Jacket (Navy Slate #334155)
-      ctx.fillStyle = '#334155';
+      // Jacket (Navy Slate #334155 / Cyber Cyan #0284C7)
+      ctx.fillStyle = cyberMode ? '#0284C7' : '#334155';
       ctx.fillRect(px + 5, py + 15, 13, 9);
       // AWS Orange Shirt inside
       ctx.fillStyle = '#FF9900';
@@ -733,7 +1192,7 @@ export function CloudQuestGameBoy() {
         ctx.fillRect(px + 14, py + 21, 6, 6);
       }
 
-      // Sneakers (#FFFFFF with red trim)
+      // Sneakers (#FFFFFF)
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(px + 4, py + 28, 5, 2.5);
       ctx.fillRect(px + 13, py + 28, 5, 2.5);
@@ -765,32 +1224,50 @@ export function CloudQuestGameBoy() {
       });
       sparkles.current = sparkles.current.filter((spk) => spk.life > 0);
 
-      // --- 8. VICTORY CELEBRATION BANNER ---
-      if (victoryCelebration) {
+      // --- 8. FIRST-TIME ONBOARDING HINT ---
+      if (!hasMovedRef.current && tick % 60 < 45) {
         ctx.save();
-        ctx.fillStyle = 'rgba(35, 47, 62, 0.88)';
-        ctx.fillRect(20, 80, 300, 52);
+        ctx.fillStyle = 'rgba(35, 47, 62, 0.85)';
+        ctx.fillRect(45, 102, 250, 22);
         ctx.strokeStyle = '#FF9900';
-        ctx.lineWidth = 2.5;
-        ctx.strokeRect(20, 80, 300, 52);
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(45, 102, 250, 22);
 
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = "bold 14px 'Anton', monospace";
+        ctx.font = 'bold 8.5px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('🎓 AWS CERTIFIED BUILDER! 🎓', 170, 102);
-
-        ctx.fillStyle = '#FDE68A';
-        ctx.font = "bold 12px 'Caveat', cursive";
-        ctx.fillText('Ganpat University SCD 2026 Ready! 🚀', 170, 122);
+        ctx.fillText('► TAP SCREEN OR USE SPACE / ARROWS TO PLAY ◄', 170, 116);
         ctx.restore();
       }
+
+      // --- 9. TOP-ALIGNED VICTORY CELEBRATION BANNER ---
+      if (victoryCelebration) {
+        ctx.save();
+        ctx.fillStyle = cyberMode ? 'rgba(15, 23, 42, 0.94)' : 'rgba(35, 47, 62, 0.92)';
+        ctx.fillRect(16, 22, 308, 38);
+        ctx.strokeStyle = '#FF9900';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(16, 22, 308, 38);
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = "bold 12px 'Anton', monospace";
+        ctx.textAlign = 'center';
+        ctx.fillText('🎓 AWS CERTIFIED BUILDER! 🎓', 170, 37);
+
+        ctx.fillStyle = '#FDE68A';
+        ctx.font = "bold 9.5px 'Caveat', cursive, monospace";
+        ctx.fillText('Ganpat University SCD 2026 Ready! 🚀 (Try Deploy & Invoke!)', 170, 52);
+        ctx.restore();
+      }
+
+      ctx.restore(); // Restore screen shake
 
       animId = requestAnimationFrame(gameLoop);
     };
 
     animId = requestAnimationFrame(gameLoop);
     return () => cancelAnimationFrame(animId);
-  }, [score, coinsCollected, unlockedServices, soundEnabled, victoryCelebration]);
+  }, [score, coinsCollected, unlockedServices, soundEnabled, victoryCelebration, cyberMode]);
 
   return (
     <div
@@ -858,12 +1335,48 @@ export function CloudQuestGameBoy() {
             paddingBottom: '6px',
           }}
         >
-          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#EF4444', border: '1px solid #232F3E' }} />
-            <span style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: '0.62rem', fontWeight: 800, color: '#64748B' }}>
-              POWER ON
+          <button
+            onClick={() => {
+              const next = !cyberMode;
+              setCyberMode(next);
+              if (soundEnabled) playChiptune('cyber');
+            }}
+            style={{
+              display: 'flex',
+              gap: '6px',
+              alignItems: 'center',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '2px 4px',
+              borderRadius: '4px',
+              outline: 'none',
+            }}
+            title={cyberMode ? 'Click to disable Cyberpunk Mode' : 'Click to activate Cyberpunk Synthwave Jetpack Mode (or use Konami Code!)'}
+          >
+            <span
+              style={{
+                width: '9px',
+                height: '9px',
+                borderRadius: '50%',
+                background: cyberMode ? '#00F0FF' : '#EF4444',
+                border: '1px solid #232F3E',
+                boxShadow: cyberMode ? '0 0 8px #00F0FF, 0 0 2px #38BDF8' : '0 0 4px rgba(239, 68, 68, 0.6)',
+                transition: 'all 0.2s ease',
+              }}
+            />
+            <span
+              style={{
+                fontFamily: 'var(--font-mono, monospace)',
+                fontSize: '0.62rem',
+                fontWeight: 800,
+                color: cyberMode ? '#0284C7' : '#64748B',
+                letterSpacing: '0.04em',
+              }}
+            >
+              {cyberMode ? '⚡ CYBER ON' : 'POWER ON'}
             </span>
-          </div>
+          </button>
 
           <span
             style={{
@@ -981,6 +1494,60 @@ export function CloudQuestGameBoy() {
             CLOUD QUEST: STUDENT EDITION
           </span>
         </div>
+
+        {/* Victory Celebration CTA Actions */}
+        {unlockedServices.size === 4 && (
+          <div
+            style={{
+              display: 'flex',
+              gap: '10px',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginTop: '4px',
+              marginBottom: '2px',
+            }}
+          >
+            <Link
+              to="/register"
+              style={{
+                background: '#FF9900',
+                color: '#232F3E',
+                fontFamily: 'var(--font-display, Anton, sans-serif)',
+                fontSize: '0.88rem',
+                fontWeight: 800,
+                letterSpacing: '0.04em',
+                padding: '6px 14px',
+                borderRadius: '6px',
+                border: '2px solid #232F3E',
+                boxShadow: '2px 2px 0 #232F3E',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                cursor: 'pointer',
+              }}
+            >
+              🎟️ CLAIM PASS →
+            </Link>
+            <button
+              onClick={resetGame}
+              style={{
+                background: '#FFFFFF',
+                color: '#232F3E',
+                fontFamily: 'var(--font-mono, monospace)',
+                fontSize: '0.72rem',
+                fontWeight: 800,
+                padding: '6px 10px',
+                borderRadius: '6px',
+                border: '2px solid #232F3E',
+                boxShadow: '2px 2px 0 #232F3E',
+                cursor: 'pointer',
+              }}
+            >
+              ↻ REPLAY
+            </button>
+          </div>
+        )}
 
         {/* =========================================================================
             TACTILE CONTROLS SECTION (Chunky D-Pad + A/B Action Buttons)
@@ -1341,10 +1908,29 @@ export function CloudQuestGameBoy() {
             fontSize: '1.1rem',
             color: '#C2702C',
             fontWeight: 700,
+            display: 'block',
           }}
         >
           (Arrow Keys / Space to Jump &amp; Bump AWS Blocks!)
         </span>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            gap: '12px',
+            marginTop: '8px',
+            fontFamily: 'var(--font-mono, monospace)',
+            fontSize: '0.68rem',
+            fontWeight: 700,
+            color: '#64748B',
+          }}
+        >
+          <span>🚀 Press <b>DEPLOY</b> for Rocket</span>
+          <span>⚡ Press <b>INVOKE</b> for Coin Shower</span>
+          <span>👾 Stomp the <b>500 Bug</b></span>
+          <span>✨ Tap <b>POWER ON</b> for Jetpack</span>
+        </div>
       </div>
     </div>
   );
