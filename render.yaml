@@ -13,6 +13,20 @@ services:
       - key: VITE_API_URL
         value: https://scd-backend.onrender.com/api
 
+  # Static Site: Admin Portal (apps/admin)
+  - type: web
+    name: scd-admin
+    runtime: static
+    buildCommand: npm install && npm run build --workspace=@scd/app-admin
+    staticPublishPath: ./apps/admin/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://scd-backend.onrender.com/api
+
   # Web Service: Backend API (Node.js / Express)
   - type: web
     name: scd-backend
