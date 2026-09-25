@@ -15,24 +15,53 @@ import {
  * the login screen on the next render rather than looping failed requests.
  */
 function resolveApiBaseUrl(): string {
-  const envUrl = import.meta.env.VITE_API_URL;
-  if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
-    return envUrl;
-  }
+  if (typeof window !== 'undefined') {
+    try {
+      // 1. Query parameter override: ?api=https://... or ?backend=https://...
+      const params = new URLSearchParams(window.location.search);
+      const queryApi = params.get('api') || params.get('apiUrl') || params.get('backend');
+      if (queryApi) {
+        let clean = queryApi.trim().replace(/\/+$/, '');
+        if (!clean.endsWith('/api/v1')) clean += '/api/v1';
+        localStorage.setItem('VITE_API_URL', clean);
+        return clean;
+      }
 
-  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    const stored = localStorage.getItem('VITE_API_URL');
-    if (stored) return stored;
+      // 2. localStorage saved API URL
+      const stored = localStorage.getItem('VITE_API_URL');
+      if (stored && !stored.includes('://scd-backend.onrender.com')) {
+        return stored;
+      }
 
-    if (window.location.hostname.endsWith('.onrender.com')) {
-      const parts = window.location.hostname.split('.');
-      const sub = parts[0] || '';
-      const backendSub = sub.replace(/^scd-(web|admin)/, 'scd-backend');
-      return `https://${backendSub}.onrender.com/api/v1`;
+      // 3. Dynamic Render subdomain pairing:
+      if (window.location.hostname.endsWith('.onrender.com')) {
+        const parts = window.location.hostname.split('.');
+        const sub = parts[0] || '';
+        const backendSub = sub.includes('admin')
+          ? sub.replace('admin', 'backend')
+          : sub.replace('web', 'backend');
+
+        if (backendSub && backendSub !== 'scd-backend') {
+          return `https://${backendSub}.onrender.com/api/v1`;
+        }
+      }
+    } catch {
+      // ignore
     }
   }
 
-  return envUrl ?? 'http://localhost:4000/api/v1';
+  // 4. Environment variable, rejecting the external taken domain
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (
+    envUrl &&
+    !envUrl.includes('localhost') &&
+    !envUrl.includes('127.0.0.1') &&
+    !envUrl.includes('://scd-backend.onrender.com')
+  ) {
+    return envUrl;
+  }
+
+  return 'http://localhost:4000/api/v1';
 }
 
 export const apiClient = new ApiClient({

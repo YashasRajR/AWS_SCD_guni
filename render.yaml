@@ -10,7 +10,7 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://scd-backend.onrender.com/api/v1
+        sync: false
 
   # Static Site: Admin Portal
   - type: static
@@ -23,7 +23,7 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://scd-backend.onrender.com/api/v1
+        sync: false
 
   # Web Service: Backend API (Node.js / Express)
   - type: web

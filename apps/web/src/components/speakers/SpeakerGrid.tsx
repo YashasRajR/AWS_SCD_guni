@@ -11,6 +11,7 @@ interface SpeakerGridProps {
   limit?: number;
   rotary?: boolean;
   speedSeconds?: number;
+  fallback?: boolean;
 }
 
 function formatSpeakerRole(designation?: string | null, organization?: string | null) {
@@ -31,12 +32,91 @@ function getGlowColor(idx: number): string {
   return 'rgba(255, 153, 0, 0.35)';
 }
 
-export function SpeakerGrid({ limit, rotary = true, speedSeconds = 48 }: SpeakerGridProps) {
+export const FALLBACK_SPEAKERS: Speaker[] = [
+  {
+    id: 'speaker-kiran-amin',
+    name: 'Dr. Kiran Amin',
+    designation: 'Deputy Pro Vice Chancellor & Executive Dean',
+    organization: 'Ganpat University',
+    bio: 'Executive Dean FoET Principal (GUNI - UVPCE) with decades of leadership in engineering education, academic innovation, and industry collaborations.',
+    profileImage: '/gallery/KiranAmin.png',
+    linkedinUrl: 'https://www.linkedin.com/school/ganpat-university/',
+    websiteUrl: null,
+    displayOrder: 1,
+    status: 'PUBLISHED',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'speaker-pravesh-patel',
+    name: 'Dr. Pravesh Patel',
+    designation: 'Faculty Coordinator & Cloud Mentor',
+    organization: 'Ganpat University',
+    bio: 'Academic Innovation & Cloud Architect Bridge, mentoring student builders on scalable cloud architectures and serverless systems.',
+    profileImage: '/gallery/Pravesh.png',
+    linkedinUrl: 'https://linkedin.com/in/pravesh-patel-43573a10',
+    websiteUrl: null,
+    displayOrder: 2,
+    status: 'PUBLISHED',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'speaker-nilesh-vaghela',
+    name: 'Nilesh Vaghela',
+    designation: 'AWS Community Hero',
+    organization: 'Electromech Cloud Solutions',
+    bio: 'AWS Community Hero, open source enthusiast, and cloud pioneer with over two decades of experience designing enterprise cloud infrastructure.',
+    profileImage: '/gallery/speaker1.png',
+    linkedinUrl: 'https://www.linkedin.com/in/nilesh-vaghela-aws/',
+    websiteUrl: null,
+    displayOrder: 3,
+    status: 'PUBLISHED',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'speaker-ashwin-raiyani',
+    name: 'Ashwin Raiyani',
+    designation: 'Senior Cloud & AI Architect',
+    organization: 'AWS Community Mentor',
+    bio: 'Expert speaker on Generative AI on AWS, Amazon Bedrock, FMaaS, building autonomous agents, and real-world enterprise AI deployments.',
+    profileImage: '/gallery/speaker2.png',
+    linkedinUrl: 'https://www.linkedin.com/',
+    websiteUrl: null,
+    displayOrder: 4,
+    status: 'PUBLISHED',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'speaker-harshil-maniyar',
+    name: 'Harshil Maniyar',
+    designation: 'AWS SBG Leader',
+    organization: 'Ganpat University',
+    bio: 'Technical Leadership & Cloud Innovation Guide, driving developer engagement, student hackathons, and cloud certifications at GUNI.',
+    profileImage: '/gallery/Harshil.png',
+    linkedinUrl: 'https://linkedin.com/in/harshil-maniyar-7a20b832a',
+    websiteUrl: null,
+    displayOrder: 5,
+    status: 'PUBLISHED',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  },
+];
+
+export function SpeakerGrid({ limit, rotary = true, speedSeconds = 48, fallback = false }: SpeakerGridProps) {
   const { items: speakers, loading, error, reload } = useSpeakers();
   const [openId, setOpenId] = useState<string | null>(null);
 
-  const shown = limit ? speakers.slice(0, limit) : speakers;
-  const openSpeaker = openId ? (speakers.find((s) => s.id === openId) ?? null) : null;
+  const effectiveSpeakers =
+    speakers && speakers.length > 0
+      ? speakers
+      : fallback
+        ? FALLBACK_SPEAKERS
+        : [];
+  const shown = limit ? effectiveSpeakers.slice(0, limit) : effectiveSpeakers;
+  const openSpeaker = openId ? (effectiveSpeakers.find((s) => s.id === openId) ?? null) : null;
 
   // Prepare duplicate halves for a continuous, seamless rotary marquee loop
   const { setA, setB } = useMemo(() => {
@@ -80,9 +160,9 @@ export function SpeakerGrid({ limit, rotary = true, speedSeconds = 48 }: Speaker
     return { setA, setB };
   }, [shown]);
 
-  if (loading) return <SkeletonGrid count={limit ?? 3} />;
-  if (error) return <ErrorState onRetry={reload} />;
-  if (speakers.length === 0) return <EmptyState message="Speakers will be announced soon." />;
+  if (loading && (!speakers || speakers.length === 0)) return <SkeletonGrid count={limit ?? 3} />;
+  if (error && effectiveSpeakers.length === 0) return <ErrorState onRetry={reload} />;
+  if (effectiveSpeakers.length === 0) return <EmptyState message="Speakers will be announced soon." />;
 
   if (!rotary) {
     return (

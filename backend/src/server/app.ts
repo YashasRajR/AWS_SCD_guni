@@ -44,7 +44,27 @@ export function createApp(): Express {
 
   app.use(
     cors({
-      origin: allowedOrigins,
+      origin: (origin, callback) => {
+        // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+
+        try {
+          const parsed = new URL(origin);
+          // Allow all Render frontend subdomains (e.g. scd-web-*.onrender.com, scd-admin-*.onrender.com)
+          if (parsed.hostname.endsWith('.onrender.com')) {
+            return callback(null, true);
+          }
+          // Allow localhost on any port
+          if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
+            return callback(null, true);
+          }
+        } catch {
+          // ignore invalid URLs
+        }
+
+        return callback(null, false);
+      },
       // No `credentials: true` — auth is a Bearer token attached in JS
       // (packages/api-client), never a cookie, so there is nothing
       // cookie-based for the browser to send cross-origin. Setting

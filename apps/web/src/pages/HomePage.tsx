@@ -64,7 +64,7 @@ export function HomePage() {
           <SectionEyebrow>Speakers</SectionEyebrow>
           <SectionTitle>Meet who&apos;s taking the stage</SectionTitle>
         </SectionHeader>
-        <SpeakerGrid limit={TEASER_LIMIT} />
+        <SpeakerGrid limit={TEASER_LIMIT} fallback />
       </Section>
 
       <Section id="sessions" muted>

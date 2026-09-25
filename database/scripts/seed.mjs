@@ -396,6 +396,153 @@ async function main() {
       );
     }
 
+    // --- Venues ---------------------------------------------------------
+    const VENUES = [
+      {
+        name: 'Centre of Excellence (CoE)',
+        description: 'Main keynote hall equipped with high-density AV setups, livestream broadcast facilities, and keynote staging.',
+        location: 'Ganpat Vidyanagar, Mehsana - Gozaria Highway, Gujarat 384012',
+        room: 'Auditorium Ground Floor',
+        capacity: 450,
+        mapUrl: 'https://maps.google.com/maps?q=Ganpat+University+Mehsana',
+        status: 'PUBLISHED',
+      },
+      {
+        name: 'Seminar Hall 209',
+        description: 'Dedicated technical breakout and hands-on workshop hall for builder sessions, demos, and lightning talks.',
+        location: '2nd Floor, New Building, Ganpat University',
+        room: 'Hall 209',
+        capacity: 220,
+        mapUrl: 'https://maps.google.com/maps?q=Ganpat+University+Mehsana',
+        status: 'PUBLISHED',
+      },
+    ];
+
+    for (const v of VENUES) {
+      const existing = await client.query('SELECT id FROM venues WHERE event_id = $1 AND name = $2', [eventId, v.name]);
+      if (existing.rows.length === 0) {
+        await client.query(
+          `INSERT INTO venues (event_id, name, description, location, room, capacity, map_url, status)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          [eventId, v.name, v.description, v.location, v.room, v.capacity, v.mapUrl, v.status],
+        );
+      } else {
+        await client.query(
+          `UPDATE venues
+           SET description = $3, location = $4, room = $5, capacity = $6, map_url = $7, status = $8
+           WHERE id = $1`,
+          [existing.rows[0].id, v.name, v.description, v.location, v.room, v.capacity, v.mapUrl, v.status],
+        );
+      }
+    }
+
+    // --- Speakers -------------------------------------------------------
+    const SPEAKERS = [
+      {
+        name: 'Dr. Kiran Amin',
+        designation: 'Deputy Pro Vice Chancellor & Executive Dean',
+        organization: 'Ganpat University',
+        bio: 'Executive Dean FoET Principal (GUNI - UVPCE) with decades of leadership in engineering education, academic innovation, and industry collaborations.',
+        profileImage: '/gallery/KiranAmin.png',
+        linkedinUrl: 'https://www.linkedin.com/school/ganpat-university/',
+        websiteUrl: null,
+        displayOrder: 1,
+        status: 'PUBLISHED',
+      },
+      {
+        name: 'Dr. Pravesh Patel',
+        designation: 'Faculty Coordinator & Cloud Mentor',
+        organization: 'Ganpat University',
+        bio: 'Academic Innovation & Cloud Architect Bridge, mentoring student builders on scalable cloud architectures and serverless systems.',
+        profileImage: '/gallery/Pravesh.png',
+        linkedinUrl: 'https://linkedin.com/in/pravesh-patel-43573a10',
+        websiteUrl: null,
+        displayOrder: 2,
+        status: 'PUBLISHED',
+      },
+      {
+        name: 'Nilesh Vaghela',
+        designation: 'AWS Community Hero',
+        organization: 'Electromech Cloud Solutions',
+        bio: 'AWS Community Hero, open source enthusiast, and cloud pioneer with over two decades of experience designing enterprise cloud infrastructure.',
+        profileImage: '/gallery/speaker1.png',
+        linkedinUrl: 'https://www.linkedin.com/in/nilesh-vaghela-aws/',
+        websiteUrl: null,
+        displayOrder: 3,
+        status: 'PUBLISHED',
+      },
+      {
+        name: 'Ashwin Raiyani',
+        designation: 'Senior Cloud & AI Architect',
+        organization: 'AWS Community Mentor',
+        bio: 'Expert speaker on Generative AI on AWS, Amazon Bedrock, FMaaS, building autonomous agents, and real-world enterprise AI deployments.',
+        profileImage: '/gallery/speaker2.png',
+        linkedinUrl: 'https://www.linkedin.com/',
+        websiteUrl: null,
+        displayOrder: 4,
+        status: 'PUBLISHED',
+      },
+      {
+        name: 'Harshil Maniyar',
+        designation: 'AWS SBG Leader',
+        organization: 'Ganpat University',
+        bio: 'Technical Leadership & Cloud Innovation Guide, driving developer engagement, student hackathons, and cloud certifications at GUNI.',
+        profileImage: '/gallery/Harshil.png',
+        linkedinUrl: 'https://linkedin.com/in/harshil-maniyar-7a20b832a',
+        websiteUrl: null,
+        displayOrder: 5,
+        status: 'PUBLISHED',
+      },
+    ];
+
+    for (const sp of SPEAKERS) {
+      const existing = await client.query('SELECT id FROM speakers WHERE name = $1', [sp.name]);
+      if (existing.rows.length === 0) {
+        await client.query(
+          `INSERT INTO speakers (name, designation, organization, bio, profile_image, linkedin_url, website_url, display_order, status)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+          [sp.name, sp.designation, sp.organization, sp.bio, sp.profileImage, sp.linkedinUrl, sp.websiteUrl, sp.displayOrder, sp.status],
+        );
+      } else {
+        await client.query(
+          `UPDATE speakers
+           SET designation = $2, organization = $3, bio = $4, profile_image = $5, linkedin_url = $6, website_url = $7, display_order = $8, status = $9
+           WHERE id = $1`,
+          [existing.rows[0].id, sp.designation, sp.organization, sp.bio, sp.profileImage, sp.linkedinUrl, sp.websiteUrl, sp.displayOrder, sp.status],
+        );
+      }
+    }
+
+    // --- Timeline Items -------------------------------------------------
+    const TIMELINE_ITEMS = [
+      { title: 'Registration & check-in', type: 'REGISTRATION', startTime: '2026-10-08T09:00:00+05:30', endTime: '2026-10-08T10:00:00+05:30', description: 'Volunteers verify registrations at the CoE entrance.', displayOrder: 1 },
+      { title: 'Opening ceremony', type: 'OTHER', startTime: '2026-10-08T10:00:00+05:30', endTime: '2026-10-08T11:00:00+05:30', description: 'Welcome address, university dignitaries, and day overview.', displayOrder: 2 },
+      { title: 'Keynote address', type: 'SESSION', startTime: '2026-10-08T11:00:00+05:30', endTime: '2026-10-08T12:00:00+05:30', description: 'Visionary cloud engineering keynote from AWS community leaders.', displayOrder: 3 },
+      { title: 'Technical breakout tracks', type: 'SESSION', startTime: '2026-10-08T12:00:00+05:30', endTime: '2026-10-08T13:30:00+05:30', description: 'Concurrent technical sessions across architecture and serverless.', displayOrder: 4 },
+      { title: 'Hands-on workshops', type: 'SESSION', startTime: '2026-10-08T14:00:00+05:30', endTime: '2026-10-08T16:00:00+05:30', description: 'Build live on AWS in guided interactive labs.', displayOrder: 5 },
+      { title: 'Community activity & quiz', type: 'OTHER', startTime: '2026-10-08T16:00:00+05:30', endTime: '2026-10-08T17:30:00+05:30', description: 'Cloud trivia, student lightning demos, and prizes.', displayOrder: 6 },
+      { title: 'Closing ceremony & awards', type: 'CLOSING', startTime: '2026-10-08T17:30:00+05:30', endTime: '2026-10-08T18:00:00+05:30', description: 'Certificates distribution, closing remarks, and high tea.', displayOrder: 7 },
+      { title: 'Networking & community mixer', type: 'NETWORKING', startTime: '2026-10-08T18:00:00+05:30', endTime: '2026-10-08T19:00:00+05:30', description: 'Connect with mentors, sponsors, and student peers.', displayOrder: 8 },
+    ];
+
+    for (const item of TIMELINE_ITEMS) {
+      const existing = await client.query('SELECT id FROM timeline_items WHERE event_id = $1 AND title = $2', [eventId, item.title]);
+      if (existing.rows.length === 0) {
+        await client.query(
+          `INSERT INTO timeline_items (event_id, title, description, start_time, end_time, type, display_order, status)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, 'PUBLISHED')`,
+          [eventId, item.title, item.description, item.startTime, item.endTime, item.type, item.displayOrder],
+        );
+      } else {
+        await client.query(
+          `UPDATE timeline_items
+           SET description = $3, start_time = $4, end_time = $5, type = $6, display_order = $7, status = 'PUBLISHED'
+           WHERE id = $1`,
+          [existing.rows[0].id, item.title, item.description, item.startTime, item.endTime, item.type, item.displayOrder],
+        );
+      }
+    }
+
     // --- Dev users (CLEARLY FAKE — never real people) ----------------------
     await upsertUser(client, { email: 'superadmin@dev.local', roleName: 'SUPER_ADMIN' });
     await upsertUser(client, { email: 'admin@dev.local', roleName: 'ADMIN' });

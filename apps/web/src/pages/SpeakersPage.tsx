@@ -22,7 +22,7 @@ export function SpeakersPage() {
       </div>
       <div className="section" style={{ padding: '32px 0 60px' }}>
         <PageContainer>
-          <SpeakerGrid />
+          <SpeakerGrid fallback />
         </PageContainer>
       </div>
     </div>

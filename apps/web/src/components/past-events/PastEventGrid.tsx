@@ -128,7 +128,6 @@ export function PastEventGrid({ limit, rotary = true, speedSeconds = 55 }: PastE
   }, [shown]);
 
   if (loading) return <SkeletonGrid count={limit ?? 4} />;
-  if (error && items.length === 0) return <ErrorState onRetry={reload} />;
 
   if (!rotary) {
     return (

@@ -41,7 +41,7 @@ export function EventTimeline({ limit }: EventTimelineProps) {
   const activeStation = (selectedStationId ? stations.find((s) => s.id === selectedStationId) : null) ?? stations[0];
 
   if (loading) return <SkeletonText lines={6} />;
-  if (error) return <ErrorState onRetry={reload} />;
+  if (error && stations.length === 0) return <ErrorState onRetry={reload} />;
   if (stations.length === 0) return <EmptyState message="The day's flow will be published soon." />;
 
   const topRow = stations.slice(0, 4);
