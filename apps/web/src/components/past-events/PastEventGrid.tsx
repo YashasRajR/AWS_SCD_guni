@@ -6,6 +6,22 @@ import { ErrorState } from '../ui/ErrorState.js';
 
 export const FALLBACK_PAST_EVENTS: PastEvent[] = [
   {
+    id: 'event-cloudx-2026',
+    eventName: 'CloudX – AWS Certification Drive',
+    year: 2026,
+    sessionName: 'Mr. Himanshu Patel (Associate Professor)',
+    sessionImage: '/gallery/cloudx_poster.jpg',
+    shortDescription:
+      'Interactive AWS certification drive organized by AWS Student Builder Group at Ganpat University with 210+ registrations, led by Associate Professor Mr. Himanshu Patel on cloud models, distributed systems, and AWS certification pathways.',
+    eventDate: '2026-08-22',
+    location: 'Seminar Hall 209, 2nd Floor, New Building, Ganpat University',
+    archiveUrl: 'https://www.meetup.com/aws-sbg-at-ganpat-university/',
+    displayOrder: 1,
+    status: 'PUBLISHED',
+    createdAt: '2026-08-22T00:00:00Z',
+    updatedAt: '2026-08-22T00:00:00Z',
+  },
+  {
     id: 'event-gujarat-builder-week-2026',
     eventName: 'AWS Gujarat Students Builder Week 2026',
     year: 2026,
@@ -16,7 +32,7 @@ export const FALLBACK_PAST_EVENTS: PastEvent[] = [
     eventDate: '2026-07-05',
     location: 'Online Event (Meetup Live)',
     archiveUrl: 'https://www.meetup.com/aws-sbg-at-ganpat-university/events/315424216/',
-    displayOrder: 1,
+    displayOrder: 2,
     status: 'PUBLISHED',
     createdAt: '2026-07-05T00:00:00Z',
     updatedAt: '2026-07-05T00:00:00Z',
@@ -32,7 +48,7 @@ export const FALLBACK_PAST_EVENTS: PastEvent[] = [
     eventDate: '2026-05-25',
     location: 'Online Event (Meetup Live)',
     archiveUrl: 'https://www.meetup.com/aws-sbg-at-ganpat-university/',
-    displayOrder: 2,
+    displayOrder: 3,
     status: 'PUBLISHED',
     createdAt: '2026-05-25T00:00:00Z',
     updatedAt: '2026-05-25T00:00:00Z',
@@ -48,7 +64,7 @@ export const FALLBACK_PAST_EVENTS: PastEvent[] = [
     eventDate: '2026-03-25',
     location: 'Seminar Hall 209, New Building, Ganpat University, Mehsana',
     archiveUrl: 'https://www.meetup.com/aws-sbg-at-ganpat-university/',
-    displayOrder: 3,
+    displayOrder: 4,
     status: 'PUBLISHED',
     createdAt: '2026-03-25T00:00:00Z',
     updatedAt: '2026-03-25T00:00:00Z',
@@ -58,14 +74,20 @@ export const FALLBACK_PAST_EVENTS: PastEvent[] = [
 export function PastEventGrid({ limit }: { limit?: number } = {}) {
   const { items, loading, error, reload } = usePastEvents();
 
-  if (loading) return <SkeletonGrid count={limit ?? 3} />;
+  if (loading) return <SkeletonGrid count={limit ?? 4} />;
   if (error && items.length === 0) return <ErrorState onRetry={reload} />;
 
   const displayList = items.length > 0 ? items : FALLBACK_PAST_EVENTS;
   const sliced = limit ? displayList.slice(0, limit) : displayList;
 
   return (
-    <div className="card-grid card-grid-3">
+    <div
+      className="card-grid"
+      style={{
+        gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+        gap: 'var(--space-5, 20px)',
+      }}
+    >
       {sliced.map((event) => (
         <PastEventCard key={event.id} event={event} />
       ))}

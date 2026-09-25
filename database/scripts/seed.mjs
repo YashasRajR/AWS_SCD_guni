@@ -182,6 +182,19 @@ async function main() {
     // --- Past events (from AWS SBG GUNI) --------------------------------
     const PAST_EVENTS = [
       {
+        eventName: 'CloudX – AWS Certification Drive',
+        year: 2026,
+        sessionName: 'Mr. Himanshu Patel (Associate Professor)',
+        sessionImage: '/gallery/cloudx_poster.jpg',
+        shortDescription:
+          'Interactive AWS certification drive organized by AWS Student Builder Group at Ganpat University with 210+ registrations, led by Associate Professor Mr. Himanshu Patel on cloud models, distributed systems, and AWS certification pathways.',
+        eventDate: '2026-08-22',
+        location: 'Seminar Hall 209, 2nd Floor, New Building, Ganpat University',
+        archiveUrl: 'https://www.meetup.com/aws-sbg-at-ganpat-university/',
+        displayOrder: 1,
+        status: 'PUBLISHED',
+      },
+      {
         eventName: 'AWS Gujarat Students Builder Week 2026',
         year: 2026,
         sessionName: '10+ Industry Experts & Continuous Cloud Learning',
@@ -191,7 +204,7 @@ async function main() {
         eventDate: '2026-07-05',
         location: 'Online Event (Meetup Live)',
         archiveUrl: 'https://www.meetup.com/aws-sbg-at-ganpat-university/events/315424216/',
-        displayOrder: 1,
+        displayOrder: 2,
         status: 'PUBLISHED',
       },
       {
@@ -204,7 +217,7 @@ async function main() {
         eventDate: '2026-05-25',
         location: 'Online Event (Meetup Live)',
         archiveUrl: 'https://www.meetup.com/aws-sbg-at-ganpat-university/',
-        displayOrder: 2,
+        displayOrder: 3,
         status: 'PUBLISHED',
       },
       {
@@ -217,29 +230,52 @@ async function main() {
         eventDate: '2026-03-25',
         location: 'Seminar Hall 209, New Building, Ganpat University, Mehsana',
         archiveUrl: 'https://www.meetup.com/aws-sbg-at-ganpat-university/',
-        displayOrder: 3,
+        displayOrder: 4,
         status: 'PUBLISHED',
       },
     ];
 
     for (const ev of PAST_EVENTS) {
-      await client.query(
-        `INSERT INTO past_events (event_name, year, session_name, session_image, short_description, event_date, location, archive_url, display_order, status)
-         SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
-         WHERE NOT EXISTS (SELECT 1 FROM past_events WHERE event_name = $1)`,
-        [
-          ev.eventName,
-          ev.year,
-          ev.sessionName,
-          ev.sessionImage,
-          ev.shortDescription,
-          ev.eventDate,
-          ev.location,
-          ev.archiveUrl,
-          ev.displayOrder,
-          ev.status,
-        ],
+      const existing = await client.query(
+        'SELECT id FROM past_events WHERE event_name = $1',
+        [ev.eventName],
       );
+      if (existing.rows.length === 0) {
+        await client.query(
+          `INSERT INTO past_events (event_name, year, session_name, session_image, short_description, event_date, location, archive_url, display_order, status)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+          [
+            ev.eventName,
+            ev.year,
+            ev.sessionName,
+            ev.sessionImage,
+            ev.shortDescription,
+            ev.eventDate,
+            ev.location,
+            ev.archiveUrl,
+            ev.displayOrder,
+            ev.status,
+          ],
+        );
+      } else {
+        await client.query(
+          `UPDATE past_events
+           SET year = $2, session_name = $3, session_image = $4, short_description = $5, event_date = $6, location = $7, archive_url = $8, display_order = $9, status = $10
+           WHERE id = $1`,
+          [
+            existing.rows[0].id,
+            ev.year,
+            ev.sessionName,
+            ev.sessionImage,
+            ev.shortDescription,
+            ev.eventDate,
+            ev.location,
+            ev.archiveUrl,
+            ev.displayOrder,
+            ev.status,
+          ],
+        );
+      }
     }
 
     // --- Gallery items (Real Event & Workshop Photos) -------------------
