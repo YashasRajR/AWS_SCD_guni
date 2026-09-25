@@ -33,7 +33,7 @@ services:
     runtime: node
     plan: free
     buildCommand: npm install --include=dev && npm run build --workspace=backend
-    startCommand: npm run db:migrate && npm run start --workspace=backend
+    startCommand: npm run db:migrate && npm run db:seed && npm run start --workspace=backend
     envVars:
       - key: NODE_ENV
         value: production
