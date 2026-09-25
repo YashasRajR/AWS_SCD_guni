@@ -12,9 +12,6 @@ export function SessionsPage() {
     <div>
       <div className="page-hero" style={{ padding: '40px 0 24px', borderBottom: '1px solid var(--scd-border)' }}>
         <PageContainer>
-          <p className="mo" style={{ color: 'var(--scd-muted)', marginBottom: '8px' }}>
-            02 / Sessions
-          </p>
           <h1 className="d1" style={{ fontSize: '36px', marginBottom: '8px' }}>
             Sessions &amp; workshops
           </h1>

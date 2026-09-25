@@ -15,9 +15,6 @@ export function AgendaPage() {
         <PageContainer>
           <div className="r" style={{ justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
             <div className="c" style={{ gap: '4px' }}>
-              <p className="mo" style={{ color: 'var(--scd-muted)', marginBottom: '8px' }}>
-                03 / Agenda
-              </p>
               <h1 className="d1" style={{ fontSize: '36px', margin: 0 }}>
                 How the day runs
               </h1>

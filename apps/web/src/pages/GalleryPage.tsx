@@ -1,4 +1,5 @@
 import { GalleryGrid } from '../components/gallery/GalleryGrid.js';
+import { GalleryMarqueeSection } from '../components/gallery/GalleryMarqueeSection.js';
 import { PageContainer } from '../components/layout/PageContainer.js';
 import { useDocumentHead } from '../lib/seo.js';
 
@@ -12,9 +13,6 @@ export function GalleryPage() {
     <div>
       <div className="page-hero" style={{ padding: '40px 0 24px', borderBottom: '1px solid var(--scd-border)' }}>
         <PageContainer>
-          <p className="mo" style={{ color: 'var(--scd-muted)', marginBottom: '8px' }}>
-            08 / Gallery
-          </p>
           <h1 className="d1" style={{ fontSize: '36px', marginBottom: '8px' }}>
             Gallery
           </h1>
@@ -23,8 +21,15 @@ export function GalleryPage() {
           </p>
         </PageContainer>
       </div>
-      <div className="section" style={{ padding: '32px 0 60px' }}>
+
+      <GalleryMarqueeSection hideHeader={true} />
+
+      <div className="section" style={{ padding: '48px 0 60px' }}>
         <PageContainer>
+          <div style={{ marginBottom: '24px' }}>
+            <h2 className="d2" style={{ fontSize: '24px', marginBottom: '6px' }}>Photo Archive</h2>
+            <p className="tx" style={{ fontSize: '14px', color: 'var(--scd-muted)' }}>Browse and filter all moments across categories and event years.</p>
+          </div>
           <GalleryGrid />
         </PageContainer>
       </div>

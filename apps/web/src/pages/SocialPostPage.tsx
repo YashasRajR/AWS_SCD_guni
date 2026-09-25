@@ -148,7 +148,7 @@ export function SocialPostPage() {
     // Key Highlights strip
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '32px system-ui, sans-serif';
-    ctx.fillText('☁️ 12 Sessions   🛠️ 4 Workshops   🏆 Hackathon & Quiz', 80, 960);
+    ctx.fillText('12 Sessions   ·   4 Workshops   ·   Hackathon & Quiz', 80, 960);
 
     // Footer
     ctx.fillStyle = '#FF9900';

@@ -12,17 +12,18 @@ import { VenueGrid } from '../components/venues/VenueGrid.js';
 import { FAQAccordion } from '../components/faq/FAQAccordion.js';
 import { RegistrationCTA } from '../components/registration/RegistrationCTA.js';
 import { PricingGrid } from '../components/pricing/PricingGrid.js';
+import { PastEventGrid } from '../components/past-events/PastEventGrid.js';
+import { GalleryMarqueeSection } from '../components/gallery/GalleryMarqueeSection.js';
+import { TeamSection } from '../components/team/TeamSection.js';
 import { Section, SectionHeader, SectionEyebrow, SectionTitle } from '../components/layout/Section.js';
 import { useDocumentHead } from '../lib/seo.js';
 
 const TEASER_LIMIT = 4;
 
 /**
- * The primary public page. Order follows the spec exactly: Hero → Event
- * Info → About → Highlights → Speakers → Sessions → Agenda → Timeline →
- * Venue → Community → FAQ → Registration CTA → Footer (Footer lives in
- * Layout). Each data-driven section teases a few items and links to its
- * dedicated page for the full list.
+ * The primary public page. Order follows the spec: Hero → Event
+ * Info → About → Highlights → Past Events → Speakers → Sessions → Agenda → Timeline →
+ * Venue → Community → Pricing → FAQ → Registration CTA → Footer.
  */
 export function HomePage() {
   useDocumentHead({
@@ -37,6 +38,20 @@ export function HomePage() {
       <EventInfo />
       <AboutEvent />
       <EventHighlights />
+
+      <Section id="past-events" muted>
+        <SectionHeader
+          action={
+            <Link to="/past-events" className="btn-link">
+              View all →
+            </Link>
+          }
+        >
+          <SectionEyebrow>Past Events</SectionEyebrow>
+          <SectionTitle>Our previous editions &amp; meetups</SectionTitle>
+        </SectionHeader>
+        <PastEventGrid limit={3} />
+      </Section>
 
       <Section id="speakers">
         <SectionHeader
@@ -109,6 +124,10 @@ export function HomePage() {
       </Section>
 
       <CommunitySection />
+      
+      <GalleryMarqueeSection id="gallery" />
+
+      <TeamSection />
 
       <Section id="pricing">
         <SectionHeader>

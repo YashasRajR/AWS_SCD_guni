@@ -47,7 +47,7 @@ function formatEventDate(event: EventConfig): string {
  */
 const DEFAULT_SETTINGS: Pick<SocialPostSettings, 'baseHashtags' | 'introLines'> = {
   baseHashtags: ['#AWSStudentCommunityDay', '#AWSSCD2026', '#AWSCloud'],
-  introLines: [`🚀 I'm attending {event}!`],
+  introLines: [`I'm attending {event}!`],
 };
 
 export function buildCopy(input: {
@@ -69,15 +69,15 @@ export function buildCopy(input: {
     introLine,
     bio,
     interestsLine,
-    [`📅 ${dateStr}`, event.venue ? `📍 ${event.venue}` : null].filter(Boolean).join('  ·  '),
-    `🔗 ${eventUrl}`,
+    [dateStr, event.venue ? event.venue : null].filter(Boolean).join('  ·  '),
+    eventUrl,
     hashtags.join(' '),
   ]
     .filter(Boolean)
     .join('\n\n');
 
   const instagramText = [
-    `${fullName} is heading to ${event.name}! ✨`,
+    `${fullName} is heading to ${event.name}!`,
     bio,
     interestsLine,
     eventUrl,

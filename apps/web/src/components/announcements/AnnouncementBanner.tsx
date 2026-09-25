@@ -56,7 +56,7 @@ export function AnnouncementBanner() {
           className="mo"
           aria-label="Dismiss banner"
         >
-          ✕ dismiss
+          Dismiss
         </button>
       </div>
     </aside>

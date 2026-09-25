@@ -1,174 +1,168 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useMemo } from 'react';
 import { useSpeakers } from '../../lib/queries.js';
-import { SpeakerCard } from './SpeakerCard.js';
 import { SpeakerDetailOverlay } from './SpeakerDetailOverlay.js';
+import { ProfileCard } from '../ui/ProfileCard.js';
 import { SkeletonGrid } from '../ui/Skeleton.js';
 import { ErrorState } from '../ui/ErrorState.js';
 import { EmptyState } from '../ui/EmptyState.js';
+import type { Speaker } from '@scd/types';
 
 interface SpeakerGridProps {
   limit?: number;
+  rotary?: boolean;
+  speedSeconds?: number;
 }
 
-export function SpeakerGrid({ limit }: SpeakerGridProps) {
+function formatSpeakerRole(designation?: string | null, organization?: string | null) {
+  let des = designation ? designation.trim().toUpperCase() : null;
+  let org = organization ? organization.trim().toUpperCase() : null;
+
+  if (des === 'X' || (des && des.length <= 1)) des = 'SPEAKER';
+  if (org === 'B' || (org && org.length <= 1)) org = 'GUNI';
+  if (!org) org = 'GUNI';
+
+  if (des && org) return `${des} • ${org}`;
+  return des || org || 'SPEAKER • GUNI';
+}
+
+function getGlowColor(idx: number): string {
+  if (idx % 3 === 0) return 'rgba(255, 153, 0, 0.45)';
+  if (idx % 3 === 1) return 'rgba(56, 189, 248, 0.45)';
+  return 'rgba(255, 153, 0, 0.35)';
+}
+
+export function SpeakerGrid({ limit, rotary = true, speedSeconds = 48 }: SpeakerGridProps) {
   const { items: speakers, loading, error, reload } = useSpeakers();
   const [openId, setOpenId] = useState<string | null>(null);
 
-  if (loading) return <SkeletonGrid count={limit ?? 4} />;
+  const shown = limit ? speakers.slice(0, limit) : speakers;
+  const openSpeaker = openId ? (speakers.find((s) => s.id === openId) ?? null) : null;
+
+  // Prepare duplicate halves for a continuous, seamless rotary marquee loop
+  const { setA, setB } = useMemo(() => {
+    if (!shown || shown.length === 0) return { setA: [], setB: [] };
+
+    // Repeat enough times so that each half has at least 10 cards across wide displays
+    const minHalfCount = 10;
+    const repeatCount = Math.max(2, Math.ceil(minHalfCount / shown.length));
+
+    const halfItems: Array<{
+      speaker: Speaker;
+      uniqueKey: string;
+      originalIndex: number;
+      isFirstInstance: boolean;
+    }> = [];
+
+    for (let r = 0; r < repeatCount; r++) {
+      shown.forEach((sp, idx) => {
+        halfItems.push({
+          speaker: sp,
+          uniqueKey: `${sp.id}-r${r}-i${idx}`,
+          originalIndex: idx,
+          isFirstInstance: r === 0,
+        });
+      });
+    }
+
+    // Set A (first instance accessible, repeated instances aria-hidden for a11y)
+    const setA = halfItems.map((item) => ({
+      ...item,
+      ariaHidden: !item.isFirstInstance,
+    }));
+
+    // Set B (duplicate half to complete the infinite 0% -> -50% CSS translation loop)
+    const setB = halfItems.map((item) => ({
+      ...item,
+      uniqueKey: `${item.uniqueKey}-clone`,
+      ariaHidden: true,
+    }));
+
+    return { setA, setB };
+  }, [shown]);
+
+  if (loading) return <SkeletonGrid count={limit ?? 3} />;
   if (error) return <ErrorState onRetry={reload} />;
   if (speakers.length === 0) return <EmptyState message="Speakers will be announced soon." />;
 
-  const shown = limit ? speakers.slice(0, limit) : speakers;
-  const activeSpeaker = shown[0]!;
-  const supportingSpeakers = shown.filter((s) => s.id !== activeSpeaker.id);
-  const openSpeaker = openId ? (shown.find((s) => s.id === openId) ?? null) : null;
-
-  // Placeholder slots to complete the line-up per wireframe 1d callout:
-  // "Unconfirmed = explicit TBA / Stay tuned… placeholder, never a made-up name"
-  const tbaSlots = Math.max(0, 4 - shown.length);
-
-  return (
-    <div className="c" style={{ gap: '24px' }}>
-      {/* Editorial layout: 1 big card + supporting cards */}
-      <div className="r" style={{ alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
-        {/* Featured speaker card */}
-        <div className="k" style={{ flex: '1 1 320px', minWidth: '280px', maxWidth: '440px', gap: '12px' }}>
-          <div className="r" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-            <p className="mo" style={{ color: 'var(--scd-muted)' }}>Featured speaker</p>
-            <span className="chip on" style={{ fontSize: '10px' }}>Featured</span>
-          </div>
-
-          <div
-            style={{
-              aspectRatio: '4/5',
-              width: '100%',
-              maxHeight: '340px',
-              borderRadius: '3px',
-              overflow: 'hidden',
-              background: 'var(--scd-surface-muted)',
-            }}
-          >
-            {activeSpeaker.profileImage ? (
-              <img
-                src={activeSpeaker.profileImage}
-                alt={activeSpeaker.name}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  filter: 'grayscale(0.5) contrast(1.1)',
-                  transition: 'filter 0.3s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.filter = 'none';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.filter = 'grayscale(0.5) contrast(1.1)';
-                }}
-              />
-            ) : (
-              <div
-                className="speaker-photo-placeholder"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '48px',
-                  fontWeight: 800,
-                  fontFamily: 'var(--scd-mono)',
-                  background: 'repeating-linear-gradient(45deg, #e6e2da 0 6px, #f4f1eb 6px 12px)',
-                  color: 'var(--scd-primary)',
-                }}
-              >
-                {activeSpeaker.name.charAt(0)}
-              </div>
-            )}
-          </div>
-
-          <h2 className="d2" style={{ margin: '4px 0 0', fontSize: '22px' }}>
-            {activeSpeaker.name}
-          </h2>
-          <p className="mo" style={{ color: 'var(--scd-muted)', fontSize: '12px' }}>
-            {[activeSpeaker.designation, activeSpeaker.organization].filter(Boolean).join(' · ')}
-          </p>
-
-          {activeSpeaker.bio && (
-            <p className="tx" style={{ fontSize: '13px', lineHeight: 1.6 }}>
-              {activeSpeaker.bio}
-            </p>
-          )}
-
-          <div className="r" style={{ gap: '8px', marginTop: '4px' }}>
-            <Link to={`/speakers/${activeSpeaker.id}`} className="btn o" style={{ textDecoration: 'none' }}>
-              Full speaker profile →
-            </Link>
-          </div>
+  if (!rotary) {
+    return (
+      <div className="c" style={{ gap: '24px', width: '100%' }}>
+        <div className="speakers-profile-cards-grid">
+          {shown.map((speaker, idx) => (
+            <ProfileCard
+              key={speaker.id}
+              name={speaker.name}
+              roleOrg={formatSpeakerRole(speaker.designation, speaker.organization)}
+              avatarUrl={speaker.profileImage || undefined}
+              linkedinUrl={speaker.linkedinUrl || undefined}
+              showUserInfo={true}
+              enableTilt={true}
+              enableMobileTilt={true}
+              behindGlowEnabled={true}
+              behindGlowColor={getGlowColor(idx)}
+              onContactClick={() => setOpenId(speaker.id)}
+            />
+          ))}
         </div>
 
-        {/* Supporting cards column */}
-        <div className="c" style={{ flex: '1 1 400px', gap: '16px' }}>
-          <p className="tx" style={{ color: 'var(--scd-muted)' }}>
-            Select any speaker below to preview their bio and sessions. Line-up updates as speakers confirm.
-          </p>
+        {openSpeaker && (
+          <SpeakerDetailOverlay speaker={openSpeaker} onClose={() => setOpenId(null)} />
+        )}
+      </div>
+    );
+  }
 
-          <div
-            className="speaker-grid-container"
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-              gap: '12px',
-            }}
-          >
-            {supportingSpeakers.map((speaker) => (
-              <SpeakerCard key={speaker.id} speaker={speaker} onSelect={() => setOpenId(speaker.id)} />
-            ))}
+  return (
+    <div className="speakers-rotary-container" style={{ width: '100%' }}>
+      <div className="speakers-rotary-wrapper">
+        <div
+          className="speakers-rotary-track"
+          style={{
+            ['--speaker-rotary-speed' as string]: `${speedSeconds}s`,
+            animationDuration: `${speedSeconds}s`,
+          }}
+        >
+          {setA.map(({ speaker, uniqueKey, originalIndex, ariaHidden }) => (
+            <ProfileCard
+              key={uniqueKey}
+              ariaHidden={ariaHidden}
+              name={speaker.name}
+              roleOrg={formatSpeakerRole(speaker.designation, speaker.organization)}
+              avatarUrl={speaker.profileImage || undefined}
+              linkedinUrl={speaker.linkedinUrl || undefined}
+              showUserInfo={true}
+              enableTilt={true}
+              enableMobileTilt={true}
+              behindGlowEnabled={true}
+              behindGlowColor={getGlowColor(originalIndex)}
+              onContactClick={() => setOpenId(speaker.id)}
+            />
+          ))}
 
-            {/* TBA placeholders */}
-            {Array.from({ length: tbaSlots }).map((_, i) => (
-              <div
-                key={`tba-${i}`}
-                className="kd mut"
-                style={{
-                  padding: '12px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  textAlign: 'center',
-                  minHeight: '180px',
-                  gap: '8px',
-                  borderStyle: 'dashed',
-                }}
-              >
-                <div
-                  style={{
-                    width: '54px',
-                    height: '68px',
-                    aspectRatio: '4/5',
-                    borderRadius: '3px',
-                    background: 'repeating-linear-gradient(45deg, #e6e2da 0 4px, #f4f1eb 4px 8px)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontFamily: 'var(--scd-mono)',
-                    fontSize: '11px',
-                    color: 'var(--scd-muted)',
-                  }}
-                >
-                  4:5
-                </div>
-                <p className="lbl" style={{ color: 'var(--scd-muted)' }}>Speaker TBA</p>
-                <p className="mo" style={{ fontSize: '10px', color: 'var(--scd-muted)' }}>Stay tuned…</p>
-              </div>
-            ))}
-          </div>
+          {setB.map(({ speaker, uniqueKey, originalIndex, ariaHidden }) => (
+            <ProfileCard
+              key={uniqueKey}
+              ariaHidden={ariaHidden}
+              name={speaker.name}
+              roleOrg={formatSpeakerRole(speaker.designation, speaker.organization)}
+              avatarUrl={speaker.profileImage || undefined}
+              linkedinUrl={speaker.linkedinUrl || undefined}
+              showUserInfo={true}
+              enableTilt={true}
+              enableMobileTilt={true}
+              behindGlowEnabled={true}
+              behindGlowColor={getGlowColor(originalIndex)}
+              onContactClick={() => setOpenId(speaker.id)}
+            />
+          ))}
         </div>
       </div>
 
-      <SpeakerDetailOverlay speaker={openSpeaker} onClose={() => setOpenId(null)} />
+      {openSpeaker && (
+        <SpeakerDetailOverlay speaker={openSpeaker} onClose={() => setOpenId(null)} />
+      )}
     </div>
   );
 }
+
+export default SpeakerGrid;

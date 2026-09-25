@@ -64,7 +64,7 @@ export function SpeakerDetailOverlay({ speaker, onClose }: { speaker: Speaker | 
             )}
             {speaker.websiteUrl && (
               <a href={speaker.websiteUrl} target="_blank" rel="noreferrer" className="chip" style={{ fontSize: '10px', textDecoration: 'none' }}>
-                ↗ web
+                web <ExternalLinkIcon width={10} height={10} style={{ display: 'inline', verticalAlign: 'middle' }} />
               </a>
             )}
           </div>

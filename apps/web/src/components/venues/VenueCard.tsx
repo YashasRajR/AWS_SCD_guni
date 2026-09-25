@@ -51,7 +51,7 @@ export function VenueCard({ venue }: { venue: Venue }) {
             className="btn o"
             style={{ fontSize: '11px', textDecoration: 'none' }}
           >
-            Open map ↗
+            Open map
           </a>
         )}
       </div>

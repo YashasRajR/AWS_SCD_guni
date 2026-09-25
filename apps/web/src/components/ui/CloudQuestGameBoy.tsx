@@ -319,7 +319,7 @@ export function CloudQuestGameBoy() {
 
     floatingScores.current.push({
       id: Math.random(),
-      text: '⚡ LAMBDA INVOCATION: +250 XP',
+      text: 'LAMBDA INVOCATION: +250 XP',
       x: 40,
       y: 75,
       color: '#EA580C',
@@ -345,7 +345,7 @@ export function CloudQuestGameBoy() {
 
     floatingScores.current.push({
       id: Math.random(),
-      text: '🚀 ROCKET DEPLOYED! +500 XP',
+      text: 'ROCKET DEPLOYED! +500 XP',
       x: 75,
       y: 90,
       color: '#16A34A',
@@ -385,7 +385,7 @@ export function CloudQuestGameBoy() {
     if (soundEnabled) playChiptune('powerup');
     floatingScores.current.push({
       id: Math.random(),
-      text: '📋 AWS-SCD-P2026 COPIED! PASTE AT CHECKOUT',
+      text: 'AWS-SCD-P2026 COPIED! PASTE AT CHECKOUT',
       x: 18,
       y: 90,
       color: '#16A34A',
@@ -623,18 +623,18 @@ export function CloudQuestGameBoy() {
       ctx.fillText(`SCORE: ${String(score).padStart(5, '0')}`, 12, 16);
 
       ctx.fillStyle = cyberMode ? '#FBBF24' : '#D97706';
-      ctx.fillText(`🪙 x${coinsCollected}`, 115, 16);
+      ctx.fillText(`COINS x${coinsCollected}`, 115, 16);
 
       if (cyberMode) {
         ctx.fillStyle = '#A855F7';
         ctx.font = 'bold 8.5px monospace';
-        ctx.fillText('⚡CYBER', 165, 16);
+        ctx.fillText('CYBER', 165, 16);
       }
 
       ctx.textAlign = 'right';
       ctx.fillStyle = unlockedServices.size === 4 ? '#10B981' : (cyberMode ? '#C084FC' : '#7C3AED');
       ctx.font = 'bold 10px monospace';
-      ctx.fillText(`AWS_CERT: ${unlockedServices.size}/4 🎓`, 328, 16);
+      ctx.fillText(`AWS_CERT: ${unlockedServices.size}/4`, 328, 16);
 
       // --- 2. FLOATING AWS CLOUDS IN BACKGROUND ---
       ctx.save();
@@ -982,7 +982,7 @@ export function CloudQuestGameBoy() {
 
             floatingScores.current.push({
               id: Math.random(),
-              text: '🐛 BUG RESOLVED! +500 XP',
+              text: 'BUG RESOLVED! +500 XP',
               x: bug.current.x - 20,
               y: bug.current.y - 12,
               color: '#10B981',
@@ -1348,7 +1348,7 @@ export function CloudQuestGameBoy() {
                 letterSpacing: '0.04em',
               }}
             >
-              {cyberMode ? '⚡ CYBER ON' : 'POWER ON'}
+              {cyberMode ? 'CYBER ON' : 'POWER ON'}
             </span>
           </button>
 
@@ -1378,7 +1378,7 @@ export function CloudQuestGameBoy() {
             }}
             title={soundEnabled ? 'Mute 8-bit sound' : 'Enable 8-bit sound'}
           >
-            {soundEnabled ? '🔊 ON' : '🔇 OFF'}
+            {soundEnabled ? 'AUDIO ON' : 'AUDIO OFF'}
           </button>
         </div>
 
@@ -1505,7 +1505,7 @@ export function CloudQuestGameBoy() {
               }}
               title="Copy coupon code AWS-SCD-P2026"
             >
-              {copiedCoupon ? '✓ COPIED!' : '📋 COPY "AWS-SCD-P2026"'}
+              {copiedCoupon ? 'COPIED!' : 'COPY "AWS-SCD-P2026"'}
             </button>
 
             <Link
@@ -1933,10 +1933,10 @@ export function CloudQuestGameBoy() {
             textAlign: 'left',
           }}
         >
-          <span>🚀 Press <b>DEPLOY</b>: Rocket</span>
-          <span>⚡ Press <b>INVOKE</b>: Coins</span>
-          <span>👾 Stomp the <b>500 Bug</b></span>
-          <span>✨ Tap <b>POWER ON</b>: Jetpack</span>
+          <span>Press <b>DEPLOY</b>: Rocket</span>
+          <span>Press <b>INVOKE</b>: Coins</span>
+          <span>Stomp the <b>500 Bug</b></span>
+          <span>Tap <b>POWER ON</b>: Jetpack</span>
         </div>
       </div>
     </div>

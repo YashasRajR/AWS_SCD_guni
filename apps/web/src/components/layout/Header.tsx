@@ -9,22 +9,22 @@ import { BuilderMark } from '../ui/BuilderMark.js';
 interface NavLinkDef {
   to: string;
   label: string;
-  num: string;
   end?: boolean;
   anchor?: boolean;
 }
 
 const SECTION_LINKS: NavLinkDef[] = [
-  { to: '/', label: 'Home', num: '01', end: true },
-  { to: '/#about', label: 'About', num: '02', anchor: true },
-  { to: '/sessions', label: 'Sessions', num: '03' },
-  { to: '/agenda', label: 'Agenda', num: '04' },
-  { to: '/speakers', label: 'Speakers', num: '05' },
-  { to: '/timeline', label: 'Timeline', num: '06' },
-  { to: '/venue', label: 'Venue', num: '07' },
-  { to: '/gallery', label: 'Gallery', num: '08' },
-  { to: '/past-events', label: 'Past Events', num: '09' },
-  { to: '/faq', label: 'FAQ', num: '10' },
+  { to: '/', label: 'Home', end: true },
+  { to: '/#about', label: 'About', anchor: true },
+  { to: '/#past-events', label: 'Past Events', anchor: true },
+  { to: '/speakers', label: 'Speakers' },
+  { to: '/sessions', label: 'Sessions' },
+  { to: '/agenda', label: 'Agenda' },
+  { to: '/timeline', label: 'Timeline' },
+  { to: '/venue', label: 'Venue' },
+  { to: '/gallery', label: 'Gallery' },
+  { to: '/#team', label: 'Team', anchor: true },
+  { to: '/faq', label: 'FAQ' },
 ];
 
 const FOCUSABLE_SELECTOR =
@@ -42,7 +42,6 @@ export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isHome = location.pathname === '/';
   const closeMenu = () => {
     setMenuOpen(false);
     toggleRef.current?.focus();
@@ -109,17 +108,6 @@ export function Header() {
       {/* Mobile Scroll Progress Indicator */}
       <div className="scroll-progress-bar" style={{ width: `${scrollProgress}%` }} aria-hidden="true" />
 
-      {/* Desktop Section Index Rail (shown on large screens on homepage) */}
-      {isHome && (
-        <nav className="section-index-rail" aria-label="Section navigation">
-          {SECTION_LINKS.slice(0, 7).map((item) => (
-            <a key={item.num} href={item.anchor ? item.to : `#${item.label.toLowerCase()}`} className="section-rail-item">
-              <span className="section-rail-dot" />
-              <span>{item.num}</span>
-            </a>
-          ))}
-        </nav>
-      )}
 
       <header className={`site-header ${isScrolled ? 'is-scrolled' : ''}`}>
         <a href="#main-content" className="skip-link">
@@ -241,7 +229,7 @@ export function Header() {
                 onClick={closeMenu}
                 aria-label="Close navigation"
               >
-                Close ✕
+                Close
               </button>
             </div>
 
@@ -257,7 +245,6 @@ export function Header() {
                     onClick={closeMenu}
                     style={{ animationDelay: `${index * 40}ms` }}
                   >
-                    <span className="mo">{item.num}</span>
                     <span className="d1" style={{ fontSize: '28px' }}>
                       {item.label}
                     </span>
@@ -273,7 +260,6 @@ export function Header() {
                     onClick={closeMenu}
                     style={{ animationDelay: `${index * 40}ms` }}
                   >
-                    <span className="mo">{item.num}</span>
                     <span className="d1" style={{ fontSize: '28px' }}>
                       {item.label}
                     </span>

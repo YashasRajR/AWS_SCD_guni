@@ -15,7 +15,7 @@ const HASHTAGS = '#AWSStudentCommunityDay #AWS #CloudComputing';
 export function generateSpeakerPost(speaker: Speaker): string {
   const role = [speaker.designation, speaker.organization].filter(Boolean).join(', ');
   const lines = [
-    `📣 Speaker announcement! We're excited to welcome ${speaker.name}${role ? ` (${role})` : ''} to ${EVENT_NAME}.`,
+    `Speaker announcement! We're excited to welcome ${speaker.name}${role ? ` (${role})` : ''} to ${EVENT_NAME}.`,
   ];
   if (speaker.bio) lines.push(speaker.bio);
   if (speaker.linkedinUrl) lines.push(speaker.linkedinUrl);
@@ -24,7 +24,7 @@ export function generateSpeakerPost(speaker: Speaker): string {
 }
 
 export function generateSessionPost(session: Session): string {
-  const lines = [`🎤 Don't miss "${session.title}" at ${EVENT_NAME}!`];
+  const lines = [`Don't miss "${session.title}" at ${EVENT_NAME}!`];
   if (session.description) lines.push(session.description);
   if (session.track) lines.push(`Track: ${session.track}`);
   lines.push(HASHTAGS);
@@ -32,7 +32,7 @@ export function generateSessionPost(session: Session): string {
 }
 
 export function generateAnnouncementPost(announcement: Announcement): string {
-  const lines = [`📢 ${announcement.title}`, announcement.message];
+  const lines = [announcement.title, announcement.message];
   lines.push(HASHTAGS);
   return lines.join('\n\n');
 }

@@ -1,0 +1,679 @@
+/* ============================================================
+   35MM KODAK PORTRA FILMSTRIP & EDITORIAL BLUEPRINT GALLERY
+   Using Real Photos from the Event Gallery
+   ============================================================ */
+
+.filmstrip-section {
+  position: relative;
+  width: 100%;
+  background-color: #f5f3ec;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(15, 23, 42, 0.08) 1px, transparent 0),
+    linear-gradient(to right, rgba(15, 23, 42, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
+  background-size: 24px 24px, 120px 120px, 120px 120px;
+  padding: 44px 0 36px;
+  overflow: hidden;
+  box-sizing: border-box;
+  color: #0f172a;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+/* Background Drafting Compass Arcs */
+.filmstrip-bg-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.65;
+}
+
+.filmstrip-compass-circle {
+  position: absolute;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* ============================================================
+   HEADER ROW
+   ============================================================ */
+
+.filmstrip-header-container {
+  position: relative;
+  z-index: 2;
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 0 28px;
+  box-sizing: border-box;
+}
+
+.filmstrip-header-layout {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: flex-start;
+  gap: clamp(16px, 3vw, 44px);
+  margin-bottom: 28px;
+}
+
+/* Left Technical Rail */
+.filmstrip-left-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.filmstrip-plus {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  line-height: 1;
+  color: #475569;
+  font-weight: 600;
+}
+
+.filmstrip-rail-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.15em;
+  color: #334155;
+  text-transform: uppercase;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.filmstrip-rail-dash {
+  width: 18px;
+  height: 2px;
+  background: #ff9900;
+  display: block;
+  margin-top: 4px;
+}
+
+/* Center Column: Badge + Title + Sketch Note */
+.filmstrip-center-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.filmstrip-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.filmstrip-badge-icon {
+  background: #ff9900;
+  color: #0b0f19;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 5px;
+  border-radius: 3px;
+  letter-spacing: -0.05em;
+  line-height: 1.1;
+}
+
+.filmstrip-badge-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: #334155;
+  text-transform: uppercase;
+}
+
+.filmstrip-title-row-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(14px, 2.2vw, 32px);
+  flex-wrap: wrap;
+}
+
+.filmstrip-hero-title {
+  margin: 0;
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: clamp(38px, 5.5vw, 74px);
+  line-height: 0.88;
+  text-transform: uppercase;
+  color: #0c0f17;
+  letter-spacing: 0.01em;
+  display: flex;
+  flex-direction: column;
+}
+
+.filmstrip-title-row1 {
+  display: block;
+  white-space: nowrap;
+}
+
+.filmstrip-title-row2 {
+  display: block;
+  white-space: nowrap;
+}
+
+.filmstrip-title-orange {
+  color: #ff9900;
+  text-shadow: 0 0 24px rgba(255, 153, 0, 0.28);
+}
+
+/* Handwritten Sketch Note with Curved Arrow */
+.filmstrip-sketch-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 14px;
+  user-select: none;
+}
+
+.filmstrip-arrow-svg {
+  width: 32px;
+  height: 22px;
+  stroke: #1e293b;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform: rotate(-8deg);
+}
+
+.filmstrip-sketch-bracket {
+  border-left: 2px solid #1e293b;
+  padding-left: 8px;
+  transform: rotate(-3deg);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.filmstrip-sketch-inner {
+  font-family: 'Caveat', 'Segoe Print', cursive;
+  font-size: 17.5px;
+  line-height: 1.05;
+  color: #0f172a;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.filmstrip-sketch-orange-dash {
+  width: 36px;
+  height: 2.5px;
+  background: #ff9900;
+  border-radius: 2px;
+  margin-top: 4px;
+}
+
+/* Right Column: Technical Metadata Block & Venn Widget */
+.filmstrip-right-col {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(16px, 2.5vw, 36px);
+  padding-top: 4px;
+}
+
+.filmstrip-meta-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 360px;
+}
+
+.filmstrip-tag-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: #1e293b;
+  text-transform: uppercase;
+}
+
+.filmstrip-desc {
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  line-height: 1.55;
+  color: #475569;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.filmstrip-meta-orange-dash {
+  width: 28px;
+  height: 2px;
+  background: #ff9900;
+  display: block;
+}
+
+/* Interlocking Venn Circles */
+.filmstrip-venn-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+
+.filmstrip-venn-circles {
+  display: flex;
+  position: relative;
+  width: 44px;
+  height: 26px;
+}
+
+.filmstrip-venn-circle {
+  position: absolute;
+  top: 0;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  border: 1.5px solid #1e293b;
+  background: transparent;
+}
+
+.filmstrip-venn-c1 {
+  left: 0;
+}
+
+.filmstrip-venn-c2 {
+  right: 0;
+}
+
+.filmstrip-venn-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: #475569;
+  text-transform: uppercase;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.filmstrip-venn-orange-dash {
+  width: 16px;
+  height: 2px;
+  background: #ff9900;
+  display: block;
+  margin-top: 2px;
+}
+
+/* ============================================================
+   35MM FILM REEL CAROUSEL
+   ============================================================ */
+
+.filmstrip-reel-viewport {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  margin: 12px 0 24px;
+  box-sizing: border-box;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 32px,
+    black calc(100% - 32px),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 32px,
+    black calc(100% - 32px),
+    transparent 100%
+  );
+}
+
+.filmstrip-reel-track {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 0;
+  width: max-content;
+  will-change: transform;
+  animation-name: filmstrip-reel-scroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-duration: 48s;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .filmstrip-reel-viewport:hover .filmstrip-reel-track {
+    animation-play-state: paused;
+  }
+}
+
+.filmstrip-reel-viewport:focus-within .filmstrip-reel-track,
+.filmstrip-reel-viewport:active .filmstrip-reel-track {
+  animation-play-state: paused;
+}
+
+@keyframes filmstrip-reel-scroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* ============================================================
+   INDIVIDUAL 35MM REAL FILM FRAME
+   ============================================================ */
+
+.filmstrip-real-frame {
+  position: relative;
+  flex-shrink: 0;
+  width: clamp(260px, 23vw, 330px);
+  background: #090b10;
+  box-sizing: border-box;
+  border-right: 4px solid #040507;
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  padding: 8px 8px 9px 8px;
+  user-select: none;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s ease;
+}
+
+.filmstrip-real-frame:hover {
+  transform: translateY(-2px) scale(1.02);
+  z-index: 5;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65), 0 0 24px rgba(255, 153, 0, 0.35);
+}
+
+/* Top Rebate Bar */
+.filmstrip-rebate-top {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 6px;
+}
+
+.filmstrip-sprockets {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2px;
+  gap: 6px;
+}
+
+.filmstrip-sprocket-hole {
+  width: 12px;
+  height: 15px;
+  border-radius: 3px;
+  background: #f5f3ec;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.85),
+    inset 0 0 1px rgba(0, 0, 0, 0.6);
+  border: 0.5px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+
+.filmstrip-edge-meta-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #f59e0b;
+  text-shadow: 0 0 4px rgba(245, 158, 11, 0.45);
+  text-transform: uppercase;
+}
+
+.filmstrip-edge-brand {
+  letter-spacing: 0.12em;
+}
+
+/* Photo Aperture */
+.filmstrip-photo-aperture {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: #000000;
+  border-radius: 2px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  outline: 1.5px solid transparent;
+  transition: outline-color 0.2s ease;
+}
+
+.filmstrip-real-frame:hover .filmstrip-photo-aperture {
+  outline-color: rgba(255, 153, 0, 0.85);
+}
+
+.filmstrip-real-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform 0.45s ease, filter 0.3s ease;
+  filter: contrast(1.05) saturate(1.05);
+}
+
+.filmstrip-real-frame:hover .filmstrip-real-img {
+  transform: scale(1.04);
+}
+
+.filmstrip-glare-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+}
+
+/* Bottom Rebate Bar */
+.filmstrip-rebate-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.filmstrip-meta-imprint {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: #f59e0b;
+  text-shadow: 0 0 5px rgba(245, 158, 11, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.filmstrip-meta-row-1 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filmstrip-meta-row-2 {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.filmstrip-meta-play {
+  font-size: 8px;
+  color: #ff9900;
+  transform: scaleY(0.9);
+}
+
+.filmstrip-meta-badge {
+  color: #fbbf24;
+  font-weight: 800;
+}
+
+/* ============================================================
+   BOTTOM EDITORIAL ACCENTS
+   ============================================================ */
+
+.filmstrip-footer-container {
+  position: relative;
+  z-index: 2;
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 0 28px;
+  box-sizing: border-box;
+}
+
+.filmstrip-footer-layout {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding-top: 8px;
+  flex-wrap: wrap;
+}
+
+.filmstrip-footer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.filmstrip-footer-brand {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.filmstrip-footer-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: #475569;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.35;
+}
+
+.filmstrip-footer-orange-bar {
+  width: 20px;
+  height: 2px;
+  background: #ff9900;
+  margin-top: 2px;
+}
+
+.filmstrip-footer-center {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: #334155;
+  text-transform: uppercase;
+}
+
+.filmstrip-footer-dash {
+  width: 28px;
+  height: 1.5px;
+  background: #94a3b8;
+}
+
+.filmstrip-footer-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.filmstrip-footer-tree {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filmstrip-footer-bracket {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 26px;
+  line-height: 1;
+  color: #334155;
+  font-weight: 300;
+  transform: translateY(-2px);
+}
+
+.filmstrip-footer-items {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  color: #334155;
+  text-transform: uppercase;
+  line-height: 1.35;
+  text-align: left;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .filmstrip-reel-track {
+    animation: none !important;
+  }
+  .filmstrip-reel-viewport {
+    overflow-x: auto;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}
+
+/* Mobile & Tablet Adjustments */
+@media (max-width: 960px) {
+  .filmstrip-header-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .filmstrip-left-rail {
+    display: none;
+  }
+  .filmstrip-right-col {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .filmstrip-footer-layout {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .filmstrip-footer-right {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .filmstrip-hero-title {
+    font-size: clamp(32px, 8.5vw, 44px);
+  }
+  .filmstrip-real-frame {
+    width: 230px;
+  }
+  .filmstrip-sprocket-hole {
+    width: 10px;
+    height: 13px;
+  }
+  .filmstrip-sketch-note {
+    padding-top: 4px;
+  }
+}

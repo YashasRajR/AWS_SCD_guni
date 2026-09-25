@@ -144,7 +144,7 @@ export function AgendaItem({ item, session, venue, compact = false }: AgendaItem
                 style={{ fontSize: '10px', padding: '4px 8px', cursor: 'pointer' }}
                 aria-pressed={saved}
               >
-                {saved ? '✓ In my sessions' : 'Add to my sessions'}
+                {saved ? 'In my sessions' : 'Add to my sessions'}
               </button>
             )}
           </div>

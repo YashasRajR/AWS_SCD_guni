@@ -148,7 +148,7 @@ export function SessionDetailPage() {
                   style={{ minHeight: '44px', padding: '0 20px', cursor: 'pointer' }}
                   aria-pressed={saved}
                 >
-                  {saved ? '✓ In my sessions' : 'Add to my sessions'}
+                  {saved ? 'In my sessions' : 'Add to my sessions'}
                 </button>
                 <Link to="/sessions" className="btn g" style={{ minHeight: '44px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
                   ← All sessions

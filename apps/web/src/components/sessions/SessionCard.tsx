@@ -85,7 +85,7 @@ export function SessionCard({ session, onOpen }: { session: Session; onOpen: () 
           style={{ padding: '6px 10px', fontSize: '11px', minHeight: 'auto' }}
           aria-pressed={saved}
         >
-          {saved ? '✓ Saved' : 'Save'}
+          {saved ? 'Saved' : 'Save'}
         </button>
       </div>
     </article>

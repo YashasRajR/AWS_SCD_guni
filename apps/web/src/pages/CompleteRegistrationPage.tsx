@@ -289,7 +289,7 @@ export function CompleteRegistrationPage() {
                     cursor: 'pointer',
                   }}
                 >
-                  📋 Paste Cloud Quest coupon &ldquo;AWS-SCD-P2026&rdquo;
+                  Paste Cloud Quest coupon &ldquo;AWS-SCD-P2026&rdquo;
                 </button>
               </div>
             )}

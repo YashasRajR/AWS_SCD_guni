@@ -1,0 +1,31 @@
+services:
+  # Static Site: AWS Student Community Day Frontend (apps/web)
+  - type: web
+    name: scd-web
+    runtime: static
+    buildCommand: npm install && npm run build --workspace=@scd/app-web
+    staticPublishPath: ./apps/web/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://scd-backend.onrender.com/api
+
+  # Web Service: Backend API (Node.js / Express)
+  - type: web
+    name: scd-backend
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start --workspace=backend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: "*"

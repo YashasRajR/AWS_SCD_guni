@@ -179,6 +179,69 @@ async function main() {
        ON CONFLICT (UPPER(code)) DO NOTHING`,
     );
 
+    // --- Past events (from AWS SBG GUNI) --------------------------------
+    const PAST_EVENTS = [
+      {
+        eventName: 'AWS Gujarat Students Builder Week 2026',
+        year: 2026,
+        sessionName: '10+ Industry Experts & Continuous Cloud Learning',
+        sessionImage: '/gallery/gujarat_builder_week_poster.png',
+        shortDescription:
+          'A 7-day virtual learning experience organized by the AWS Student Builder Group Leaders – Gujarat. Featuring 10+ industry experts, live interactive Q&A, e-certificates, and hands-on cloud learning.',
+        eventDate: '2026-07-05',
+        location: 'Online Event (Meetup Live)',
+        archiveUrl: 'https://www.meetup.com/aws-sbg-at-ganpat-university/events/315424216/',
+        displayOrder: 1,
+        status: 'PUBLISHED',
+      },
+      {
+        eventName: 'GEN AI ON AWS',
+        year: 2026,
+        sessionName: 'Mr. Ashwin Raiyani (Expert AI Speaker)',
+        sessionImage: '/gallery/Poster2.png',
+        shortDescription:
+          'An online technical session delivered by Mr. Ashwin Raiyani illustrating the future of Generative AI, featuring industry use cases, Amazon Bedrock, FMaaS, building agents, and real-world tools.',
+        eventDate: '2026-05-25',
+        location: 'Online Event (Meetup Live)',
+        archiveUrl: 'https://www.meetup.com/aws-sbg-at-ganpat-university/',
+        displayOrder: 2,
+        status: 'PUBLISHED',
+      },
+      {
+        eventName: 'AWS Cloud Ignite',
+        year: 2026,
+        sessionName: 'Nilesh Vaghela & Dimple Vaghela (AWS Community Heroes)',
+        sessionImage: '/gallery/Poster1.png',
+        shortDescription:
+          'Flagship cloud computing awareness event organized by AWS Cloud Club Ganpat University with 600+ registrations, introducing students to cloud fundamentals and AWS ecosystem with hands-on EC2 & S3 console labs.',
+        eventDate: '2026-03-25',
+        location: 'Seminar Hall 209, New Building, Ganpat University, Mehsana',
+        archiveUrl: 'https://www.meetup.com/aws-sbg-at-ganpat-university/',
+        displayOrder: 3,
+        status: 'PUBLISHED',
+      },
+    ];
+
+    for (const ev of PAST_EVENTS) {
+      await client.query(
+        `INSERT INTO past_events (event_name, year, session_name, session_image, short_description, event_date, location, archive_url, display_order, status)
+         SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+         WHERE NOT EXISTS (SELECT 1 FROM past_events WHERE event_name = $1)`,
+        [
+          ev.eventName,
+          ev.year,
+          ev.sessionName,
+          ev.sessionImage,
+          ev.shortDescription,
+          ev.eventDate,
+          ev.location,
+          ev.archiveUrl,
+          ev.displayOrder,
+          ev.status,
+        ],
+      );
+    }
+
     // --- Dev users (CLEARLY FAKE — never real people) ----------------------
     await upsertUser(client, { email: 'superadmin@dev.local', roleName: 'SUPER_ADMIN' });
     await upsertUser(client, { email: 'admin@dev.local', roleName: 'ADMIN' });

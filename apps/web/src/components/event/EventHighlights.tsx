@@ -51,85 +51,104 @@ export function EventHighlights() {
   const active = HIGHLIGHTS.find((h) => h.id === activeId) || HIGHLIGHTS[0]!;
 
   return (
-    <section id="highlights" className="section" style={{ paddingTop: '36px', paddingBottom: '36px' }}>
+    <section id="highlights" className="section" style={{ paddingTop: '20px', paddingBottom: '36px' }}>
       <div className="container">
-        <div className="c" style={{ gap: '16px' }}>
-          <div>
-            <p className="mo">02 / Highlights</p>
-          </div>
-
-          <div className="r highlights-matrix" style={{ alignItems: 'stretch' }}>
-            {/* Left Central Card (Info Layer) */}
-            <div className="k" style={{ flex: '1.3 1 340px', minHeight: '180px', justifyContent: 'space-between', background: '#fff' }}>
-              <div>
-                <p className="d2">What&apos;s waiting for you?</p>
-                <p className="tx" style={{ marginTop: '4px', color: 'var(--muted)' }}>
-                  Six ways to spend the day. Pick one to see what it involves.
-                </p>
-              </div>
-
-              <div className="kd" style={{ background: 'var(--surface-muted)', marginTop: '12px' }}>
-                <div className="r" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                  <p className="lbl" style={{ color: 'var(--primary)', fontWeight: 700 }}>
-                    {active.title} — {active.tagline}
-                  </p>
-                  <span className="chip on" style={{ padding: '2px 8px', fontSize: '0.65rem' }}>Active</span>
-                </div>
-                <p className="tx" style={{ fontSize: '0.88rem', marginTop: '4px' }}>
-                  {active.detail}
-                </p>
-              </div>
+        <div className="r highlights-matrix" style={{ alignItems: 'stretch' }}>
+          {/* Left Central Card (Info Layer) */}
+          <div
+            className="k"
+            style={{
+              flex: '1.4 1 340px',
+              minHeight: '180px',
+              justifyContent: 'space-between',
+              background: '#fff',
+              border: '1.5px solid var(--primary, #232F3E)',
+              padding: '24px',
+              borderRadius: '4px',
+            }}
+          >
+            <div>
+              <h3 className="d2" style={{ fontSize: 'clamp(20px, 2.2vw, 26px)', fontWeight: 800, margin: '0 0 6px', color: 'var(--primary, #232F3E)' }}>
+                What&apos;s waiting for you?
+              </h3>
+              <p className="tx" style={{ color: 'var(--muted, #656d79)', fontSize: '0.95rem', margin: 0 }}>
+                Six ways to spend the day. Pick one to see what it involves.
+              </p>
             </div>
 
-            {/* Right Satellites (2 columns of 3) */}
-            <div className="c" style={{ flex: '1 1 280px', gap: '8px' }}>
-              <div className="r" style={{ gap: '8px' }}>
-                {HIGHLIGHTS.slice(0, 2).map((h) => (
-                  <button
-                    key={h.id}
-                    type="button"
-                    className={`highlights-satellite-btn ${activeId === h.id ? 'active' : ''}`}
-                    style={{ flex: 1 }}
-                    onClick={() => setActiveId(h.id)}
-                    onMouseEnter={() => setActiveId(h.id)}
-                  >
-                    <p className="d3" style={{ fontSize: '15px' }}>{h.title}</p>
-                    <p className="mo" style={{ fontSize: '0.65rem', marginTop: '2px', color: 'inherit' }}>Tap to view</p>
-                  </button>
-                ))}
+            <div
+              className="kd"
+              style={{
+                background: 'var(--surface-muted, #f8f6fc)',
+                border: '1.25px dashed var(--scd-border, #9a958c)',
+                padding: '16px 20px',
+                borderRadius: '4px',
+                marginTop: '16px',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <p className="lbl" style={{ color: 'var(--primary, #232F3E)', fontWeight: 700, fontSize: '1rem', margin: 0 }}>
+                  {active.title} — {active.tagline}
+                </p>
+                <span
+                  className="chip on"
+                  style={{
+                    background: 'var(--scd-accent, #FF9900)',
+                    color: '#14181F',
+                    fontWeight: 700,
+                    fontSize: '0.7rem',
+                    padding: '3px 8px',
+                    borderRadius: '999px',
+                  }}
+                >
+                  Active
+                </span>
               </div>
+              <p className="tx" style={{ fontSize: '0.9rem', lineHeight: 1.6, color: '#3d3a34', margin: 0 }}>
+                {active.detail}
+              </p>
+            </div>
+          </div>
 
-              <div className="r" style={{ gap: '8px' }}>
-                {HIGHLIGHTS.slice(2, 4).map((h) => (
-                  <button
-                    key={h.id}
-                    type="button"
-                    className={`highlights-satellite-btn ${activeId === h.id ? 'active' : ''}`}
-                    style={{ flex: 1 }}
-                    onClick={() => setActiveId(h.id)}
-                    onMouseEnter={() => setActiveId(h.id)}
-                  >
-                    <p className="d3" style={{ fontSize: '15px' }}>{h.title}</p>
-                    <p className="mo" style={{ fontSize: '0.65rem', marginTop: '2px', color: 'inherit' }}>Tap to view</p>
-                  </button>
-                ))}
-              </div>
+          {/* Right Satellites (2 columns of 3) */}
+          <div className="c" style={{ flex: '1 1 280px', gap: '10px' }}>
+            <div className="r" style={{ gap: '10px' }}>
+              {HIGHLIGHTS.slice(0, 2).map((h) => (
+                <button
+                  key={h.id}
+                  type="button"
+                  className={`highlights-satellite-btn ${activeId === h.id ? 'active' : ''}`}
+                  onClick={() => setActiveId(h.id)}
+                >
+                  <span className="d3" style={{ fontSize: '16px', fontWeight: 700 }}>{h.title}</span>
+                </button>
+              ))}
+            </div>
 
-              <div className="r" style={{ gap: '8px' }}>
-                {HIGHLIGHTS.slice(4, 6).map((h) => (
-                  <button
-                    key={h.id}
-                    type="button"
-                    className={`highlights-satellite-btn ${activeId === h.id ? 'active' : ''}`}
-                    style={{ flex: 1 }}
-                    onClick={() => setActiveId(h.id)}
-                    onMouseEnter={() => setActiveId(h.id)}
-                  >
-                    <p className="d3" style={{ fontSize: '15px' }}>{h.title}</p>
-                    <p className="mo" style={{ fontSize: '0.65rem', marginTop: '2px', color: 'inherit' }}>Tap to view</p>
-                  </button>
-                ))}
-              </div>
+            <div className="r" style={{ gap: '10px' }}>
+              {HIGHLIGHTS.slice(2, 4).map((h) => (
+                <button
+                  key={h.id}
+                  type="button"
+                  className={`highlights-satellite-btn ${activeId === h.id ? 'active' : ''}`}
+                  onClick={() => setActiveId(h.id)}
+                >
+                  <span className="d3" style={{ fontSize: '16px', fontWeight: 700 }}>{h.title}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="r" style={{ gap: '10px' }}>
+              {HIGHLIGHTS.slice(4, 6).map((h) => (
+                <button
+                  key={h.id}
+                  type="button"
+                  className={`highlights-satellite-btn ${activeId === h.id ? 'active' : ''}`}
+                  onClick={() => setActiveId(h.id)}
+                >
+                  <span className="d3" style={{ fontSize: '16px', fontWeight: 700 }}>{h.title}</span>
+                </button>
+              ))}
             </div>
           </div>
         </div>

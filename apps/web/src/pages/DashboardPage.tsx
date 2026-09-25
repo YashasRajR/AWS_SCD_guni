@@ -261,22 +261,22 @@ export function DashboardPage() {
               <div className="r" style={{ gap: '6px', flexWrap: 'wrap' }}>
                 <div className="kd" style={{ flex: 1, minWidth: '70px', padding: '6px 8px', background: completedCount >= 1 ? 'var(--scd-accent)' : undefined }}>
                   <p className="mo" style={{ fontSize: '10px', color: completedCount >= 1 ? '#fff' : 'var(--scd-muted)' }}>
-                    {completedCount >= 1 ? '✓ Check-in' : '1 Check-in'}
+                    {completedCount >= 1 ? 'Check-in (Done)' : '1 Check-in'}
                   </p>
                 </div>
                 <div className="kd" style={{ flex: 1, minWidth: '70px', padding: '6px 8px', background: completedCount >= 2 ? 'var(--scd-accent)' : undefined }}>
                   <p className="mo" style={{ fontSize: '10px', color: completedCount >= 2 ? '#fff' : 'var(--scd-muted)' }}>
-                    {completedCount >= 2 ? '✓ Keynote' : '2 Keynote'}
+                    {completedCount >= 2 ? 'Keynote (Done)' : '2 Keynote'}
                   </p>
                 </div>
                 <div className="kd" style={{ flex: 1, minWidth: '70px', padding: '6px 8px', background: completedCount >= 3 ? 'var(--scd-accent)' : undefined }}>
                   <p className="mo" style={{ fontSize: '10px', color: completedCount >= 3 ? '#fff' : 'var(--scd-muted)' }}>
-                    {completedCount >= 3 ? '✓ Workshop' : '3 Workshop'}
+                    {completedCount >= 3 ? 'Workshop (Done)' : '3 Workshop'}
                   </p>
                 </div>
                 <div className="kd" style={{ flex: 1, minWidth: '70px', padding: '6px 8px', background: completedCount >= 4 ? 'var(--scd-accent)' : undefined }}>
                   <p className="mo" style={{ fontSize: '10px', color: completedCount >= 4 ? '#fff' : 'var(--scd-muted)' }}>
-                    {completedCount >= 4 ? '✓ Closing' : '4 Closing'}
+                    {completedCount >= 4 ? 'Closing (Done)' : '4 Closing'}
                   </p>
                 </div>
               </div>

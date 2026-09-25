@@ -2,17 +2,17 @@ import { Link } from 'react-router-dom';
 
 const COMMUNITY_CARDS = [
   {
-    tag: 'Community 01',
+    tag: 'Builders',
     title: 'Student Builders',
     description: 'Connect with fellow student builders from campuses across Gujarat exchanging code, projects, and cloud architectures.',
   },
   {
-    tag: 'Community 02',
+    tag: 'Cloud Club',
     title: 'AWS Cloud Club GUNI',
     description: 'Collaborate with the official Ganpat University AWS student club, organize study jams, and prepare for AWS Certifications.',
   },
   {
-    tag: 'Community 03',
+    tag: 'Mentorship',
     title: 'Mentors & Industry',
     description: 'Direct access to AWS Heroes, Community Builders, and tech leads offering architectural reviews and career guidance.',
   },

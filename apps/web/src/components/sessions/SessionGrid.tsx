@@ -85,7 +85,7 @@ export function SessionGrid({ limit, filterable }: SessionGridProps) {
               <input
                 type="search"
                 className="session-search"
-                placeholder="⌕ Search sessions by title or speaker..."
+                placeholder="Search sessions by title or speaker..."
                 aria-label="Search sessions"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}

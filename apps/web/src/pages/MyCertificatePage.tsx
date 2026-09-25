@@ -168,7 +168,7 @@ export function MyCertificatePage() {
                   className="btn g"
                   style={{ minHeight: '44px', padding: '0 20px', cursor: 'pointer' }}
                 >
-                  Share to LinkedIn ↗
+                  Share to LinkedIn
                 </button>
               </div>
             </div>
