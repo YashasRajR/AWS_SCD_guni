@@ -32,8 +32,8 @@
     "db:migrate:status": "node database/scripts/migrate.mjs status",
     "db:seed": "node database/scripts/seed.mjs",
     "db:reset": "node database/scripts/migrate.mjs reset && node database/scripts/seed.mjs",
-    "start:web": "serve -s apps/web/dist -l $PORT",
-    "start:admin": "serve -s apps/admin/dist -l $PORT"
+    "start:web": "serve -s apps/web/dist -l ${PORT:-3000}",
+    "start:admin": "serve -s apps/admin/dist -l ${PORT:-3001}"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
