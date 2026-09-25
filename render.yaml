@@ -1,5 +1,5 @@
 services:
-  # Static Site: AWS Student Community Day Frontend (apps/web)
+  # Static Site: AWS Student Community Day Attendee Web App
   - type: web
     name: scd-web
     runtime: static
@@ -11,9 +11,9 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://scd-backend.onrender.com/api
+        value: https://scd-backend.onrender.com/api/v1
 
-  # Static Site: Admin Portal (apps/admin)
+  # Static Site: Admin Portal
   - type: web
     name: scd-admin
     runtime: static
@@ -25,7 +25,7 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://scd-backend.onrender.com/api
+        value: https://scd-backend.onrender.com/api/v1
 
   # Web Service: Backend API (Node.js / Express)
   - type: web
@@ -39,7 +39,20 @@ services:
         value: production
       - key: PORT
         value: 10000
-      - key: JWT_SECRET
+      - key: AUTH_SECRET
         generateValue: true
-      - key: CORS_ORIGIN
-        value: "*"
+      - key: PUBLIC_APP_URL
+        value: https://scd-web.onrender.com
+      - key: ADMIN_APP_URL
+        value: https://scd-admin.onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: scd-db
+          property: connectionString
+
+databases:
+  # Managed PostgreSQL Database for Backend
+  - name: scd-db
+    databaseName: scd
+    user: scd_user
+    plan: free
