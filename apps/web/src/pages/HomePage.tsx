@@ -50,7 +50,7 @@ export function HomePage() {
           <SectionEyebrow>Past Events</SectionEyebrow>
           <SectionTitle>Our previous editions &amp; meetups</SectionTitle>
         </SectionHeader>
-        <PastEventGrid limit={4} />
+        <PastEventGrid rotary speedSeconds={55} />
       </Section>
 
       <Section id="speakers">

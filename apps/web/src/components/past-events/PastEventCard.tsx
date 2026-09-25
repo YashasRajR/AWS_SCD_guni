@@ -3,10 +3,18 @@ import type { PastEvent } from '@scd/types';
 import { formatDate } from '../../lib/format.js';
 import { ExternalLinkIcon } from '../ui/Icon.js';
 
-export function PastEventCard({ event }: { event: PastEvent }) {
+export interface PastEventCardProps {
+  event: PastEvent;
+  style?: React.CSSProperties;
+  className?: string;
+  ariaHidden?: boolean;
+}
+
+export function PastEventCard({ event, style, className = '', ariaHidden }: PastEventCardProps) {
   return (
     <article
-      className="past-event-card k"
+      className={`past-event-card k ${className}`.trim()}
+      aria-hidden={ariaHidden}
       style={{
         padding: 0,
         background: 'var(--scd-surface)',
@@ -17,6 +25,7 @@ export function PastEventCard({ event }: { event: PastEvent }) {
         border: '1.25px solid var(--scd-border)',
         borderRadius: '8px',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
+        ...style,
       }}
     >
       {/* Top Banner / Poster */}
@@ -175,7 +184,12 @@ export function PastEventCard({ event }: { event: PastEvent }) {
             flexWrap: 'wrap',
           }}
         >
-          <Link to="/gallery" className="btn g" style={{ fontSize: '11px', padding: '6px 12px', textDecoration: 'none' }}>
+          <Link
+            to="/gallery"
+            tabIndex={ariaHidden ? -1 : undefined}
+            className="btn g"
+            style={{ fontSize: '11px', padding: '6px 12px', textDecoration: 'none' }}
+          >
             See photos →
           </Link>
           {event.archiveUrl && (
@@ -183,6 +197,7 @@ export function PastEventCard({ event }: { event: PastEvent }) {
               href={event.archiveUrl}
               target="_blank"
               rel="noreferrer"
+              tabIndex={ariaHidden ? -1 : undefined}
               className="btn o"
               style={{ fontSize: '11px', padding: '6px 12px', textDecoration: 'none' }}
             >

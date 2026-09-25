@@ -1,0 +1,88 @@
+.past-events-rotary-container {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.past-events-rotary-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  padding: 8px 0 20px;
+  box-sizing: border-box;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 28px,
+    black calc(100% - 28px),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 28px,
+    black calc(100% - 28px),
+    transparent 100%
+  );
+}
+
+.past-events-rotary-track {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: clamp(16px, 2vw, 24px);
+  width: max-content;
+  will-change: transform;
+  animation-name: past-events-rotary-scroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-duration: var(--past-events-rotary-speed, 55s);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .past-events-rotary-wrapper:hover .past-events-rotary-track {
+    animation-play-state: paused;
+  }
+}
+
+.past-events-rotary-wrapper:focus-within .past-events-rotary-track,
+.past-events-rotary-wrapper:active .past-events-rotary-track {
+  animation-play-state: paused;
+}
+
+.past-events-rotary-item {
+  width: clamp(310px, 26vw, 360px);
+  flex: 0 0 clamp(310px, 26vw, 360px);
+  display: flex;
+  flex-direction: column;
+}
+
+.past-events-rotary-item .past-event-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes past-events-rotary-scroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .past-events-rotary-track {
+    animation: none !important;
+  }
+  .past-events-rotary-wrapper {
+    overflow-x: auto;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}

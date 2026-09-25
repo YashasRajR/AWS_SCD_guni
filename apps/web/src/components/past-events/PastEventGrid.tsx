@@ -1,8 +1,10 @@
+import { useMemo } from 'react';
 import type { PastEvent } from '@scd/types';
 import { usePastEvents } from '../../lib/queries.js';
 import { PastEventCard } from './PastEventCard.js';
 import { SkeletonGrid } from '../ui/Skeleton.js';
 import { ErrorState } from '../ui/ErrorState.js';
+import './PastEventRotary.css';
 
 export const FALLBACK_PAST_EVENTS: PastEvent[] = [
   {
@@ -71,26 +73,102 @@ export const FALLBACK_PAST_EVENTS: PastEvent[] = [
   },
 ];
 
-export function PastEventGrid({ limit }: { limit?: number } = {}) {
+export interface PastEventGridProps {
+  limit?: number;
+  rotary?: boolean;
+  speedSeconds?: number;
+}
+
+export function PastEventGrid({ limit, rotary = true, speedSeconds = 55 }: PastEventGridProps = {}) {
   const { items, loading, error, reload } = usePastEvents();
+
+  const displayList = items.length > 0 ? items : FALLBACK_PAST_EVENTS;
+  const shown = limit ? displayList.slice(0, limit) : displayList;
+
+  // Prepare duplicate halves for a continuous, seamless rotary marquee loop
+  const { setA, setB } = useMemo(() => {
+    if (!shown || shown.length === 0) return { setA: [], setB: [] };
+
+    // Repeat enough times so that each half has at least 8 cards across wide displays
+    const minHalfCount = 8;
+    const repeatCount = Math.max(2, Math.ceil(minHalfCount / shown.length));
+
+    const halfItems: Array<{
+      event: PastEvent;
+      uniqueKey: string;
+      originalIndex: number;
+      isFirstInstance: boolean;
+    }> = [];
+
+    for (let r = 0; r < repeatCount; r++) {
+      shown.forEach((ev, idx) => {
+        halfItems.push({
+          event: ev,
+          uniqueKey: `${ev.id}-r${r}-i${idx}`,
+          originalIndex: idx,
+          isFirstInstance: r === 0,
+        });
+      });
+    }
+
+    // Set A (first instance accessible, repeated instances aria-hidden for a11y)
+    const setA = halfItems.map((item) => ({
+      ...item,
+      ariaHidden: !item.isFirstInstance,
+    }));
+
+    // Set B (duplicate half to complete the infinite 0% -> -50% CSS translation loop)
+    const setB = halfItems.map((item) => ({
+      ...item,
+      uniqueKey: `${item.uniqueKey}-clone`,
+      ariaHidden: true,
+    }));
+
+    return { setA, setB };
+  }, [shown]);
 
   if (loading) return <SkeletonGrid count={limit ?? 4} />;
   if (error && items.length === 0) return <ErrorState onRetry={reload} />;
 
-  const displayList = items.length > 0 ? items : FALLBACK_PAST_EVENTS;
-  const sliced = limit ? displayList.slice(0, limit) : displayList;
+  if (!rotary) {
+    return (
+      <div
+        className="card-grid"
+        style={{
+          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+          gap: 'var(--space-5, 20px)',
+        }}
+      >
+        {shown.map((event) => (
+          <PastEventCard key={event.id} event={event} />
+        ))}
+      </div>
+    );
+  }
 
   return (
-    <div
-      className="card-grid"
-      style={{
-        gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-        gap: 'var(--space-5, 20px)',
-      }}
-    >
-      {sliced.map((event) => (
-        <PastEventCard key={event.id} event={event} />
-      ))}
+    <div className="past-events-rotary-container" style={{ width: '100%' }}>
+      <div className="past-events-rotary-wrapper">
+        <div
+          className="past-events-rotary-track"
+          style={{
+            ['--past-events-rotary-speed' as string]: `${speedSeconds}s`,
+            animationDuration: `${speedSeconds}s`,
+          }}
+        >
+          {setA.map(({ event, uniqueKey, ariaHidden }) => (
+            <div key={uniqueKey} className="past-events-rotary-item">
+              <PastEventCard event={event} ariaHidden={ariaHidden} />
+            </div>
+          ))}
+
+          {setB.map(({ event, uniqueKey, ariaHidden }) => (
+            <div key={uniqueKey} className="past-events-rotary-item">
+              <PastEventCard event={event} ariaHidden={ariaHidden} />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
