@@ -10,11 +10,11 @@
     "build": "tsup src/index.ts --format esm --dts --out-dir dist --external react",
     "typecheck": "tsc --noEmit"
   },
-  "peerDependencies": {
+  "dependencies": {
+    "@types/react": "^18.3.12",
     "react": "^18.3.1"
   },
   "devDependencies": {
-    "@types/react": "^18.3.12",
     "tsup": "^8.3.5",
     "typescript": "^5.6.3"
   }
