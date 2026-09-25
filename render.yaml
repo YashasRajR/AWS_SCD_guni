@@ -33,12 +33,14 @@ services:
     runtime: node
     plan: free
     buildCommand: npm install && npm run build
-    startCommand: npm run start --workspace=backend
+    startCommand: npm run db:migrate && npm run start --workspace=backend
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
+      - key: DATABASE_SSL
+        value: "true"
       - key: AUTH_SECRET
         generateValue: true
       - key: PUBLIC_APP_URL

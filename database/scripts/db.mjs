@@ -14,8 +14,12 @@ export function createPool() {
       'DATABASE_URL is not set. Copy .env.example to .env and configure it before running database scripts.',
     );
   }
+  const useSsl =
+    process.env.DATABASE_SSL === 'true' ||
+    process.env.NODE_ENV === 'production' ||
+    (connectionString && (connectionString.includes('sslmode=require') || connectionString.includes('render.com')));
   return new Pool({
     connectionString,
-    ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+    ssl: useSsl ? { rejectUnauthorized: false } : undefined,
   });
 }
