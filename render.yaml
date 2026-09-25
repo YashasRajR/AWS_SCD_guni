@@ -1,8 +1,7 @@
 services:
   # Static Site: AWS Student Community Day Attendee Web App
-  - type: web
+  - type: static
     name: scd-web
-    runtime: static
     buildCommand: npm install && npm run build --workspace=@scd/app-web
     staticPublishPath: ./apps/web/dist
     routes:
@@ -14,9 +13,8 @@ services:
         value: https://scd-backend.onrender.com/api/v1
 
   # Static Site: Admin Portal
-  - type: web
+  - type: static
     name: scd-admin
-    runtime: static
     buildCommand: npm install && npm run build --workspace=@scd/app-admin
     staticPublishPath: ./apps/admin/dist
     routes:

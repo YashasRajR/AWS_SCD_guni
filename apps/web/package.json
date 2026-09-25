@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --port 5173",
     "build": "tsc --noEmit && vite build",
+    "start": "serve -s dist -l $PORT",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview --port 5173",
     "test": "vitest run"

@@ -31,12 +31,15 @@
     "db:migrate:down": "node database/scripts/migrate.mjs down",
     "db:migrate:status": "node database/scripts/migrate.mjs status",
     "db:seed": "node database/scripts/seed.mjs",
-    "db:reset": "node database/scripts/migrate.mjs reset && node database/scripts/seed.mjs"
+    "db:reset": "node database/scripts/migrate.mjs reset && node database/scripts/seed.mjs",
+    "start:web": "serve -s apps/web/dist -l $PORT",
+    "start:admin": "serve -s apps/admin/dist -l $PORT"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.5",
     "pg": "^8.13.1",
+    "serve": "^14.2.4",
     "tsup": "^8.3.5",
     "typescript": "^5.6.3"
   },
