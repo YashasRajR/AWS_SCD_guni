@@ -242,6 +242,118 @@ async function main() {
       );
     }
 
+    // --- Gallery items (Real Event & Workshop Photos) -------------------
+    const GALLERY_ITEMS = [
+      {
+        imageUrl: '/gallery/workshop1.png',
+        caption: 'Cloud Practitioner Essentials Workshop',
+        altText: 'Students coding and working in the cloud laboratory',
+        category: 'WORKSHOP',
+        eventYear: 2026,
+        displayOrder: 1,
+        status: 'PUBLISHED',
+      },
+      {
+        imageUrl: '/gallery/day2_nirmal_1.png',
+        caption: 'Keynote Address by Nirmal Pathak Sir',
+        altText: 'Nirmal Pathak Sir presenting on main stage',
+        category: 'KEYNOTE',
+        eventYear: 2026,
+        displayOrder: 2,
+        status: 'PUBLISHED',
+      },
+      {
+        imageUrl: '/gallery/community1.jpeg',
+        caption: 'AWS Cloud Ignite Community Gathering',
+        altText: 'Full auditorium community group photo with AWS Family banner',
+        category: 'COMMUNITY',
+        eventYear: 2026,
+        displayOrder: 3,
+        status: 'PUBLISHED',
+      },
+      {
+        imageUrl: '/gallery/speaker1.png',
+        caption: 'Cloud Computing Insights by Nilesh Vaghela Sir',
+        altText: 'Nilesh Vaghela Sir speaking about cloud architectures',
+        category: 'SPEAKER',
+        eventYear: 2026,
+        displayOrder: 4,
+        status: 'PUBLISHED',
+      },
+      {
+        imageUrl: '/gallery/day2_manthan_1.png',
+        caption: 'Mastering AWS Cloud Innovation with Manthan Sir',
+        altText: 'Technical session with Manthan Sir on stage',
+        category: 'SPEAKER',
+        eventYear: 2026,
+        displayOrder: 5,
+        status: 'PUBLISHED',
+      },
+      {
+        imageUrl: '/gallery/day2_group_1.png',
+        caption: 'Student Community Circle - Concepts to Career',
+        altText: 'Student leaders and attendees collaborating in interactive session',
+        category: 'STUDENT_CIRCLE',
+        eventYear: 2026,
+        displayOrder: 6,
+        status: 'PUBLISHED',
+      },
+      {
+        imageUrl: '/gallery/workshop2.png',
+        caption: 'Hands-on EC2 & S3 Sandbox Labs',
+        altText: 'Deep dive live coding and architectural workshop',
+        category: 'WORKSHOP',
+        eventYear: 2026,
+        displayOrder: 7,
+        status: 'PUBLISHED',
+      },
+      {
+        imageUrl: '/gallery/speaker2.png',
+        caption: 'Keynote Session by Mr. Ashwin Raiyani',
+        altText: 'Gen AI on AWS with Mr. Ashwin Raiyani',
+        category: 'SPEAKER',
+        eventYear: 2026,
+        displayOrder: 8,
+        status: 'PUBLISHED',
+      },
+      {
+        imageUrl: '/gallery/community2.png',
+        caption: 'AWS Student Builders Group Collaboration',
+        altText: 'Students and mentors interacting and celebrating milestones',
+        category: 'COMMUNITY',
+        eventYear: 2026,
+        displayOrder: 9,
+        status: 'PUBLISHED',
+      },
+      {
+        imageUrl: '/gallery/day2_nirmal_2.png',
+        caption: 'Cloud Builder Q&A with Nirmal Pathak Sir',
+        altText: 'Interactive Q&A panel with students asking cloud questions',
+        category: 'PANEL',
+        eventYear: 2026,
+        displayOrder: 10,
+        status: 'PUBLISHED',
+      },
+      {
+        imageUrl: '/gallery/day2_group_2.png',
+        caption: 'Campus Builder Network Meetup',
+        altText: 'Group photo of AWS student builders community',
+        category: 'COMMUNITY',
+        eventYear: 2026,
+        displayOrder: 11,
+        status: 'PUBLISHED',
+      },
+    ];
+
+    for (const item of GALLERY_ITEMS) {
+      await client.query(
+        `INSERT INTO gallery_items (image_url, caption, alt_text, category, event_year, display_order, status)
+         SELECT $1, $2, $3, $4, $5, $6, $7
+         WHERE NOT EXISTS (SELECT 1 FROM gallery_items WHERE image_url = $1)`,
+        [item.imageUrl, item.caption, item.altText, item.category, item.eventYear, item.displayOrder, item.status],
+      );
+    }
+
     // --- Dev users (CLEARLY FAKE — never real people) ----------------------
     await upsertUser(client, { email: 'superadmin@dev.local', roleName: 'SUPER_ADMIN' });
     await upsertUser(client, { email: 'admin@dev.local', roleName: 'ADMIN' });

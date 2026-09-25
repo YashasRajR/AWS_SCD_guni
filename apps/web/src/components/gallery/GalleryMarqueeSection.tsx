@@ -152,32 +152,26 @@ export function GalleryMarqueeSection({
   const { items: apiItems } = useGallery();
   const [selectedPhoto, setSelectedPhoto] = useState<FilmPhoto | null>(null);
 
-  // Combine real gallery photos with any dynamic items from API
+  // Use dynamic items from the Admin Portal API when available, fallback to real gallery photos
   const allPhotos = useMemo<FilmPhoto[]>(() => {
-    if (apiItems.length === 0) return REAL_GALLERY_PHOTOS;
+    if (apiItems && apiItems.length > 0) {
+      return apiItems.map((item, idx) => {
+        const num = (item.displayOrder || idx + 1).toString().padStart(2, '0');
+        const nextNum = (item.displayOrder ? item.displayOrder + 1 : idx + 2).toString().padStart(2, '0');
+        return {
+          id: item.id,
+          title: item.caption ?? item.altText ?? 'Community Moment',
+          image: item.imageUrl,
+          category: (item.category ?? 'EVENT').toUpperCase(),
+          date: item.eventYear ? `${item.eventYear}` : '2026',
+          locationTag: (item.category ?? 'COMMUNITY').toUpperCase().replace(/\s+/g, '_'),
+          frameNum: num,
+          nextNum: nextNum,
+        };
+      });
+    }
 
-    const dynamicPhotos: FilmPhoto[] = apiItems.map((item, idx) => {
-      const num = (idx + 1).toString().padStart(2, '0');
-      const nextNum = (idx + 2).toString().padStart(2, '0');
-      return {
-        id: item.id,
-        title: item.caption ?? item.altText ?? 'Community Moment',
-        image: item.imageUrl,
-        category: (item.category ?? 'EVENT').toUpperCase(),
-        date: item.eventYear ? `${item.eventYear}` : '2026',
-        locationTag: (item.category ?? 'COMMUNITY').toUpperCase().replace(/\s+/g, '_'),
-        frameNum: num,
-        nextNum: nextNum,
-      };
-    });
-
-    const combined = [...REAL_GALLERY_PHOTOS, ...dynamicPhotos];
-    const seen = new Set<string>();
-    return combined.filter((p) => {
-      if (seen.has(p.image)) return false;
-      seen.add(p.image);
-      return true;
-    });
+    return REAL_GALLERY_PHOTOS;
   }, [apiItems]);
 
   // Two identical halves for continuous 35mm film rotary loop
