@@ -293,80 +293,20 @@ export function GalleryMarqueeSection({
         />
       </div>
 
-      {/* Editorial Header */}
+      {/* Clean Header */}
       {!hideHeader && (
         <div className="filmstrip-header-container">
-          <div className="filmstrip-header-layout">
-            {/* Left Technical Accent Column */}
-            <div className="filmstrip-left-rail">
-              <span className="filmstrip-plus">+</span>
-              <p className="filmstrip-rail-text">
-                BUILDERS<br />
-                LEARNERS<br />
-                CREATORS<br />
-                COMMUNITY
-              </p>
-              <span className="filmstrip-rail-dash" />
+          <div className="filmstrip-header-clean">
+            <div className="filmstrip-badge">
+              <span className="filmstrip-badge-icon">//</span>
+              <span className="filmstrip-badge-text">GALLERY</span>
             </div>
-
-            {/* Center Column: Badge + Title + Sketch Note */}
-            <div className="filmstrip-center-col">
-              <div className="filmstrip-badge">
-                <span className="filmstrip-badge-icon">//</span>
-                <span className="filmstrip-badge-text">GALLERY</span>
-              </div>
-
-              <div className="filmstrip-title-row-wrapper">
-                <h2 className="filmstrip-hero-title">
-                  <span className="filmstrip-title-row1">MOMENTS FROM</span>
-                  <span className="filmstrip-title-row2">
-                    OUR <span className="filmstrip-title-orange">COMMUNITY</span>
-                  </span>
-                </h2>
-
-                <div className="filmstrip-sketch-note">
-                  <svg
-                    className="filmstrip-arrow-svg"
-                    viewBox="0 0 36 28"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M4 14C12 6 24 5 32 18M32 18L24 16M32 18L29 9" />
-                  </svg>
-                  <div className="filmstrip-sketch-bracket">
-                    <div className="filmstrip-sketch-inner">
-                      IDEAS<br />
-                      PEOPLE<br />
-                      BUILD<br />
-                      TOGETHER
-                    </div>
-                    <div className="filmstrip-sketch-orange-dash" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column: Technical Metadata Block & Venn Widget */}
-            <div className="filmstrip-right-col">
-              <div className="filmstrip-meta-box">
-                <span className="filmstrip-tag-pill">[ AWS / COMMUNITY / SCD 2026 ]</span>
-                <p className="filmstrip-desc">
-                  Snapshots of ideas, energy and connections from our AWS community events,
-                  workshops, hackathons and beyond.
-                </p>
-                <span className="filmstrip-meta-orange-dash" />
-              </div>
-
-              <div className="filmstrip-venn-widget">
-                <div className="filmstrip-venn-circles">
-                  <span className="filmstrip-venn-circle filmstrip-venn-c1" />
-                  <span className="filmstrip-venn-circle filmstrip-venn-c2" />
-                </div>
-                <div className="filmstrip-venn-text">
-                  SAME<br />PEOPLE<br />BRIGHTER<br />IDEAS
-                </div>
-                <span className="filmstrip-venn-orange-dash" />
-              </div>
-            </div>
+            <h2 className="filmstrip-hero-title">
+              <span className="filmstrip-title-row1">MOMENTS FROM </span>
+              <span className="filmstrip-title-row2">
+                OUR <span className="filmstrip-title-orange">COMMUNITY</span>
+              </span>
+            </h2>
           </div>
         </div>
       )}
@@ -376,37 +316,6 @@ export function GalleryMarqueeSection({
         <div className="filmstrip-reel-track">
           {setA.map((photo) => renderFrame(photo, photo.uniqueKey, false))}
           {setB.map((photo) => renderFrame(photo, photo.uniqueKey, true))}
-        </div>
-      </div>
-
-      {/* Bottom Editorial Accents */}
-      <div className="filmstrip-footer-container">
-        <div className="filmstrip-footer-layout">
-          <div className="filmstrip-footer-left">
-            <span className="filmstrip-footer-brand">AWS GUNI SCD 2026 —</span>
-            <span className="filmstrip-footer-sub">A STRONGER BUILDER COMMUNITY. TOGETHER.</span>
-            <span className="filmstrip-footer-orange-bar" />
-          </div>
-
-          <div className="filmstrip-footer-center">
-            <span className="filmstrip-plus">+</span>
-            <span className="filmstrip-footer-dash" />
-            <span>MORE MOMENTS AHEAD</span>
-            <span className="filmstrip-footer-dash" />
-            <span className="filmstrip-plus">+</span>
-          </div>
-
-          <div className="filmstrip-footer-right">
-            <div className="filmstrip-footer-tree">
-              <span className="filmstrip-footer-bracket">[</span>
-              <div className="filmstrip-footer-items">
-                PEOPLE<br />
-                PROGRESS<br />
-                POSSIBILITIES
-              </div>
-            </div>
-            <span className="filmstrip-footer-orange-bar" />
-          </div>
         </div>
       </div>
 

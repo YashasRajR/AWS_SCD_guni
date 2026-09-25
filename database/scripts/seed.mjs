@@ -352,6 +352,12 @@ async function main() {
          WHERE NOT EXISTS (SELECT 1 FROM gallery_items WHERE image_url = $1)`,
         [item.imageUrl, item.caption, item.altText, item.category, item.eventYear, item.displayOrder, item.status],
       );
+      await client.query(
+        `UPDATE gallery_items
+         SET caption = $2, alt_text = $3, category = $4, event_year = $5, display_order = $6, status = $7
+         WHERE image_url = $1 AND (caption IS NULL OR caption = '' OR display_order = 0)`,
+        [item.imageUrl, item.caption, item.altText, item.category, item.eventYear, item.displayOrder, item.status],
+      );
     }
 
     // --- Dev users (CLEARLY FAKE — never real people) ----------------------
