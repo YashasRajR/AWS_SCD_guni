@@ -44,16 +44,6 @@ export const TEAM_MEMBERS: TeamMember[] = [
     team: 'Leadership',
     badgeVariant: 'accent',
   },
-  {
-    id: 'aric-pandya',
-    name: 'Aric Pandya',
-    role: 'Advisor',
-    tagline: 'Guiding student cloud builders through advanced architectural principles and cloud roadmaps',
-    photo: '/gallery/Aric.png',
-    linkedin: 'https://linkedin.com/in/aricpandya',
-    team: 'Advisor',
-    badgeVariant: 'accent',
-  },
 
   // Developer Team
   {

@@ -124,16 +124,6 @@ const REAL_GALLERY_PHOTOS: FilmPhoto[] = [
     date: 'July 2026',
     locationTag: 'ACADEMY',
     frameNum: '11',
-    nextNum: '12',
-  },
-  {
-    id: 'g12',
-    title: 'AWS Community Builder Session',
-    image: '/gallery/Aric.png',
-    category: 'COMMUNITY',
-    date: 'March 2026',
-    locationTag: 'CONNECT_LOUNGE',
-    frameNum: '12',
     nextNum: '01',
   },
 ];
