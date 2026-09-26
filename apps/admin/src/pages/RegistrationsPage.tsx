@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { Registration } from '@scd/types';
 import { usePaginatedResource, useDebouncedSearch } from '../lib/hooks.js';
-import { apiClient } from '../lib/api.js';
+import { apiClient, resolveApiBaseUrl } from '../lib/api.js';
 import { ApiClientError } from '@scd/api-client';
 import { formatDateTime } from '../lib/format.js';
 import { Table, type Column } from '../components/Table.js';
@@ -13,7 +13,7 @@ import { getStoredToken } from '../lib/auth-storage.js';
 const STATUSES = ['PENDING', 'CONFIRMED', 'WAITLISTED', 'CANCELLED', 'REJECTED'];
 
 async function downloadRegistrationsCsv(): Promise<void> {
-  const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api/v1';
+  const baseUrl = resolveApiBaseUrl();
   const res = await fetch(`${baseUrl.replace(/\/$/, '')}/admin/registrations/export`, {
     headers: { Authorization: `Bearer ${getStoredToken() ?? ''}` },
   });

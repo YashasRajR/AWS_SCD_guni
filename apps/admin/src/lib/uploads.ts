@@ -1,10 +1,11 @@
 import { getStoredToken } from './auth-storage.js';
+import { resolveApiBaseUrl } from './api.js';
 
 /** Multipart upload needs its own fetch — apiClient (@scd/api-client) only
  * sends/parses JSON — same reasoning as the PDF-download helpers using
  * fetch directly for the one non-JSON case. */
 export async function uploadImage(file: File): Promise<string> {
-  const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api/v1';
+  const baseUrl = resolveApiBaseUrl();
   const formData = new FormData();
   formData.append('file', file);
   const res = await fetch(`${baseUrl.replace(/\/$/, '')}/admin/uploads`, {

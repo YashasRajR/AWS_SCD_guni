@@ -2,11 +2,11 @@ import { useRef, useState } from 'react';
 import type { SchedulePdfStatus } from '@scd/types';
 import { describeApiError } from '@scd/api-client';
 import { useResource } from '../lib/hooks.js';
-import { apiClient } from '../lib/api.js';
+import { apiClient, resolveApiBaseUrl } from '../lib/api.js';
 import { getStoredToken } from '../lib/auth-storage.js';
 import { formatDateTime } from '../lib/format.js';
 
-const baseUrl = () => (import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api/v1').replace(/\/$/, '');
+const baseUrl = () => (resolveApiBaseUrl()).replace(/\/$/, '');
 
 async function downloadAdminPdf(): Promise<void> {
   const res = await fetch(`${baseUrl()}/admin/schedule-pdf/pdf`, {

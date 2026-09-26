@@ -14,7 +14,7 @@ import {
  * stored session so a 401 (expired/garbage token) drops the app back to
  * the login screen on the next render rather than looping failed requests.
  */
-function resolveApiBaseUrl(): string {
+export function resolveApiBaseUrl(): string {
   if (typeof window !== 'undefined') {
     try {
       // 1. Query parameter override: ?api=https://... or ?backend=https://...

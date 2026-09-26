@@ -1,8 +1,9 @@
 import { getStoredToken } from './auth-storage.js';
+import { resolveApiBaseUrl } from './api.js';
 
 /** Authenticated download of a non-JSON admin endpoint (CSV/PDF export) as a browser file save. */
 export async function downloadFile(path: string, filename: string): Promise<void> {
-  const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api/v1';
+  const baseUrl = resolveApiBaseUrl();
   const res = await fetch(`${baseUrl.replace(/\/$/, '')}${path}`, {
     headers: { Authorization: `Bearer ${getStoredToken() ?? ''}` },
   });

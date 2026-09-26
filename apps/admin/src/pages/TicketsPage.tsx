@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { QrToken, QrTokenType, Ticket } from '@scd/types';
 import { describeApiError } from '@scd/api-client';
 import { usePaginatedResource, useResource } from '../lib/hooks.js';
-import { apiClient } from '../lib/api.js';
+import { apiClient, resolveApiBaseUrl } from '../lib/api.js';
 import { getStoredToken } from '../lib/auth-storage.js';
 import { formatDateTime } from '../lib/format.js';
 import { Table, type Column } from '../components/Table.js';
@@ -30,7 +30,7 @@ async function downloadVersionPdf(
   path: string,
   filename: string,
 ): Promise<void> {
-  const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api/v1';
+  const baseUrl = resolveApiBaseUrl();
   const res = await fetch(`${baseUrl.replace(/\/$/, '')}${path}`, {
     headers: { Authorization: `Bearer ${getStoredToken() ?? ''}` },
   });
@@ -93,7 +93,7 @@ function TicketHistoryModal({ ticket, onClose }: { ticket: Ticket; onClose: () =
 /** The PDF endpoint returns a raw application/pdf body (not the JSON
  * envelope), so it needs its own authenticated fetch rather than apiClient. */
 async function downloadTicketPdf(ticketId: string, ticketNumber: string): Promise<void> {
-  const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api/v1';
+  const baseUrl = resolveApiBaseUrl();
   const res = await fetch(`${baseUrl.replace(/\/$/, '')}/admin/tickets/${ticketId}/pdf`, {
     headers: { Authorization: `Bearer ${getStoredToken() ?? ''}` },
   });
