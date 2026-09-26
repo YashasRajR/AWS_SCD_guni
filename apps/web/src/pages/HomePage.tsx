@@ -39,7 +39,6 @@ export function HomePage() {
 
       <Section id="tickets">
         <SectionHeader>
-          <SectionEyebrow>Pricing</SectionEyebrow>
           <SectionTitle>Ticket plans</SectionTitle>
         </SectionHeader>
         <PricingGrid />
@@ -56,7 +55,6 @@ export function HomePage() {
             </Link>
           }
         >
-          <SectionEyebrow>Past Events</SectionEyebrow>
           <SectionTitle>Our previous editions &amp; meetups</SectionTitle>
         </SectionHeader>
         <PastEventGrid rotary speedSeconds={55} />
@@ -70,7 +68,6 @@ export function HomePage() {
             </Link>
           }
         >
-          <SectionEyebrow>Speakers</SectionEyebrow>
           <SectionTitle>Meet who&apos;s taking the stage</SectionTitle>
         </SectionHeader>
         <SpeakerGrid limit={TEASER_LIMIT} fallback />
@@ -84,7 +81,6 @@ export function HomePage() {
             </Link>
           }
         >
-          <SectionEyebrow>Sessions</SectionEyebrow>
           <SectionTitle>Talks, workshops, and panels</SectionTitle>
         </SectionHeader>
         <SessionGrid limit={TEASER_LIMIT} />
@@ -98,7 +94,6 @@ export function HomePage() {
             </Link>
           }
         >
-          <SectionEyebrow>Agenda</SectionEyebrow>
           <SectionTitle>How the day runs</SectionTitle>
         </SectionHeader>
         <AgendaList limit={5} />
@@ -140,7 +135,6 @@ export function HomePage() {
 
       <Section id="pricing">
         <SectionHeader>
-          <SectionEyebrow>Pricing</SectionEyebrow>
           <SectionTitle>Ticket plans</SectionTitle>
         </SectionHeader>
         <PricingGrid />
