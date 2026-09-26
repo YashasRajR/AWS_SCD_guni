@@ -59,7 +59,7 @@ export function PlanCard({ plan, onClick, disabled, cta, phase = 'PHASE 01' }: P
       : `${plan.currency} ${plan.price}`;
 
   return (
-    <div className="lanyard-ticket-wrapper">
+    <div className="lanyard-ticket-wrapper" data-reveal>
       {/* Top Lanyard Strap & Silver Hardware */}
       <div className="lanyard-hanger" aria-hidden="true">
         <div className="lanyard-strap">

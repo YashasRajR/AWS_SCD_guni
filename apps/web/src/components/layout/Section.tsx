@@ -31,13 +31,13 @@ interface SectionHeaderProps {
 export function SectionHeader({ center, action, children }: SectionHeaderProps) {
   if (action) {
     return (
-      <div className="section-header-row">
+      <div className="section-header-row" data-reveal>
         <div>{children}</div>
         {action}
       </div>
     );
   }
-  return <div className={center ? 'section-header section-header-center' : 'section-header'}>{children}</div>;
+  return <div className={center ? 'section-header section-header-center' : 'section-header'} data-reveal>{children}</div>;
 }
 
 export function SectionEyebrow({ children }: { children?: ReactNode }) {

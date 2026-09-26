@@ -35,6 +35,7 @@ export function SessionCard({ session, onOpen }: { session: Session; onOpen: () 
   return (
     <article
       className="k session-card card-clickable"
+      data-reveal
       onClick={onOpen}
       role="button"
       tabIndex={0}

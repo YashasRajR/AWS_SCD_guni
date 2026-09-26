@@ -68,6 +68,7 @@ export function AgendaItem({ item, session, venue, compact = false }: AgendaItem
   return (
     <div
       className={`k ${isNow ? 'agenda-row-now' : ''}`}
+      data-reveal
       style={{
         padding: '10px 12px',
         borderTop: isNow ? '2.5px solid var(--scd-accent)' : undefined,

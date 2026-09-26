@@ -380,7 +380,7 @@ export function TeamSection() {
         aria-label="Team members row"
       >
         {TEAM_MEMBERS.map((member) => (
-          <article key={member.id} className="team-member-card k">
+          <article key={member.id} className="team-member-card k" data-reveal>
             {/* Portrait Image */}
             <div className="team-member-photo-wrap">
               <img

@@ -23,7 +23,7 @@ export function AccordionItem({ title, isOpen, onToggle, children }: AccordionIt
   const panelId = `accordion-panel-${reactId}`;
 
   return (
-    <div className="accordion-item">
+    <div className="accordion-item" data-reveal>
       <h3 style={{ margin: 0 }}>
         <button
           type="button"

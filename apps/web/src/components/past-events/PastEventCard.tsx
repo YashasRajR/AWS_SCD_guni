@@ -15,6 +15,7 @@ export function PastEventCard({ event, style, className = '', ariaHidden }: Past
     <article
       className={`past-event-card k ${className}`.trim()}
       aria-hidden={ariaHidden}
+      data-reveal
       style={{
         padding: 0,
         background: 'var(--scd-surface)',

@@ -3028,6 +3028,13 @@ img.speaker-photo {
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard), border-color var(--duration-fast) var(--ease-standard);
+}
+
+.past-event-card:hover {
+  transform: translateY(-5px) scale(1.015);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
 }
 
 .past-event-image {

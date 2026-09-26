@@ -13,7 +13,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 export function TimelineItem({ item }: { item: TimelineItemType }) {
   return (
-    <li className="timeline-item">
+    <li className="timeline-item" data-reveal>
       <span className="timeline-item-marker" aria-hidden="true" />
       <div className="timeline-item-body">
         <div className="timeline-item-head">

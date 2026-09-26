@@ -18,6 +18,7 @@ export function SpeakerCard({
   return (
     <article
       className={`speaker-card k ${isSelected ? 'speaker-card-selected' : ''}`}
+      data-reveal
       onClick={onSelect}
       style={{
         cursor: onSelect ? 'pointer' : undefined,

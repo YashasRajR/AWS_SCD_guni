@@ -12,7 +12,7 @@ export function VenueCard({ venue }: { venue: Venue }) {
   };
 
   return (
-    <div className="venue-card k" style={{ padding: '16px', gap: '10px', background: 'var(--scd-surface)' }}>
+    <div className="venue-card k" data-reveal style={{ padding: '16px', gap: '10px', background: 'var(--scd-surface)' }}>
       <div className="r" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <h3 className="d3" style={{ margin: 0 }}>{venue.name}</h3>
         {venue.capacity !== null && (

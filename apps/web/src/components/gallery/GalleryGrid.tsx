@@ -238,6 +238,7 @@ export function GalleryGrid() {
             <button
               type="button"
               key={item.id}
+              data-reveal
               onClick={(e) => {
                 lastTriggerRef.current = e.currentTarget;
                 setSelectedIndex(index);
