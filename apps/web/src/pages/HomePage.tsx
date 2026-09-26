@@ -22,8 +22,9 @@ const TEASER_LIMIT = 4;
 
 /**
  * The primary public page. Order follows the spec: Hero → Event
- * Info → About → Highlights → Past Events → Speakers → Sessions → Agenda → Timeline →
- * Venue → Community → Pricing → FAQ → Registration CTA → Footer.
+ * Info → Pricing → About → Highlights → Past Events → Speakers → Sessions →
+ * Agenda → Timeline → Venue → Community → Gallery → Team → FAQ →
+ * Registration CTA → Footer.
  */
 export function HomePage() {
   useDocumentHead({
@@ -36,6 +37,13 @@ export function HomePage() {
     <div>
       <EventHero />
       <EventInfo />
+
+      <Section id="pricing">
+        <SectionHeader>
+          <SectionTitle>Ticket plans</SectionTitle>
+        </SectionHeader>
+        <PricingGrid />
+      </Section>
 
       <AboutEvent />
       <EventHighlights />
@@ -123,13 +131,6 @@ export function HomePage() {
       <GalleryMarqueeSection id="gallery" />
 
       <TeamSection />
-
-      <Section id="pricing">
-        <SectionHeader>
-          <SectionTitle>Ticket plans</SectionTitle>
-        </SectionHeader>
-        <PricingGrid />
-      </Section>
 
       <Section id="faq" muted>
         <SectionHeader
