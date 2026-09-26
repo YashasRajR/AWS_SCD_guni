@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../lib/auth.js';
 import { useEvent } from '../../lib/queries.js';
 import { formatDate } from '../../lib/format.js';
 import { CountdownTimer } from './CountdownTimer.js';
@@ -8,7 +7,6 @@ import { ShapeGrid } from '../ui/ShapeGrid.js';
 
 export function EventHero() {
   const { data: event, loading: eventLoading, notFound } = useEvent();
-  const { status } = useAuth();
 
   const heroStyle = event?.heroBackgroundImage
     ? {
@@ -85,10 +83,6 @@ export function EventHero() {
                   <a href={event.primaryCtaUrl} className="btn o hero-cta-pulse">
                     {event.primaryCtaLabel || 'Register Now →'}
                   </a>
-                ) : status === 'signed-in' ? (
-                  <Link to="/dashboard" className="btn o hero-cta-pulse">
-                    Go to my dashboard →
-                  </Link>
                 ) : (
                   <Link to="/register" className="btn o hero-cta-pulse">
                     Register Now →

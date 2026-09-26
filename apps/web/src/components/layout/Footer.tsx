@@ -182,11 +182,6 @@ export const Footer: React.FC = () => {
                   Register Now &rarr;
                 </Link>
               </li>
-              <li>
-                <Link to="/login" className="sbg-footer-nav-link">
-                  Attendee Login
-                </Link>
-              </li>
             </ul>
           </div>
 

@@ -692,14 +692,13 @@ export function RegisterPage() {
                 </div>
 
                 <div className="r" style={{ gap: '12px' }}>
-                  <button
-                    type="button"
-                    onClick={() => navigate('/dashboard')}
+                  <Link
+                    to="/social-post"
                     className="btn o"
-                    style={{ minHeight: '44px', padding: '0 24px', cursor: 'pointer' }}
+                    style={{ minHeight: '44px', padding: '0 24px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
                   >
-                    Go to student dashboard →
-                  </button>
+                    Create Social Badge →
+                  </Link>
                   <Link to="/agenda" className="btn g" style={{ minHeight: '44px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
                     Explore agenda
                   </Link>

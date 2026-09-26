@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import type { SiteLink } from '@scd/types';
-import { useAuth } from '../../lib/auth.js';
 import { useNavLinks, useSocialLinks } from '../../lib/queries.js';
 import { Mascot } from '../ui/Mascot.js';
 import { BuilderMark } from '../ui/BuilderMark.js';
@@ -39,8 +38,6 @@ export function Header() {
   const toggleRef = useRef<HTMLButtonElement>(null);
   const { items: customNavLinks } = useNavLinks();
   const { items: socialLinks } = useSocialLinks();
-  const { status, logout } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
 
   const closeMenu = () => {
@@ -165,33 +162,9 @@ export function Header() {
           </nav>
 
           <div className="nav-auth" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {status === 'signed-in' ? (
-              <>
-                <Link to="/dashboard" className="btn btn-primary" style={{ padding: '6px 14px', fontSize: '0.75rem' }}>
-                  Dashboard
-                </Link>
-                <button
-                  type="button"
-                  className="btn btn.g"
-                  style={{ padding: '6px 10px', fontSize: '0.72rem' }}
-                  onClick={() => {
-                    logout();
-                    navigate('/');
-                  }}
-                >
-                  Log out
-                </button>
-              </>
-            ) : (
-              <>
-                <NavLink to="/login" className="mo nav-link" style={{ display: 'inline-block' }}>
-                  Log in
-                </NavLink>
-                <Link to="/register" className="btn o" style={{ padding: '7px 14px', fontSize: '0.78rem' }}>
-                  Register
-                </Link>
-              </>
-            )}
+            <Link to="/register" className="btn o" style={{ padding: '7px 14px', fontSize: '0.78rem' }}>
+              Register
+            </Link>
 
             <button
               ref={toggleRef}
@@ -273,15 +246,9 @@ export function Header() {
 
             <div className="mobile-nav-fullscreen-footer">
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {status === 'signed-in' ? (
-                  <Link to="/dashboard" className="btn o" onClick={closeMenu}>
-                    My Dashboard →
-                  </Link>
-                ) : (
-                  <Link to="/register" className="btn o" onClick={closeMenu}>
-                    Register now →
-                  </Link>
-                )}
+                <Link to="/register" className="btn o" onClick={closeMenu}>
+                  Register now →
+                </Link>
                 <p className="mo" style={{ color: 'rgba(255,255,255,0.7)' }}>
                   @aws.sbg_guni · GUNI Mehsana
                 </p>

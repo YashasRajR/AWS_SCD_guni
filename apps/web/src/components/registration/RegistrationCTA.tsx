@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../lib/auth.js';
 import { useEvent } from '../../lib/queries.js';
 import { formatDate, getRegistrationPhase } from '../../lib/format.js';
 
@@ -17,7 +16,6 @@ export function RegistrationCTA({
   title = 'Ready to build the future?',
   description = 'Join AWS Students Community Day 2026 at Ganpat University.',
 }: RegistrationCTAProps) {
-  const { status } = useAuth();
   const { data: event } = useEvent();
   const phase = getRegistrationPhase(event);
 
@@ -189,28 +187,7 @@ export function RegistrationCTA({
 
         {/* Action Button */}
         <div>
-          {status === 'signed-in' ? (
-            <Link
-              to="/dashboard"
-              className="btn o hero-cta-pulse"
-              style={{
-                background: '#FF9900',
-                color: '#14181F',
-                fontWeight: 800,
-                padding: '11px 24px',
-                fontSize: '13px',
-                textTransform: 'uppercase',
-                textDecoration: 'none',
-                letterSpacing: '0.04em',
-                borderRadius: '4px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}
-            >
-              Go to my dashboard →
-            </Link>
-          ) : phase === 'not-open' ? (
+          {phase === 'not-open' ? (
             <div className="r" style={{ alignItems: 'center', gap: '12px' }}>
               <span
                 className="btn g"
