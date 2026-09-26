@@ -128,9 +128,15 @@ export function SocialPostPage() {
     ctx.fillText(`Track: ${topic}`, 120, 700);
 
     // Check-in status
+    const statusText =
+      mode === 'spoke'
+        ? 'STATUS: FEATURED SPEAKER'
+        : mode === 'attended'
+          ? 'STATUS: ATTENDED'
+          : 'STATUS: CONFIRMED PASS';
     ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 28px monospace';
-    ctx.fillText('STATUS: CONFIRMED PASS', 120, 790);
+    ctx.fillText(statusText, 120, 790);
 
     // Mascot representation / circle
     ctx.save();
@@ -180,7 +186,7 @@ export function SocialPostPage() {
     <div className="section" style={{ padding: '32px 0 60px' }}>
       <div style={{ maxWidth: '820px', margin: '0 auto', padding: '0 16px' }}>
         <p className="mo" style={{ color: 'var(--scd-muted)', marginBottom: '16px' }}>
-          <Link to="/dashboard" style={{ color: 'inherit', textDecoration: 'none' }}>Dashboard</Link> / Social post
+          <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>Home</Link> / Social post
         </p>
 
         <div className="c" style={{ gap: '20px' }}>
@@ -253,6 +259,7 @@ export function SocialPostPage() {
                   <input
                     type="text"
                     value={name}
+                    placeholder="e.g. Yashas Raj"
                     onChange={(e) => setName(e.target.value)}
                     style={{ width: '100%', border: 'none', outline: 'none', background: 'transparent', fontFamily: 'inherit', fontSize: '14px' }}
                   />
@@ -263,6 +270,7 @@ export function SocialPostPage() {
                   <input
                     type="text"
                     value={college}
+                    placeholder="e.g. Ganpat University"
                     onChange={(e) => setCollege(e.target.value)}
                     style={{ width: '100%', border: 'none', outline: 'none', background: 'transparent', fontFamily: 'inherit', fontSize: '14px' }}
                   />
@@ -273,6 +281,7 @@ export function SocialPostPage() {
                   <input
                     type="text"
                     value={topic}
+                    placeholder="e.g. Serverless & AI"
                     onChange={(e) => setTopic(e.target.value)}
                     style={{ width: '100%', border: 'none', outline: 'none', background: 'transparent', fontFamily: 'inherit', fontSize: '14px' }}
                   />

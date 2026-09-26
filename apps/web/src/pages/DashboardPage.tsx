@@ -150,7 +150,7 @@ export function DashboardPage() {
             <Link to="/dashboard/certificates" className="mo" style={{ color: 'var(--scd-fg)', textDecoration: 'none' }}>
               Certificate
             </Link>
-            <Link to="/dashboard/social-post" className="mo" style={{ color: 'var(--scd-fg)', textDecoration: 'none' }}>
+            <Link to="/social-post" className="mo" style={{ color: 'var(--scd-fg)', textDecoration: 'none' }}>
               Social Post
             </Link>
             <Link to="/dashboard/profile" className="mo" style={{ color: 'var(--scd-fg)', textDecoration: 'none' }}>
@@ -384,7 +384,7 @@ export function DashboardPage() {
             </div>
 
             <div className="r" style={{ gap: '12px', flexWrap: 'wrap' }}>
-              <Link to="/dashboard/social-post" className="k" style={{ flex: 1, minWidth: '160px', textDecoration: 'none', color: 'inherit', padding: '14px', gap: '4px' }}>
+              <Link to="/social-post" className="k" style={{ flex: 1, minWidth: '160px', textDecoration: 'none', color: 'inherit', padding: '14px', gap: '4px' }}>
                 <p className="d3" style={{ margin: 0, fontSize: '16px' }}>Social Post</p>
                 <p className="mo" style={{ color: 'var(--scd-muted)', fontSize: '11px' }}>
                   &quot;I&apos;m attending&quot; badge

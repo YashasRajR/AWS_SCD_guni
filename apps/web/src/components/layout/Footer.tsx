@@ -168,6 +168,11 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/social-post" className="sbg-footer-nav-link">
+                  Social Post
+                </Link>
+              </li>
+              <li>
                 <Link to="/faq" className="sbg-footer-nav-link">
                   FAQs &amp; Help
                 </Link>

@@ -96,6 +96,7 @@ function AppRoutes() {
         <Route path="faq" element={<FaqPage />} />
         <Route path="gallery" element={<GalleryPage />} />
         <Route path="past-events" element={<PastEventsPage />} />
+        <Route path="social-post" element={<SocialPostPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="forgot-password" element={<ForgotPasswordPage />} />
@@ -143,11 +144,7 @@ function AppRoutes() {
         />
         <Route
           path="dashboard/social-post"
-          element={
-            <RequireConfirmedRegistration>
-              <SocialPostPage />
-            </RequireConfirmedRegistration>
-          }
+          element={<Navigate to="/social-post" replace />}
         />
         <Route
           path="dashboard/wrapped"

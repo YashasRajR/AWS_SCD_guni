@@ -23,6 +23,7 @@ const SECTION_LINKS: NavLinkDef[] = [
   { to: '/timeline', label: 'Timeline' },
   { to: '/venue', label: 'Venue' },
   { to: '/gallery', label: 'Gallery' },
+  { to: '/social-post', label: 'Social Post' },
   { to: '/#team', label: 'Team', anchor: true },
   { to: '/faq', label: 'FAQ' },
 ];
