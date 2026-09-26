@@ -34,10 +34,10 @@ export const eventRepository = {
   async create(input: CreateEventInput): Promise<EventRow> {
     const { rows } = await getPool().query<EventRow>(
       `INSERT INTO events
-         (name, slug, description, event_date, start_time, end_time, venue, registration_open, registration_close, status, registration_fee, currency,
+         (name, slug, description, event_date, start_time, end_time, venue, registration_open, registration_close, registration_closed_message, status, registration_fee, currency,
           hero_subtitle, hero_background_image, primary_cta_label, primary_cta_url, secondary_cta_label, secondary_cta_url,
           logo_url, header_cta_label, header_cta_url, header_cta_visible, footer_text, contact_email, contact_phone)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)
        RETURNING *`,
       [
         input.name,
@@ -49,6 +49,7 @@ export const eventRepository = {
         input.venue ?? null,
         input.registrationOpen ?? null,
         input.registrationClose ?? null,
+        input.registrationClosedMessage ?? null,
         input.status ?? 'DRAFT',
         input.registrationFee ?? 0,
         input.currency ?? 'INR',
@@ -81,6 +82,7 @@ export const eventRepository = {
       venue: patch.venue,
       registration_open: patch.registrationOpen,
       registration_close: patch.registrationClose,
+      registration_closed_message: patch.registrationClosedMessage,
       status: patch.status,
       registration_fee: patch.registrationFee,
       currency: patch.currency,

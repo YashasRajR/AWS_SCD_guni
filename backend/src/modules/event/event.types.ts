@@ -11,6 +11,7 @@ export interface EventRow {
   venue: string | null;
   registration_open: string | null;
   registration_close: string | null;
+  registration_closed_message: string | null;
   status: EventStatus;
   registration_fee: string;
   currency: string;
@@ -43,6 +44,7 @@ export function toEventConfig(row: EventRow): EventConfig {
     venue: row.venue,
     registrationOpen: row.registration_open,
     registrationClose: row.registration_close,
+    registrationClosedMessage: row.registration_closed_message,
     status: row.status,
     registrationFee: row.registration_fee,
     currency: row.currency,

@@ -32,6 +32,12 @@ const FIELDS: FieldDef[] = [
     help: '0 for a free event — attendees are never asked to pay and the payment flow is skipped entirely.',
   },
   {
+    name: 'registrationClosedMessage',
+    label: 'Registration closed message',
+    type: 'text',
+    help: 'Shown on the homepage registration CTA once registration closes. Leave blank to use the default "Registration for this phase is closed." message.',
+  },
+  {
     name: 'currency',
     label: 'Currency',
     type: 'text',

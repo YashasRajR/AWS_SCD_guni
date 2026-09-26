@@ -227,7 +227,7 @@ export function RegistrationCTA({
                 Register now →
               </Link>
               <p className="mo" style={{ color: '#cfc9be', fontSize: '12px', margin: 0 }}>
-                Registration for this phase is closed.
+                {event?.registrationClosedMessage || 'Registration for this phase is closed.'}
               </p>
             </div>
           ) : (

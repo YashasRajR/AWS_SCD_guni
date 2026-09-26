@@ -20,6 +20,8 @@ export interface EventConfig {
   venue: string | null;
   registrationOpen: string | null;
   registrationClose: string | null;
+  /** Shown on the registration CTA once closed. Null falls back to a generic message. */
+  registrationClosedMessage: string | null;
   status: EventStatus;
   /** "0.00" means this edition is free — the payment flow never triggers. */
   registrationFee: string;

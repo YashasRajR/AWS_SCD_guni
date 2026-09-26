@@ -67,6 +67,7 @@ export const createEventSchema = z.object({
   venue: z.string().trim().max(300).optional(),
   registrationOpen: z.string().datetime().optional(),
   registrationClose: z.string().datetime().optional(),
+  registrationClosedMessage: z.string().trim().max(300).optional(),
   status: z.enum(EVENT_STATUSES).default('DRAFT'),
   // 0 = a free event; the payment flow is simply never triggered for it.
   registrationFee: z.coerce.number().min(0).default(0),
