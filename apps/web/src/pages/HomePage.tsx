@@ -15,7 +15,7 @@ import { PricingGrid } from '../components/pricing/PricingGrid.js';
 import { PastEventGrid } from '../components/past-events/PastEventGrid.js';
 import { GalleryMarqueeSection } from '../components/gallery/GalleryMarqueeSection.js';
 import { TeamSection } from '../components/team/TeamSection.js';
-import { Section, SectionHeader, SectionEyebrow, SectionTitle } from '../components/layout/Section.js';
+import { Section, SectionHeader, SectionTitle } from '../components/layout/Section.js';
 import { useDocumentHead } from '../lib/seo.js';
 
 const TEASER_LIMIT = 4;
@@ -107,7 +107,6 @@ export function HomePage() {
             </Link>
           }
         >
-          <SectionEyebrow>Day flow</SectionEyebrow>
           <SectionTitle>A quick look at the timeline</SectionTitle>
         </SectionHeader>
         <EventTimeline limit={6} />
@@ -121,7 +120,6 @@ export function HomePage() {
             </Link>
           }
         >
-          <SectionEyebrow>Venue</SectionEyebrow>
           <SectionTitle>Where to find us</SectionTitle>
         </SectionHeader>
         <VenueGrid limit={2} />
@@ -148,7 +146,6 @@ export function HomePage() {
             </Link>
           }
         >
-          <SectionEyebrow>FAQ</SectionEyebrow>
           <SectionTitle>Common questions</SectionTitle>
         </SectionHeader>
         <FAQAccordion limit={5} />

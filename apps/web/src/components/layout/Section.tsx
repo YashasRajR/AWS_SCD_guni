@@ -40,8 +40,8 @@ export function SectionHeader({ center, action, children }: SectionHeaderProps) 
   return <div className={center ? 'section-header section-header-center' : 'section-header'}>{children}</div>;
 }
 
-export function SectionEyebrow({ children }: { children: ReactNode }) {
-  return <p className="section-eyebrow">{children}</p>;
+export function SectionEyebrow({ children }: { children?: ReactNode }) {
+  return null;
 }
 
 export function SectionTitle({ children }: { children: ReactNode }) {

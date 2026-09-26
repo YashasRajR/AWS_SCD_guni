@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { Section, SectionHeader, SectionEyebrow, SectionTitle, SectionDescription } from '../layout/Section.js';
+import { Section, SectionHeader, SectionTitle, SectionDescription } from '../layout/Section.js';
 
 export interface TeamMember {
   id: string;
@@ -366,7 +366,6 @@ export function TeamSection() {
           </div>
         }
       >
-        <SectionEyebrow>Team</SectionEyebrow>
         <SectionTitle>Meet the Builders &amp; Organizers</SectionTitle>
         <SectionDescription>
           The faculty mentors, student leads, and creators behind AWS Student Community Day 2026.
