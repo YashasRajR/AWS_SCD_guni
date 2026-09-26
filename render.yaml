@@ -1,7 +1,6 @@
-services:
+staticSites:
   # Static Site: AWS Student Community Day Attendee Web App
-  - type: static
-    name: scd-web
+  - name: scd-web
     buildCommand: npm install && npm run build --workspace=@scd/app-web
     staticPublishPath: ./apps/web/dist
     routes:
@@ -13,8 +12,7 @@ services:
         sync: false
 
   # Static Site: Admin Portal
-  - type: static
-    name: scd-admin
+  - name: scd-admin
     buildCommand: npm install && npm run build --workspace=@scd/app-admin
     staticPublishPath: ./apps/admin/dist
     routes:
@@ -25,6 +23,7 @@ services:
       - key: VITE_API_URL
         sync: false
 
+services:
   # Web Service: Backend API (Node.js / Express)
   - type: web
     name: scd-backend
