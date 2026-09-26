@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { NavLink, Link, useLocation } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
+import { REGISTER_URL } from '../../lib/registration.js';
 import type { SiteLink } from '@scd/types';
 import { useNavLinks, useSocialLinks } from '../../lib/queries.js';
 import { Mascot } from '../ui/Mascot.js';
@@ -162,9 +163,9 @@ export function Header() {
           </nav>
 
           <div className="nav-auth" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Link to="/register" className="btn o" style={{ padding: '7px 14px', fontSize: '0.78rem' }}>
+            <a href={REGISTER_URL} target="_blank" rel="noopener noreferrer" className="btn o" style={{ padding: '7px 14px', fontSize: '0.78rem' }}>
               Register
-            </Link>
+            </a>
 
             <button
               ref={toggleRef}
@@ -246,9 +247,9 @@ export function Header() {
 
             <div className="mobile-nav-fullscreen-footer">
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <Link to="/register" className="btn o" onClick={closeMenu}>
+                <a href={REGISTER_URL} target="_blank" rel="noopener noreferrer" className="btn o" onClick={closeMenu}>
                   Register now →
-                </Link>
+                </a>
                 <p className="mo" style={{ color: 'rgba(255,255,255,0.7)' }}>
                   @aws.sbg_guni · GUNI Mehsana
                 </p>

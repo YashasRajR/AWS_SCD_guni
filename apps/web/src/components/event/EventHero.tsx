@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { REGISTER_URL } from '../../lib/registration.js';
 import { useEvent } from '../../lib/queries.js';
 import { formatDate } from '../../lib/format.js';
 import { CountdownTimer } from './CountdownTimer.js';
@@ -43,9 +44,9 @@ export function EventHero() {
               you&apos;re ready to register the moment it opens.
             </p>
             <div className="r" style={{ marginTop: '20px', gap: '10px' }}>
-              <Link to="/register" className="btn o hero-cta-pulse">
+              <a href={REGISTER_URL} target="_blank" rel="noopener noreferrer" className="btn o hero-cta-pulse">
                 Register Now →
-              </Link>
+              </a>
               <Link to="/agenda" className="btn g">
                 Explore Agenda
               </Link>
@@ -84,9 +85,9 @@ export function EventHero() {
                     {event.primaryCtaLabel || 'Register Now →'}
                   </a>
                 ) : (
-                  <Link to="/register" className="btn o hero-cta-pulse">
+                  <a href={REGISTER_URL} target="_blank" rel="noopener noreferrer" className="btn o hero-cta-pulse">
                     Register Now →
-                  </Link>
+                  </a>
                 )}
 
                 {event?.secondaryCtaUrl ? (

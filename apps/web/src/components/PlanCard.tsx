@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { REGISTER_URL } from '../lib/registration.js';
 import type { TicketPlan } from '@scd/types';
 
 export interface PlanCardProps {
@@ -125,14 +125,16 @@ export function PlanCard({ plan, onClick, disabled, cta, phase = 'PHASE 01' }: P
             <span className="lanyard-claim-arrow" aria-hidden="true">↗</span>
           </button>
         ) : (
-          <Link
-            to={soldOut ? '#' : `/register?plan=${encodeURIComponent(plan.code || plan.id)}`}
+          <a
+            href={soldOut ? undefined : REGISTER_URL}
+            target={soldOut ? undefined : '_blank'}
+            rel={soldOut ? undefined : 'noopener noreferrer'}
             className={`lanyard-claim-btn ${soldOut ? 'is-disabled' : ''}`}
             aria-label={`Claim ${plan.name} pass for ${displayPrice}`}
           >
             <span className="lanyard-claim-label">{soldOut ? 'Sold Out' : 'Claim Pass'}</span>
             <span className="lanyard-claim-arrow" aria-hidden="true">↗</span>
-          </Link>
+          </a>
         )}
 
         {/* Barcode & Auth String */}

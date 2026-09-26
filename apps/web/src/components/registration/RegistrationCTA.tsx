@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { REGISTER_URL } from '../../lib/registration.js';
 import { useEvent } from '../../lib/queries.js';
 import { formatDate, getRegistrationPhase } from '../../lib/format.js';
 
@@ -206,8 +206,10 @@ export function RegistrationCTA({
             </div>
           ) : phase === 'closed' ? (
             <div className="r" style={{ alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              <Link
-                to="/register"
+              <a
+                href={REGISTER_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="btn o"
                 style={{
                   background: '#FF9900',
@@ -225,14 +227,16 @@ export function RegistrationCTA({
                 }}
               >
                 Register now →
-              </Link>
+              </a>
               <p className="mo" style={{ color: '#cfc9be', fontSize: '12px', margin: 0 }}>
                 {event?.registrationClosedMessage || 'Registration for this phase is closed.'}
               </p>
             </div>
           ) : (
-            <Link
-              to="/register"
+            <a
+              href={REGISTER_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="btn o hero-cta-pulse"
               style={{
                 background: '#FF9900',
@@ -250,7 +254,7 @@ export function RegistrationCTA({
               }}
             >
               Register now →
-            </Link>
+            </a>
           )}
         </div>
       </div>

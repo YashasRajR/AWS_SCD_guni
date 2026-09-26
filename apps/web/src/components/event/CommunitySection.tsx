@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { REGISTER_URL } from '../../lib/registration.js';
 
 const COMMUNITY_CARDS = [
   {
@@ -107,9 +107,9 @@ export function CommunitySection() {
               >
                 Follow @aws.sbg_guni →
               </a>
-              <Link to="/register" className="btn g" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}>
+              <a href={REGISTER_URL} target="_blank" rel="noopener noreferrer" className="btn g" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}>
                 Join Community Free
-              </Link>
+              </a>
             </div>
           </div>
         </div>

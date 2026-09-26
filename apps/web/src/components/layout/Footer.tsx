@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { REGISTER_URL } from '../../lib/registration.js';
 import './Footer.css';
 
 // Handcrafted SVG icons matching AWS_GUNI-main exactly (no external dependency needed)
@@ -178,9 +179,9 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/register" className="sbg-footer-nav-link accent-link">
+                <a href={REGISTER_URL} target="_blank" rel="noopener noreferrer" className="sbg-footer-nav-link accent-link">
                   Register Now &rarr;
-                </Link>
+                </a>
               </li>
             </ul>
           </div>

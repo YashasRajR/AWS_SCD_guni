@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { REGISTER_URL } from '../../lib/registration.js';
 
 /**
  * CloudQuestGameBoy — Expanded, Highly Playable Handheld Console
@@ -1508,8 +1508,10 @@ export function CloudQuestGameBoy() {
               {copiedCoupon ? 'COPIED!' : 'COPY "AWS-SCD-P2026"'}
             </button>
 
-            <Link
-              to="/register?coupon=AWS-SCD-P2026"
+            <a
+              href={REGISTER_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={handleCopyCoupon}
               style={{
                 background: '#FFFFFF',
@@ -1530,7 +1532,7 @@ export function CloudQuestGameBoy() {
               title="Go to checkout to paste coupon"
             >
               CHECKOUT →
-            </Link>
+            </a>
 
             <button
               type="button"
