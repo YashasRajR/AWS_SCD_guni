@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { useTicketPlans } from '../../lib/queries.js';
 import { PlanCard } from '../PlanCard.js';
 import { SkeletonGrid } from '../ui/Skeleton.js';
@@ -13,16 +12,12 @@ export function PricingGrid() {
   if (plans.length === 0) return <EmptyState message="Ticket pricing will be published soon." />;
 
   return (
-    <div className="plan-card-grid">
-      {plans.map((plan) => (
+    <div className="lanyard-tickets-row">
+      {plans.map((plan, index) => (
         <PlanCard
           key={plan.id}
           plan={plan}
-          cta={
-            <Link to="/register" className="btn btn-primary">
-              Register for {plan.name} →
-            </Link>
-          }
+          phase={index === 0 ? 'PHASE 01' : 'PHASE 02'}
         />
       ))}
     </div>

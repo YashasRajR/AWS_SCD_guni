@@ -2482,75 +2482,282 @@ img.speaker-photo {
   text-align: center;
 }
 
-.plan-card-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
-  margin: 0 0 var(--space-5);
+/* Lanyard Pass / Ticket Badges (Wireframe / Design Spec) */
+.lanyard-tickets-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 36px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 16px 16px 36px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 auto;
+  max-width: 100%;
+  scrollbar-width: thin;
 }
 
-.plan-card {
+.lanyard-ticket-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 0.3rem;
-  text-align: left;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: var(--space-5);
-  cursor: pointer;
-  transition: border-color var(--duration-base) var(--ease-standard), box-shadow var(--duration-base) var(--ease-standard);
-  font: inherit;
-  color: inherit;
+  align-items: center;
+  flex: 0 0 340px;
+  width: 340px;
+  max-width: 88vw;
+  scroll-snap-align: center;
+  position: relative;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.plan-card:hover:not(:disabled) {
-  border-color: var(--primary);
-  box-shadow: var(--shadow-sm);
+.lanyard-ticket-wrapper:hover {
+  transform: translateY(-4px);
 }
 
-.plan-card:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.lanyard-hanger {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 5;
+  margin-bottom: -10px;
 }
 
-.plan-card-label {
-  font-family: var(--font-display);
+.lanyard-strap {
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(90deg, #18191c 0%, #26292e 50%, #18191c 100%);
+  border-radius: 4px 4px 0 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.lanyard-aws-logo {
+  width: 36px;
+  height: 22px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+.lanyard-buckle {
+  width: 38px;
+  height: 14px;
+  background: linear-gradient(180deg, #e4e4e7 0%, #a1a1aa 50%, #52525b 100%);
+  border-radius: 3px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.lanyard-ring {
+  width: 22px;
+  height: 16px;
+  border: 3.5px solid #27272a;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  background: transparent;
+  margin-top: -2px;
+}
+
+.lanyard-badge-card {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 28px;
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 24px 50px -12px rgba(0, 0, 0, 0.16), 0 4px 14px rgba(0, 0, 0, 0.05);
+  padding: 24px 22px 20px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  color: #000000;
+  box-sizing: border-box;
+}
+
+.lanyard-badge-card.is-disabled {
+  opacity: 0.75;
+}
+
+.lanyard-badge-slot {
+  width: 60px;
+  height: 13px;
+  border-radius: 9999px;
+  background: #cbd5e1;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
+  margin: 0 auto 16px;
+}
+
+.lanyard-badge-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 18px;
+  position: relative;
+  z-index: 2;
+}
+
+.lanyard-badge-org {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: var(--tracking-tight);
-  color: var(--primary);
-  font-size: var(--text-h4);
 }
 
-.plan-card-price {
-  font-weight: var(--fw-semibold);
-  font-size: var(--text-lg);
+.lanyard-badge-rule {
+  flex: 1;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.14);
+  margin: 0 12px;
 }
 
-.plan-card-desc {
-  color: var(--muted);
-  font-size: var(--text-small);
-  margin-bottom: var(--space-2);
+.lanyard-badge-phase {
+  font-family: var(--font-mono, monospace);
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #ff6600;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
 }
 
-.plan-card-benefits {
-  margin: 0 0 var(--space-2);
-  padding-left: 1.1rem;
-  font-size: var(--text-small);
-  color: var(--text);
+.lanyard-badge-watermark {
+  position: absolute;
+  top: 76px;
+  left: 20px;
+  right: 20px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 900;
+  font-size: 52px;
+  line-height: 0.94;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(0, 0, 0, 0.05);
+  letter-spacing: -0.02em;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
 }
 
-.plan-card-spots {
-  font-size: var(--text-small);
-  color: var(--primary);
-  font-weight: var(--fw-semibold);
+.lanyard-badge-title {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 900;
+  font-size: 34px;
+  line-height: 1.05;
+  color: #050505;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  margin: 8px 0 10px;
+  position: relative;
+  z-index: 2;
 }
 
-@media (max-width: 520px) {
-  .plan-card-grid {
-    grid-template-columns: 1fr;
-  }
+.lanyard-badge-title-line1 {
+  display: block;
+}
+
+.lanyard-badge-title-line2 {
+  display: block;
+}
+
+.lanyard-badge-price {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 900;
+  font-size: 56px;
+  line-height: 1;
+  color: #000000;
+  letter-spacing: -0.03em;
+  margin: 0 0 20px;
+  position: relative;
+  z-index: 2;
+}
+
+.lanyard-claim-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 6px 6px 22px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 24px -4px rgba(255, 153, 0, 0.38), 0 0 14px rgba(255, 153, 0, 0.22);
+  text-decoration: none;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lanyard-claim-btn:hover:not(.is-disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px -4px rgba(255, 153, 0, 0.5), 0 0 18px rgba(255, 153, 0, 0.35);
+}
+
+.lanyard-claim-btn.is-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.lanyard-claim-label {
+  font-family: var(--font-mono, monospace);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: #0f172a;
+  text-transform: uppercase;
+}
+
+.lanyard-claim-arrow {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #FF9900 0%, #FF6600 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(255, 102, 0, 0.35);
+  color: #000000;
+  font-weight: 900;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.lanyard-badge-footer {
+  border-top: 1.5px solid rgba(0, 0, 0, 0.12);
+  margin-top: 22px;
+  padding-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 2;
+}
+
+.lanyard-badge-barcode {
+  display: flex;
+  align-items: center;
+}
+
+.lanyard-badge-divider {
+  width: 1.5px;
+  height: 28px;
+  background: rgba(0, 0, 0, 0.12);
+  margin: 0 10px;
+}
+
+.lanyard-badge-auth {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .register-section {

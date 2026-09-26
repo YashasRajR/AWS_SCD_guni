@@ -36,6 +36,15 @@ export function HomePage() {
     <div>
       <EventHero />
       <EventInfo />
+
+      <Section id="tickets">
+        <SectionHeader>
+          <SectionEyebrow>Pricing</SectionEyebrow>
+          <SectionTitle>Ticket plans</SectionTitle>
+        </SectionHeader>
+        <PricingGrid />
+      </Section>
+
       <AboutEvent />
       <EventHighlights />
 
