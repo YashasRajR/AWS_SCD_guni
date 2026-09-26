@@ -33,9 +33,10 @@ services:
     buildCommand: npm install --include=dev && npm run build --workspace=backend
     # Migrations are idempotent (tracked in schema_migrations) and safe to
     # run on every start. db:seed is NOT run here -- it upserts demo/sample
-    # content (event name, ticket prices, etc.) and would overwrite real
-    # admin-edited data in Neon on every restart/redeploy. Run it manually,
-    # once, only against a fresh/empty database.
+    # content and would overwrite real admin-edited data on every
+    # restart/redeploy. This is a fresh, empty Render Postgres database, so
+    # run "npm run db:seed" manually once (Render Shell) after the first
+    # successful deploy to load the initial event/ticket content.
     startCommand: npm run db:migrate && npm run start --workspace=backend
     envVars:
       - key: NODE_ENV
@@ -50,7 +51,14 @@ services:
         value: https://scd-web.onrender.com
       - key: ADMIN_APP_URL
         value: https://scd-admin.onrender.com
-      # Existing Neon database -- set the real connection string in the
-      # Render dashboard (Environment tab), never committed here.
+      # Render-managed Postgres, provisioned by the databases: block below.
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: scd-db
+          property: connectionString
+
+databases:
+  - name: scd-db
+    plan: free
+    databaseName: scd
+    user: scd
