@@ -18,6 +18,8 @@ function resolveApiBaseUrl(): string {
   if (typeof window !== 'undefined') {
     try {
       // 1. Query parameter override: ?api=https://... or ?backend=https://...
+      // Highest priority -- for pointing a live deploy at a different
+      // backend without a rebuild (e.g. while debugging).
       const params = new URLSearchParams(window.location.search);
       const queryApi = params.get('api') || params.get('apiUrl') || params.get('backend');
       if (queryApi) {
@@ -27,39 +29,28 @@ function resolveApiBaseUrl(): string {
         return clean;
       }
 
-      // 2. localStorage saved API URL
+      // 2. localStorage: whatever a previous ?api= override left behind.
       const stored = localStorage.getItem('VITE_API_URL');
-      if (stored && !stored.includes('://scd-backend.onrender.com')) {
-        return stored;
-      }
-
-      // 3. Dynamic Render subdomain pairing:
-      // If web is at scd-web-abc1.onrender.com, pair with scd-backend-abc1.onrender.com
-      if (window.location.hostname.endsWith('.onrender.com')) {
-        const parts = window.location.hostname.split('.');
-        const sub = parts[0] || '';
-        const backendSub = sub.includes('web')
-          ? sub.replace('web', 'backend')
-          : sub.replace('admin', 'backend');
-
-        if (backendSub && backendSub !== 'scd-backend') {
-          return `https://${backendSub}.onrender.com/api/v1`;
-        }
-      }
+      if (stored) return stored;
     } catch {
       // ignore
     }
   }
 
-  // 4. Environment variable, rejecting the external taken domain
+  // 3. VITE_API_URL set at build time -- the normal production path.
+  // Trusted as-is (including the default Render name -- it's this
+  // deploy's own backend unless the build was misconfigured).
   const envUrl = import.meta.env.VITE_API_URL;
-  if (
-    envUrl &&
-    !envUrl.includes('localhost') &&
-    !envUrl.includes('127.0.0.1') &&
-    !envUrl.includes('://scd-backend.onrender.com')
-  ) {
+  if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
     return envUrl;
+  }
+
+  // 4. No env var configured: guess the backend from this site's own
+  // Render subdomain (e.g. scd-web-abc1.onrender.com -> scd-backend-abc1).
+  if (typeof window !== 'undefined' && window.location.hostname.endsWith('.onrender.com')) {
+    const sub = window.location.hostname.split('.')[0] || '';
+    const backendSub = sub.includes('web') ? sub.replace('web', 'backend') : sub.replace('admin', 'backend');
+    if (backendSub) return `https://${backendSub}.onrender.com/api/v1`;
   }
 
   return 'http://localhost:4000/api/v1';
