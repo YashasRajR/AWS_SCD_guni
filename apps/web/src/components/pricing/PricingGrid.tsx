@@ -17,7 +17,7 @@ export function PricingGrid() {
         <PlanCard
           key={plan.id}
           plan={plan}
-          phase={index === 0 ? 'PHASE 01' : 'PHASE 02'}
+          phase={`PHASE ${String(index + 1).padStart(2, '0')}`}
         />
       ))}
     </div>
