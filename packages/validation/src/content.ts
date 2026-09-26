@@ -16,6 +16,41 @@ const contentStatusSchema = z.enum(CONTENT_STATUSES);
 // accept a plain YYYY-MM-DD.
 const dateOnlySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected a date in YYYY-MM-DD format');
 
+/**
+ * Flexible URL schema that:
+ * 1. Accepts undefined, null, or empty string as optional/omitted.
+ * 2. Auto-normalizes URLs missing http:// or https:// (e.g. linkedin.com/... -> https://linkedin.com/...).
+ * 3. Allows relative paths starting with / (e.g. /gallery/photo.png, /uploads/...).
+ */
+export const flexibleUrlSchema = z
+  .union([z.string(), z.null(), z.undefined()])
+  .transform((val) => {
+    if (!val || typeof val !== 'string') return undefined;
+    const trimmed = val.trim();
+    if (!trimmed) return undefined;
+    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://') && !trimmed.startsWith('/')) {
+      return `https://${trimmed}`;
+    }
+    return trimmed;
+  })
+  .pipe(
+    z
+      .string()
+      .refine(
+        (val) => {
+          if (val.startsWith('/')) return true;
+          try {
+            new URL(val);
+            return true;
+          } catch {
+            return false;
+          }
+        },
+        { message: 'Must be a valid URL or path' },
+      )
+      .optional(),
+  );
+
 // --- Event config ------------------------------------------------------------
 export const createEventSchema = z.object({
   name: z.string().trim().min(2).max(200),
@@ -38,12 +73,12 @@ export const createEventSchema = z.object({
   currency: z.string().trim().toUpperCase().length(3).default('INR'),
   // Hero/header/footer/contact site content (spec sections 4/5/38).
   heroSubtitle: z.string().trim().max(300).optional(),
-  heroBackgroundImage: z.string().trim().url().optional(),
+  heroBackgroundImage: flexibleUrlSchema,
   primaryCtaLabel: z.string().trim().max(60).optional(),
   primaryCtaUrl: z.string().trim().max(500).optional(),
   secondaryCtaLabel: z.string().trim().max(60).optional(),
   secondaryCtaUrl: z.string().trim().max(500).optional(),
-  logoUrl: z.string().trim().url().optional(),
+  logoUrl: flexibleUrlSchema,
   headerCtaLabel: z.string().trim().max(60).optional(),
   headerCtaUrl: z.string().trim().max(500).optional(),
   headerCtaVisible: z.boolean().default(false),
@@ -58,13 +93,13 @@ export type UpdateEventInput = z.infer<typeof updateEventSchema>;
 // --- Speakers ------------------------------------------------------------
 export const createSpeakerSchema = z.object({
   name: z.string().trim().min(2).max(200),
-  designation: z.string().trim().max(200).optional(),
-  organization: z.string().trim().max(200).optional(),
-  bio: z.string().trim().max(5000).optional(),
-  profileImage: z.string().trim().url().optional(),
-  linkedinUrl: z.string().trim().url().optional(),
-  websiteUrl: z.string().trim().url().optional(),
-  displayOrder: z.number().int().min(0).default(0),
+  designation: z.string().trim().max(200).nullable().optional(),
+  organization: z.string().trim().max(200).nullable().optional(),
+  bio: z.string().trim().max(5000).nullable().optional(),
+  profileImage: flexibleUrlSchema,
+  linkedinUrl: flexibleUrlSchema,
+  websiteUrl: flexibleUrlSchema,
+  displayOrder: z.coerce.number().int().min(0).default(0),
   status: contentStatusSchema.default('DRAFT'),
 });
 export type CreateSpeakerInput = z.infer<typeof createSpeakerSchema>;
@@ -90,11 +125,11 @@ export type UpdateSessionInput = z.infer<typeof updateSessionSchema>;
 export const createVenueSchema = z.object({
   eventId: z.string().uuid(),
   name: z.string().trim().min(2).max(200),
-  description: z.string().trim().max(2000).optional(),
-  location: z.string().trim().max(300).optional(),
-  room: z.string().trim().max(200).optional(),
-  capacity: z.number().int().min(0).optional(),
-  mapUrl: z.string().trim().url().optional(),
+  description: z.string().trim().max(2000).nullable().optional(),
+  location: z.string().trim().max(300).nullable().optional(),
+  room: z.string().trim().max(200).nullable().optional(),
+  capacity: z.coerce.number().int().min(0).nullable().optional(),
+  mapUrl: flexibleUrlSchema,
   status: contentStatusSchema.default('DRAFT'),
 });
 export type CreateVenueInput = z.infer<typeof createVenueSchema>;

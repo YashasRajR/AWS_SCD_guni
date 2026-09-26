@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { ApiClientError } from '@scd/api-client';
 import { fromDateTimeLocalValue, toDateTimeLocalValue } from '../lib/format.js';
 import { uploadImage } from '../lib/uploads.js';
 
@@ -61,8 +62,17 @@ function toApiValue(field: FieldDef, raw: unknown): unknown {
     return fromDateTimeLocalValue(String(raw ?? ''));
   }
   if (typeof raw === 'string') {
-    const trimmed = raw.trim();
-    return trimmed === '' ? undefined : trimmed;
+    let trimmed = raw.trim();
+    if (trimmed === '') return undefined;
+    if (
+      (field.name.toLowerCase().endsWith('url') || field.name.toLowerCase().endsWith('link')) &&
+      !trimmed.startsWith('http://') &&
+      !trimmed.startsWith('https://') &&
+      !trimmed.startsWith('/')
+    ) {
+      trimmed = `https://${trimmed}`;
+    }
+    return trimmed;
   }
   return raw;
 }
@@ -161,7 +171,15 @@ export function ResourceForm({ fields, initialValues, submitLabel, onSubmit, onC
       }
       await onSubmit(payload);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      if (err instanceof ApiClientError && err.details?.issues && Array.isArray(err.details.issues)) {
+        const issueMessages = (err.details.issues as Array<{ path?: string; message?: string }>)
+          .map((i) => (i.path ? `${i.path}: ${i.message}` : i.message))
+          .filter(Boolean)
+          .join('; ');
+        setError(issueMessages ? `Validation failed: ${issueMessages}` : err.message);
+      } else {
+        setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      }
     } finally {
       setSubmitting(false);
     }

@@ -19,9 +19,9 @@ const fields: FieldDef[] = [
   { name: 'organization', label: 'Organization', type: 'text' },
   { name: 'bio', label: 'Bio', type: 'textarea' },
   { name: 'profileImage', label: 'Profile image', type: 'image' },
-  { name: 'linkedinUrl', label: 'LinkedIn URL', type: 'text' },
-  { name: 'websiteUrl', label: 'Website URL', type: 'text' },
-  { name: 'displayOrder', label: 'Display order', type: 'number' },
+  { name: 'linkedinUrl', label: 'LinkedIn URL', type: 'text', placeholder: 'https://linkedin.com/in/username' },
+  { name: 'websiteUrl', label: 'Website URL', type: 'text', placeholder: 'https://example.com' },
+  { name: 'displayOrder', label: 'Display order', type: 'number', placeholder: '0' },
   {
     name: 'status',
     label: 'Status',
