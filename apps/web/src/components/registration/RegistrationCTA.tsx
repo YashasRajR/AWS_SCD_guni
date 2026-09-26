@@ -227,7 +227,7 @@ export function RegistrationCTA({
                 Register now →
               </Link>
               <p className="mo" style={{ color: '#cfc9be', fontSize: '12px', margin: 0 }}>
-                Seats filling fast · Free entry
+                Registration for this phase is closed.
               </p>
             </div>
           ) : (

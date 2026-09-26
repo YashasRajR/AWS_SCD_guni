@@ -37,13 +37,6 @@ export function HomePage() {
       <EventHero />
       <EventInfo />
 
-      <Section id="tickets">
-        <SectionHeader>
-          <SectionTitle>Ticket plans</SectionTitle>
-        </SectionHeader>
-        <PricingGrid />
-      </Section>
-
       <AboutEvent />
       <EventHighlights />
 
