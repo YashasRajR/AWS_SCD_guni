@@ -3079,6 +3079,7 @@ img.speaker-photo {
    ============================================================ */
 
 .past-event-card {
+  position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -3087,10 +3088,32 @@ img.speaker-photo {
   transition: transform var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard), border-color var(--duration-fast) var(--ease-standard);
 }
 
+/* Folded ticket-stub corner -- ties the recap cards back to the event's
+   ticket/badge visual language instead of a plain photo card. */
+.past-event-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 34px 34px 0;
+  border-color: transparent var(--scd-accent, #FF9900) transparent transparent;
+  filter: drop-shadow(-2px 2px 3px rgba(0, 0, 0, 0.35));
+  transition: border-width var(--duration-fast) var(--ease-standard);
+  z-index: 4;
+  pointer-events: none;
+}
+
 .past-event-card:hover {
   transform: translateY(-5px) scale(1.015);
   box-shadow: var(--shadow-md);
   border-color: var(--border-strong);
+}
+
+.past-event-card:hover::after {
+  border-width: 0 42px 42px 0;
 }
 
 .past-event-image {
