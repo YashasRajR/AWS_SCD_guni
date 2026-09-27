@@ -3,7 +3,7 @@
 .sbg-footer {
   position: relative;
   background-color: #020205;
-  border-top: 1px solid rgba(168, 85, 247, 0.15);
+  border-top: 1px solid rgba(255, 153, 0, 0.15);
   color: #94a3b8;
   padding: 64px 0 40px;
   overflow: hidden;
@@ -14,14 +14,14 @@
 .sbg-footer-glow-1 {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at bottom right, rgba(168, 85, 247, 0.06), transparent 50%);
+  background: radial-gradient(circle at bottom right, rgba(255, 153, 0, 0.06), transparent 50%);
   pointer-events: none;
 }
 
 .sbg-footer-glow-2 {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at top left, rgba(217, 70, 239, 0.06), transparent 50%);
+  background: radial-gradient(circle at top left, rgba(255, 153, 0, 0.04), transparent 50%);
   pointer-events: none;
 }
 
@@ -67,7 +67,7 @@
 }
 
 .sbg-footer-logo-svg {
-  color: #a855f7;
+  color: var(--accent, #FF9900);
   transition: transform 0.3s ease;
   flex-shrink: 0;
 }
@@ -91,12 +91,12 @@
 }
 
 .sbg-footer-brand-header:hover .sbg-footer-brand-name {
-  color: #a855f7;
+  color: var(--accent, #FF9900);
 }
 
 .sbg-footer-brand-sub {
   font-size: 9px;
-  color: #c084fc;
+  color: var(--accent, #FF9900);
   font-family: var(--font-mono, monospace);
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -140,16 +140,16 @@
 }
 
 .sbg-footer-social-btn:hover {
-  border-color: #a855f7;
-  color: #a855f7;
-  background: rgba(168, 85, 247, 0.1);
+  border-color: var(--accent, #FF9900);
+  color: var(--accent, #FF9900);
+  background: rgba(255, 153, 0, 0.1);
   transform: translateY(-2px) scale(1.05);
 }
 
 .sbg-footer-social-btn.alt-glow:hover {
-  border-color: #d946ef;
-  color: #d946ef;
-  background: rgba(217, 70, 239, 0.1);
+  border-color: var(--accent, #FF9900);
+  color: var(--accent, #FF9900);
+  background: rgba(255, 153, 0, 0.1);
 }
 
 .sbg-footer-nav {
@@ -187,7 +187,7 @@
 }
 
 .sbg-footer-nav-link:hover {
-  color: #a855f7;
+  color: var(--accent, #FF9900);
   transform: translateX(2px);
 }
 
@@ -225,7 +225,7 @@
 }
 
 .sbg-footer-contact-icon {
-  color: #a855f7;
+  color: var(--accent, #FF9900);
   flex-shrink: 0;
   width: 20px;
   height: 20px;
