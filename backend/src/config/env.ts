@@ -49,7 +49,16 @@ const envSchema = z.object({
   // uploaded files are served from, so a stored URL still resolves from
   // apps on other origins (web), not just the admin app.
   UPLOAD_DIR: z.string().optional().default('uploads'),
-  PUBLIC_API_URL: z.string().url().default('http://localhost:4000'),
+  // Render sets RENDER_EXTERNAL_URL to this service's own https://...
+  // .onrender.com URL automatically -- falls back to it so uploaded-file
+  // URLs are correct on Render without needing PUBLIC_API_URL set by hand
+  // (the exact onrender.com subdomain isn't known until the service is
+  // created). Explicit PUBLIC_API_URL still wins, e.g. behind a custom
+  // domain.
+  PUBLIC_API_URL: z
+    .string()
+    .url()
+    .default(process.env.RENDER_EXTERNAL_URL || 'http://localhost:4000'),
   UPLOAD_MAX_BYTES: z.coerce.number().int().positive().default(5 * 1024 * 1024),
 
   // Google Sheets sync (spec #41) — a service account's credentials, not
