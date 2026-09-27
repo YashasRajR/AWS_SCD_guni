@@ -240,7 +240,7 @@ export function AboutEvent() {
             </span>
           </div>
 
-          <div className="r" style={{ flexWrap: 'wrap', gap: '12px' }}>
+          <div className="r" style={{ flexWrap: 'wrap', gap: '8px' }}>
             {facts.map((f) => {
               const isExpanded = expandedId === f.id;
               return (
@@ -251,6 +251,7 @@ export function AboutEvent() {
                     flex: '1 1 220px',
                     background: '#fff',
                     cursor: 'pointer',
+                    padding: isExpanded ? '14px' : '10px 14px',
                     borderColor: isExpanded ? 'var(--scd-accent, #ff9900)' : 'var(--scd-border)',
                     boxShadow: isExpanded ? '0 6px 20px rgba(255, 153, 0, 0.12)' : undefined,
                     transition: 'all 0.2s ease',
@@ -279,15 +280,17 @@ export function AboutEvent() {
                       {isExpanded ? '−' : '+'}
                     </span>
                   </div>
-                  <p className="tx" style={{ fontWeight: 500, fontSize: '12.5px', marginTop: '4px' }}>
-                    {f.short}
-                  </p>
                   {isExpanded && (
-                    <div className="kd" style={{ marginTop: '8px', background: 'var(--scd-surface-muted, #f4f6f8)', padding: '10px' }}>
-                      <p className="tx" style={{ fontSize: '12px', lineHeight: 1.5, margin: 0 }}>
-                        {f.detail}
+                    <>
+                      <p className="tx" style={{ fontWeight: 500, fontSize: '12.5px', marginTop: '6px' }}>
+                        {f.short}
                       </p>
-                    </div>
+                      <div className="kd" style={{ marginTop: '8px', background: 'var(--scd-surface-muted, #f4f6f8)', padding: '10px' }}>
+                        <p className="tx" style={{ fontSize: '12px', lineHeight: 1.5, margin: 0 }}>
+                          {f.detail}
+                        </p>
+                      </div>
+                    </>
                   )}
                 </div>
               );
