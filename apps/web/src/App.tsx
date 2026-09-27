@@ -15,7 +15,6 @@ import { FaqPage } from './pages/FaqPage.js';
 import { GalleryPage } from './pages/GalleryPage.js';
 import { PastEventsPage } from './pages/PastEventsPage.js';
 import { RegisterPage } from './pages/RegisterPage.js';
-import { SocialPostPage } from './pages/SocialPostPage.js';
 import { NotFoundPage } from './pages/NotFoundPage.js';
 
 function AppRoutes() {
@@ -36,14 +35,15 @@ function AppRoutes() {
         <Route path="faq" element={<FaqPage />} />
         <Route path="gallery" element={<GalleryPage />} />
         <Route path="past-events" element={<PastEventsPage />} />
-        <Route path="social-post" element={<SocialPostPage />} />
+        {/* Retired feature; keep old links resolving somewhere sane. */}
+        <Route path="social-post" element={<Navigate to="/" replace />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="login" element={<Navigate to="/" replace />} />
         <Route path="forgot-password" element={<Navigate to="/" replace />} />
         <Route path="reset-password" element={<Navigate to="/" replace />} />
         <Route path="verify-email" element={<Navigate to="/" replace />} />
         <Route path="complete-registration" element={<Navigate to="/register" replace />} />
-        <Route path="dashboard/social-post" element={<Navigate to="/social-post" replace />} />
+        <Route path="dashboard/social-post" element={<Navigate to="/" replace />} />
         <Route path="dashboard" element={<Navigate to="/" replace />} />
         <Route path="dashboard/*" element={<Navigate to="/" replace />} />
         <Route path="*" element={<NotFoundPage />} />
