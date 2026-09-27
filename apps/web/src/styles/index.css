@@ -2763,24 +2763,25 @@ img.speaker-photo {
   }
 
   .lanyard-strap {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
+    padding: 3px;
   }
 
   .lanyard-aws-logo {
-    width: 28px;
-    height: 17px;
+    width: 20px;
+    height: 12px;
   }
 
   .lanyard-buckle {
-    width: 30px;
-    height: 11px;
+    width: 22px;
+    height: 8px;
   }
 
   .lanyard-ring {
-    width: 18px;
-    height: 13px;
-    border-width: 3px;
+    width: 14px;
+    height: 10px;
+    border-width: 2.5px;
   }
 
   .lanyard-badge-card {
