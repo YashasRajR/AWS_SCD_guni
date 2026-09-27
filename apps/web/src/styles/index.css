@@ -127,6 +127,45 @@ ol {
 
 .section {
   padding: var(--space-16) 0;
+  position: relative;
+  isolation: isolate;
+}
+
+/* --- AWS-service doodle wallpaper (every content section except the hero) ---
+   One repeating SVG tile (cloud / server / database / lambda glyph), drawn
+   as a pseudo-element so it never needs touching per-component: any element
+   with .section or .filmstrip-section picks it up automatically. Kept behind
+   content via isolation+negative z-index, and slowly drifts for a "lively"
+   feel without being distracting (subtle opacity, paused for reduced motion). */
+.filmstrip-section {
+  position: relative;
+  isolation: isolate;
+}
+
+.section::before,
+.filmstrip-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20300%20300%22%20width=%22300%22%20height=%22300%22%3E%0A%3Cg%20fill=%22none%22%20stroke=%22%231B2733%22%20stroke-width=%222.4%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%0A%3Cg%20transform=%22translate%2818,26%29%22%3E%3Ccircle%20cx=%2210%22%20cy=%2220%22%20r=%228%22/%3E%3Ccircle%20cx=%2220%22%20cy=%2212%22%20r=%2211%22/%3E%3Ccircle%20cx=%2232%22%20cy=%2220%22%20r=%228%22/%3E%3Crect%20x=%224%22%20y=%2218%22%20width=%2234%22%20height=%2212%22%20rx=%226%22/%3E%3C/g%3E%0A%3Cg%20transform=%22translate%28208,18%29%22%3E%3Crect%20x=%220%22%20y=%220%22%20width=%2246%22%20height=%2230%22%20rx=%224%22/%3E%3Cline%20x1=%226%22%20y1=%229%22%20x2=%2240%22%20y2=%229%22/%3E%3Cline%20x1=%226%22%20y1=%2216%22%20x2=%2240%22%20y2=%2216%22/%3E%3Cline%20x1=%226%22%20y1=%2223%22%20x2=%2240%22%20y2=%2223%22/%3E%3C/g%3E%0A%3Cg%20transform=%22translate%2828,186%29%22%3E%3Cellipse%20cx=%2224%22%20cy=%228%22%20rx=%2220%22%20ry=%227%22/%3E%3Cpath%20d=%22M4%208%20L4%2042%20A20%207%200%200%200%2044%2042%20L44%208%22/%3E%3Cpath%20d=%22M4%2025%20A20%207%200%200%200%2044%2025%22/%3E%3C/g%3E%0A%3C/g%3E%0A%3Cg%20fill=%22none%22%20stroke=%22%23FF9900%22%20stroke-width=%222.6%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%0A%3Cg%20transform=%22translate%28212,188%29%22%3E%3Cpath%20d=%22M6%204%20L26%2056%20M18%2030%20L4%2056%22/%3E%3C/g%3E%0A%3C/g%3E%0A%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 300px 300px;
+  animation: service-doodles-drift 32s linear infinite;
+}
+
+@keyframes service-doodles-drift {
+  from { background-position: 0 0; }
+  to { background-position: 300px 300px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section::before,
+  .filmstrip-section::before {
+    animation: none;
+  }
 }
 
 .section-tight {
