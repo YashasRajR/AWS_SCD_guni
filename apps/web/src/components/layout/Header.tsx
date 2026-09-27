@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { NavLink, useLocation } from 'react-router-dom';
 import { REGISTER_URL } from '../../lib/registration.js';
 import type { SiteLink } from '@scd/types';
@@ -183,7 +184,10 @@ export function Header() {
         </div>
 
         {/* Full-Screen Mobile Navigation Overlay (Wireframe 1l) */}
-        {menuOpen && (
+        {/* Portaled to <body>: the header's own backdrop-filter (see .is-scrolled)
+            creates a containing block for fixed descendants, which otherwise
+            confines this "fullscreen" overlay to the header's own height. */}
+        {menuOpen && createPortal(
           <div
             id="mobile-nav-fullscreen"
             className="mobile-nav-fullscreen"
@@ -265,7 +269,8 @@ export function Header() {
                 )}
               </div>
             </div>
-          </div>
+          </div>,
+          document.body,
         )}
       </header>
     </>
