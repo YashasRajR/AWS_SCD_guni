@@ -4229,6 +4229,23 @@ img.speaker-photo {
   z-index: 2;
 }
 
+/* On mobile the hero should read as a proper full-screen opener instead
+   of a compact block sitting above a lot of visible grid background --
+   fill the viewport height and center the content in it. dvh accounts
+   for mobile browser chrome (address bar) shrinking the real viewport. */
+@media (max-width: 640px) {
+  .hero {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+  }
+
+  .hero-container {
+    width: 100%;
+  }
+}
+
 @media (max-width: 960px) {
   .hero-layout-row {
     flex-direction: column;
