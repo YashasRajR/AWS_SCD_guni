@@ -4537,6 +4537,14 @@ img.speaker-photo {
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
+@media (max-width: 640px) {
+  .team-member-card {
+    flex: 0 0 72vw;
+    max-width: 240px;
+    min-width: 200px;
+  }
+}
+
 .team-member-card:hover {
   transform: translateY(-5px);
   border-color: var(--accent);
