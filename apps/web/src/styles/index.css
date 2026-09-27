@@ -3882,6 +3882,20 @@ img.speaker-photo {
   }
 }
 
+/* --- Header lockup logo: no explicit width/height was set on the svg or
+   its wrapper, so it fell back to the browser's default 300x150 box and
+   got clipped by whatever container it sat in. --- */
+.mascot-lockup {
+  display: inline-flex;
+  align-items: center;
+}
+
+.mascot-lockup-svg {
+  height: 100%;
+  width: auto;
+  display: block;
+}
+
 /* --- Speakers Purple Duotone --- */
 .speaker-duotone-frame {
   position: relative;

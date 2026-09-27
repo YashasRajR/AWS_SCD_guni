@@ -25,19 +25,13 @@ export function Mascot({ variant = 'default', size, className = '' }: MascotProp
     return (
       <div className={`mascot-lockup ${className}`} style={pixelSize ? { height: pixelSize } : undefined}>
         <svg viewBox="0 0 160 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="mascot-lockup-svg">
-          {/* AWS SBG × GUNI Lockup */}
+          {/* AWS SBG GUNI Lockup */}
           <g transform="translate(2 4) scale(3.1111)">
             <path fillRule="evenodd" clipRule="evenodd" d="M 2 1 V 0 H 3 V 1 H 4 V 0 H 5 V 1 H 6 V 0 H 7 V 2 H 2 Z M 8 2 H 9 V 3 H 8 V 4 H 9 V 5 H 8 V 6 H 9 V 7 H 7 V 2 Z M 7 8 V 9 H 6 V 8 H 5 V 9 H 4 V 8 H 3 V 9 H 2 V 7 H 7 Z M 1 7 H 0 V 6 H 1 V 5 H 0 V 4 H 1 V 3 H 0 V 2 H 2 V 7 Z" fill="#232F3E" />
           </g>
           
           <text x="36" y="16" fill="#14181F" fontFamily="Inter, sans-serif" fontWeight="800" fontSize="11" letterSpacing="0.05em">
-            AWS SBG
-          </text>
-          <text x="88" y="16" fill="#FF9900" fontFamily="Inter, sans-serif" fontWeight="700" fontSize="11">
-            ×
-          </text>
-          <text x="100" y="16" fill="#14181F" fontFamily="Inter, sans-serif" fontWeight="800" fontSize="11" letterSpacing="0.05em">
-            GUNI
+            AWS SBG GUNI
           </text>
           <text x="36" y="27" fill="#656D79" fontFamily="JetBrains Mono, monospace" fontWeight="600" fontSize="7.5" letterSpacing="0.12em">
             STUDENTS COMMUNITY DAY
