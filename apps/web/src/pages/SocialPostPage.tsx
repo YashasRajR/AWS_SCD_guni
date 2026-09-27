@@ -58,15 +58,15 @@ export function SocialPostPage() {
     canvas.width = 1080;
     canvas.height = 1350;
 
-    // Dark Navy Gradient Background
+    // Purple Gradient Background (poster-inspired)
     const bgGrad = ctx.createLinearGradient(0, 0, 1080, 1350);
-    bgGrad.addColorStop(0, '#232F3E');
-    bgGrad.addColorStop(1, '#16191F');
+    bgGrad.addColorStop(0, '#7C3AED');
+    bgGrad.addColorStop(1, '#4C1D95');
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, 1080, 1350);
 
     // Subtle technical grid
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
     ctx.lineWidth = 1;
     for (let x = 0; x < 1080; x += 45) {
       ctx.beginPath();
@@ -81,71 +81,78 @@ export function SocialPostPage() {
       ctx.stroke();
     }
 
-    // Outer Orange Border
-    ctx.strokeStyle = '#FF9900';
+    // Outer White Border
+    ctx.strokeStyle = '#FFFFFF';
     ctx.lineWidth = 8;
     ctx.strokeRect(40, 40, 1000, 1270);
 
-    // Top Header
-    ctx.fillStyle = '#FF9900';
-    ctx.font = 'bold 30px monospace';
-    ctx.fillText('AWS STUDENTS COMMUNITY DAY 2026', 80, 120);
+    // Top Header pill badge
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.roundRect(80, 80, 560, 56, 28);
+    ctx.fill();
+    ctx.fillStyle = '#4C1D95';
+    ctx.font = 'bold 26px system-ui, sans-serif';
+    ctx.fillText('AWS STUDENTS COMMUNITY DAY 2026', 106, 116);
 
     // Headline (I'm Attending! / I Attended! / I Spoke!)
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '800 80px system-ui, sans-serif';
-    ctx.fillText(headline, 80, 230);
+    ctx.font = '900 84px system-ui, sans-serif';
+    ctx.fillText(headline, 80, 260);
 
     // Date & Venue
-    ctx.fillStyle = '#cfc9be';
-    ctx.font = '500 32px monospace';
-    ctx.fillText('8 October 2026 · Ganpat University, Mehsana', 80, 290);
+    ctx.fillStyle = '#E9D5FF';
+    ctx.font = '600 32px system-ui, sans-serif';
+    ctx.fillText('8 October 2026 · Ganpat University, Mehsana', 80, 320);
 
-    // Orange divider
+    // Orange divider (kept as brand accent)
     ctx.fillStyle = '#FF9900';
-    ctx.fillRect(80, 330, 180, 6);
+    ctx.fillRect(80, 360, 180, 8);
 
-    // Center Name Box
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
-    ctx.fillRect(80, 440, 920, 420);
-    ctx.strokeStyle = 'rgba(255, 153, 0, 0.4)';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(80, 440, 920, 420);
+    // Center Name Box (white card)
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.roundRect(80, 440, 920, 420, 24);
+    ctx.fill();
 
     // Name inside box
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '800 64px system-ui, sans-serif';
+    ctx.fillStyle = '#1E1033';
+    ctx.font = '900 64px system-ui, sans-serif';
     ctx.fillText(name || 'Attendee Name', 120, 560);
 
     // College
-    ctx.fillStyle = '#FF9900';
-    ctx.font = '600 36px system-ui, sans-serif';
+    ctx.fillStyle = '#7C3AED';
+    ctx.font = '700 36px system-ui, sans-serif';
     ctx.fillText(college || 'Ganpat University', 120, 630);
 
     // Track/Topic
-    ctx.fillStyle = '#9a958c';
-    ctx.font = '30px monospace';
+    ctx.fillStyle = '#6b6478';
+    ctx.font = '600 30px system-ui, sans-serif';
     ctx.fillText(`Track: ${topic}`, 120, 700);
 
-    // Check-in status
+    // Check-in status pill
     const statusText =
       mode === 'spoke'
         ? 'STATUS: FEATURED SPEAKER'
         : mode === 'attended'
           ? 'STATUS: ATTENDED'
           : 'STATUS: CONFIRMED PASS';
+    ctx.fillStyle = '#4C1D95';
+    ctx.beginPath();
+    ctx.roundRect(120, 750, 420, 52, 26);
+    ctx.fill();
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 28px monospace';
-    ctx.fillText(statusText, 120, 790);
+    ctx.font = 'bold 26px system-ui, sans-serif';
+    ctx.fillText(statusText, 144, 785);
 
-    // Mascot representation / circle
+    // Badge circle
     ctx.save();
     ctx.beginPath();
     ctx.arc(880, 560, 60, 0, Math.PI * 2);
     ctx.fillStyle = '#FF9900';
     ctx.fill();
-    ctx.fillStyle = '#232F3E';
-    ctx.font = 'bold 44px monospace';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '900 44px system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('SCD', 880, 560);
@@ -153,16 +160,16 @@ export function SocialPostPage() {
 
     // Key Highlights strip
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '32px system-ui, sans-serif';
+    ctx.font = '700 32px system-ui, sans-serif';
     ctx.fillText('12 Sessions   ·   4 Workshops   ·   Hackathon & Quiz', 80, 960);
 
     // Footer
     ctx.fillStyle = '#FF9900';
-    ctx.font = 'bold 36px monospace';
+    ctx.font = '900 36px system-ui, sans-serif';
     ctx.fillText('@aws.sbg_guni', 80, 1220);
 
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-    ctx.font = '28px system-ui, sans-serif';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+    ctx.font = '600 28px system-ui, sans-serif';
     ctx.fillText('Centre of Excellence · Ganpat Vidyanagar, Gujarat', 80, 1260);
   }, [headline, name, college, topic]);
 
@@ -238,7 +245,7 @@ export function SocialPostPage() {
                   border: '1.5px solid var(--scd-primary)',
                   boxShadow: 'var(--scd-shadow-sm)',
                   position: 'relative',
-                  background: '#232F3E',
+                  background: '#4C1D95',
                 }}
               >
                 <canvas
