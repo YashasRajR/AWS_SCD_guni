@@ -3995,12 +3995,26 @@ img.speaker-photo {
 }
 
 /* --- Confetti Simulation (<=40 particles) --- */
+.confetti-burst {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 5;
+}
+
 .confetti-particle {
   position: absolute;
   width: 8px;
   height: 8px;
   border-radius: 2px;
   animation: confettiFall 1.8s ease-in forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confetti-burst {
+    display: none;
+  }
 }
 
 @keyframes confettiFall {

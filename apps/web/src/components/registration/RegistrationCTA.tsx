@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { REGISTER_URL } from '../../lib/registration.js';
+import { ConfettiBurst } from '../ui/ConfettiBurst.js';
 import { useEvent } from '../../lib/queries.js';
 import { formatDate, getRegistrationPhase } from '../../lib/format.js';
 
@@ -18,6 +20,7 @@ export function RegistrationCTA({
 }: RegistrationCTAProps) {
   const { data: event } = useEvent();
   const phase = getRegistrationPhase(event);
+  const [confettiKey, setConfettiKey] = useState(0);
 
   const facts = [
     { label: 'Date', value: event?.eventDate ? formatDate(event.eventDate) : '8 Oct' },
@@ -176,7 +179,8 @@ export function RegistrationCTA({
         </div>
 
         {/* Action Button */}
-        <div>
+        <div style={{ position: 'relative' }}>
+          {confettiKey > 0 && <ConfettiBurst key={confettiKey} onDone={() => setConfettiKey(0)} />}
           {phase === 'not-open' ? (
             <div className="r" style={{ alignItems: 'center', gap: '12px' }}>
               <span
@@ -228,6 +232,7 @@ export function RegistrationCTA({
               target="_blank"
               rel="noopener noreferrer"
               className="btn o hero-cta-pulse"
+              onClick={() => setConfettiKey((k) => k + 1)}
               style={{
                 background: '#FF9900',
                 color: '#14181F',
