@@ -3864,6 +3864,24 @@ img.speaker-photo {
   z-index: 10;
 }
 
+/* --- Community section cards: horizontal scroll on mobile instead of a
+   tall full-width stack, matching the ticket-plan / past-events carousels. --- */
+@media (max-width: 640px) {
+  .community-cards-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+
+  .community-card {
+    flex: 0 0 78vw;
+    max-width: 300px;
+    scroll-snap-align: start;
+  }
+}
+
 /* --- Speakers Purple Duotone --- */
 .speaker-duotone-frame {
   position: relative;

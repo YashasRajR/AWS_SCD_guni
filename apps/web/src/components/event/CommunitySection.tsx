@@ -77,11 +77,11 @@ export function CommunitySection() {
               </p>
             </div>
 
-            <div className="r" style={{ flexWrap: 'wrap', gap: '14px' }}>
+            <div className="r community-cards-row" style={{ flexWrap: 'wrap', gap: '14px' }}>
               {COMMUNITY_CARDS.map((card) => (
                 <div
                   key={card.tag}
-                  className="kd"
+                  className="kd community-card"
                   style={{
                     flex: '1 1 240px',
                     background: 'rgba(255, 255, 255, 0.05)',
