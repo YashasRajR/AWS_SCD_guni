@@ -37,7 +37,6 @@ export function RegistrationCTA({
         overflow: 'hidden',
         borderRadius: 'var(--radius-sm, 4px)',
         border: '1.5px solid var(--primary, #232F3E)',
-        background: '#1A222D',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-start',
