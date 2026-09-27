@@ -6,10 +6,8 @@
  */
 export function BrandMark({ size = 28, className = '' }: { size?: number; className?: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" className={className} aria-hidden="true">
-      <rect x="1" y="1" width="30" height="30" rx="6" fill="#232F3E" stroke="#FF9900" strokeWidth="2" />
-      <path d="M9 21L16 9L23 21" stroke="#FF9900" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      <path d="M12.5 17H19.5" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" />
+    <svg width={size} height={size} viewBox="0 0 9 9" className={className} aria-hidden="true">
+      <path fillRule="evenodd" clipRule="evenodd" d="M 2 1 V 0 H 3 V 1 H 4 V 0 H 5 V 1 H 6 V 0 H 7 V 2 H 2 Z M 8 2 H 9 V 3 H 8 V 4 H 9 V 5 H 8 V 6 H 9 V 7 H 7 V 2 Z M 7 8 V 9 H 6 V 8 H 5 V 9 H 4 V 8 H 3 V 9 H 2 V 7 H 7 Z M 1 7 H 0 V 6 H 1 V 5 H 0 V 4 H 1 V 3 H 0 V 2 H 2 V 7 Z" fill="#232F3E" />
     </svg>
   );
 }
@@ -28,9 +26,9 @@ export function Mascot({ variant = 'default', size, className = '' }: MascotProp
       <div className={`mascot-lockup ${className}`} style={pixelSize ? { height: pixelSize } : undefined}>
         <svg viewBox="0 0 160 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="mascot-lockup-svg">
           {/* AWS SBG × GUNI Lockup */}
-          <rect x="2" y="4" width="28" height="28" rx="4" fill="#232F3E" stroke="#FF9900" strokeWidth="1.5" />
-          <path d="M9 22L16 11L23 22" stroke="#FF9900" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M12 18H20" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
+          <g transform="translate(2 4) scale(3.1111)">
+            <path fillRule="evenodd" clipRule="evenodd" d="M 2 1 V 0 H 3 V 1 H 4 V 0 H 5 V 1 H 6 V 0 H 7 V 2 H 2 Z M 8 2 H 9 V 3 H 8 V 4 H 9 V 5 H 8 V 6 H 9 V 7 H 7 V 2 Z M 7 8 V 9 H 6 V 8 H 5 V 9 H 4 V 8 H 3 V 9 H 2 V 7 H 7 Z M 1 7 H 0 V 6 H 1 V 5 H 0 V 4 H 1 V 3 H 0 V 2 H 2 V 7 Z" fill="#232F3E" />
+          </g>
           
           <text x="36" y="16" fill="#14181F" fontFamily="Inter, sans-serif" fontWeight="800" fontSize="11" letterSpacing="0.05em">
             AWS SBG
