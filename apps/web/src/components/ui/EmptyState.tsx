@@ -13,7 +13,6 @@ export function EmptyState({ message, action }: EmptyStateProps) {
       <Mascot variant="default" size={68} />
       <p className="lbl" style={{ fontSize: '15px' }}>{message}</p>
       {action && <div style={{ marginTop: '4px' }}>{action}</div>}
-      <p className="mo" style={{ color: 'var(--border-dashed)', marginTop: '4px' }}>Empty state</p>
     </div>
   );
 }
