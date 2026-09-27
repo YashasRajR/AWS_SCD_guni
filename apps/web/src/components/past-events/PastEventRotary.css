@@ -65,6 +65,23 @@
   .past-events-rotary-item {
     width: clamp(220px, 68vw, 260px);
     flex: 0 0 clamp(220px, 68vw, 260px);
+    scroll-snap-align: center;
+  }
+
+  /* The auto-scrolling marquee only reads well when several cards fit the
+     viewport at once, so on mobile it just constantly shows two cards
+     half-cropped at both edges. Swap it for a manual swipe-and-snap row
+     instead, same fallback already used for prefers-reduced-motion. */
+  .past-events-rotary-track {
+    animation: none !important;
+  }
+
+  .past-events-rotary-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    mask-image: none;
+    -webkit-mask-image: none;
   }
 }
 
