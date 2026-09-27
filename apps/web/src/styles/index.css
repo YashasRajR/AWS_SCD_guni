@@ -3841,36 +3841,6 @@ img.speaker-photo {
   z-index: 10;
 }
 
-/* --- Highlights Satellite Layout --- */
-.highlights-matrix {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
-
-@media (min-width: 860px) {
-  .highlights-matrix {
-    flex-wrap: nowrap;
-  }
-}
-
-.highlights-satellite-btn {
-  background: #fff;
-  border: 1.25px solid var(--primary);
-  border-radius: var(--radius-sm);
-  padding: 12px;
-  text-align: left;
-  cursor: pointer;
-  transition: all var(--duration-fast);
-}
-
-.highlights-satellite-btn:hover, .highlights-satellite-btn.active {
-  background: var(--accent);
-  transform: scale(1.02);
-  border-color: var(--primary);
-}
-
 /* --- Speakers Purple Duotone --- */
 .speaker-duotone-frame {
   position: relative;
@@ -4651,9 +4621,25 @@ img.speaker-photo {
   align-items: stretch;
 }
 
+.highlights-info-card {
+  flex: 1.4 1 340px;
+  min-height: 180px;
+}
+
+.highlights-satellites-col {
+  flex: 1 1 280px;
+}
+
 @media (max-width: 768px) {
   .highlights-matrix {
     flex-direction: column;
+  }
+
+  .highlights-info-card,
+  .highlights-satellites-col {
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
   }
 }
 

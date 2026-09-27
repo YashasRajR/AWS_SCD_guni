@@ -56,10 +56,8 @@ export function EventHighlights() {
         <div className="r highlights-matrix" style={{ alignItems: 'stretch' }}>
           {/* Left Central Card (Info Layer) */}
           <div
-            className="k"
+            className="k highlights-info-card"
             style={{
-              flex: '1.4 1 340px',
-              minHeight: '180px',
               justifyContent: 'space-between',
               background: '#fff',
               border: '1.5px solid var(--primary, #232F3E)',
@@ -111,7 +109,7 @@ export function EventHighlights() {
           </div>
 
           {/* Right Satellites (2 columns of 3) */}
-          <div className="c" style={{ flex: '1 1 280px', gap: '10px' }}>
+          <div className="c highlights-satellites-col" style={{ gap: '10px' }}>
             <div className="r" style={{ gap: '10px' }}>
               {HIGHLIGHTS.slice(0, 2).map((h) => (
                 <button
