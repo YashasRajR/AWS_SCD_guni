@@ -1,5 +1,4 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { Mascot } from './Mascot.js';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -25,7 +24,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       return (
         <div className="full-page-status" style={{ padding: '40px 20px' }}>
           <div className="k mut" style={{ maxWidth: '420px', margin: '0 auto', alignItems: 'center', textAlign: 'center', padding: '28px', gap: '14px' }} role="alert">
-            <Mascot variant="sad" size={56} />
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+              <circle cx="24" cy="24" r="22" fill="#232F3E" />
+              <path d="M24 15V27" stroke="#FF9900" strokeWidth="3" strokeLinecap="round" />
+              <circle cx="24" cy="33" r="2.2" fill="#FF9900" />
+            </svg>
             <p className="lbl" style={{ fontSize: '16px' }}>Something broke on our side.</p>
             <p className="tx" style={{ color: 'var(--muted)' }}>This page hit an unexpected error. Reloading usually fixes it.</p>
             <div className="r" style={{ gap: '10px' }}>

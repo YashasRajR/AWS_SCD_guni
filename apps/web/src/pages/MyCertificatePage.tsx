@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import type { Certificate } from '@scd/types';
 import { useResource } from '../lib/hooks.js';
 import { useDocumentHead } from '../lib/seo.js';
-import { Mascot } from '../components/ui/Mascot.js';
+import { BrandMark } from '../components/ui/Mascot.js';
 import { useAuth } from '../lib/auth.js';
 import { useToast } from '../lib/toast.js';
 
@@ -73,7 +73,12 @@ export function MyCertificatePage() {
                 background: 'var(--scd-surface-muted)',
               }}
             >
-              <Mascot variant="default" size={68} />
+              <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+                <circle cx="28" cy="28" r="26" stroke="var(--border-dashed, #C7CDD6)" strokeWidth="1.5" strokeDasharray="3 4" />
+                <rect x="18" y="26" width="20" height="16" rx="3" fill="#232F3E" />
+                <path d="M22 26V20a6 6 0 0 1 12 0V26" stroke="#FF9900" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+                <circle cx="28" cy="34" r="2.4" fill="#FF9900" />
+              </svg>
               <h2 className="d3" style={{ margin: 0, fontSize: '18px' }}>Not available yet</h2>
               <p className="tx" style={{ color: 'var(--scd-muted)', maxWidth: '360px', fontSize: '13px' }}>
                 Your certificate unlocks once attendance is verified on 8 October 2026. Complete the check-in station to unlock your verified credential.
@@ -113,7 +118,7 @@ export function MyCertificatePage() {
 
                 <div className="r" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                   <div className="r" style={{ alignItems: 'center', gap: '8px' }}>
-                    <Mascot variant="sm" size={32} />
+                    <BrandMark size={32} />
                     <span className="mo" style={{ fontSize: '11px', fontWeight: 700 }}>AWS SCD 2026</span>
                   </div>
                   <span className="mo" style={{ fontSize: '10px', color: 'var(--scd-muted)' }}>

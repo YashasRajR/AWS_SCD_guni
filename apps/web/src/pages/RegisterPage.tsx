@@ -4,7 +4,7 @@ import { emailSchema, passwordSchema, phoneSchema } from '@scd/validation';
 import { useAuth } from '../lib/auth.js';
 import { useDocumentHead } from '../lib/seo.js';
 import { PasswordInput } from '../components/ui/PasswordInput.js';
-import { Mascot } from '../components/ui/Mascot.js';
+import { BrandMark } from '../components/ui/Mascot.js';
 
 const CURRENT_YEAR = new Date().getFullYear();
 const PASSOUT_YEAR_OPTIONS = Array.from({ length: 8 }, (_, i) => String(CURRENT_YEAR - 1 + i));
@@ -732,7 +732,7 @@ export function RegisterPage() {
             </div>
 
             <div style={{ padding: '24px 0', display: 'flex', justifyContent: 'center' }}>
-              <Mascot variant="wave" size={140} />
+              <BrandMark size={96} />
             </div>
 
             <div className="c" style={{ gap: '4px' }}>

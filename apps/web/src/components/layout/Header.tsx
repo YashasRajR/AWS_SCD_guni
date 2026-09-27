@@ -265,7 +265,6 @@ export function Header() {
                   </a>
                 )}
               </div>
-              <Mascot variant="default" size={64} />
             </div>
           </div>
         )}

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import type { EventWrapped } from '@scd/types';
 import { useResource } from '../lib/hooks.js';
 import { useDocumentHead } from '../lib/seo.js';
-import { Mascot } from '../components/ui/Mascot.js';
+import { BrandMark } from '../components/ui/Mascot.js';
 import { useToast } from '../lib/toast.js';
 
 const SLIDE_MS = 5000;
@@ -300,7 +300,7 @@ export function EventWrappedPage() {
                 <p className="mo" style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '11px' }}>
                   0{index + 1} / 0{slides.length} {paused ? '· paused' : '· hold to pause'}
                 </p>
-                <Mascot variant="sm" size={24} />
+                <BrandMark size={24} />
               </div>
 
               {/* Main Content */}
@@ -405,7 +405,7 @@ export function EventWrappedPage() {
                   textAlign: 'center',
                 }}
               >
-                <Mascot variant="sm" size={36} />
+                <BrandMark size={36} />
                 <p className="mo" style={{ color: 'var(--scd-accent)', fontSize: '9px', marginTop: '6px' }}>
                   4:5 CARD
                 </p>

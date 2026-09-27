@@ -1,3 +1,19 @@
+/**
+ * Small icon-only version of the header lockup badge -- no face, just the
+ * brand mark. Used wherever a compact logo watermark is needed (certificate,
+ * share cards) now that the illustrated mascot character has been removed
+ * from those spots.
+ */
+export function BrandMark({ size = 28, className = '' }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <rect x="1" y="1" width="30" height="30" rx="6" fill="#232F3E" stroke="#FF9900" strokeWidth="2" />
+      <path d="M9 21L16 9L23 21" stroke="#FF9900" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <path d="M12.5 17H19.5" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 interface MascotProps {
   variant?: 'default' | 'wave' | 'sm' | 'sad' | 'lockup';
   size?: number | string;
