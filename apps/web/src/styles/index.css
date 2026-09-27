@@ -2748,18 +2748,14 @@ img.speaker-photo {
    icon and headline text no longer look oversized next to a narrow card. */
 @media (max-width: 640px) {
   .lanyard-tickets-row {
-    flex-direction: column;
-    align-items: center;
-    overflow-x: visible;
-    flex-wrap: wrap;
-    gap: 28px;
+    gap: 16px;
     padding: 8px 12px 24px;
   }
 
   .lanyard-ticket-wrapper {
-    width: 100%;
-    max-width: 320px;
-    flex: 0 0 auto;
+    flex: 0 0 82vw;
+    width: 82vw;
+    max-width: 300px;
   }
 
   .lanyard-strap {
