@@ -61,6 +61,13 @@
   flex-direction: column;
 }
 
+@media (max-width: 640px) {
+  .past-events-rotary-item {
+    width: clamp(220px, 68vw, 260px);
+    flex: 0 0 clamp(220px, 68vw, 260px);
+  }
+}
+
 .past-events-rotary-item .past-event-card {
   height: 100%;
   display: flex;
