@@ -23,15 +23,6 @@ export function RegistrationCTA({
     { label: 'Date', value: event?.eventDate ? formatDate(event.eventDate) : '8 Oct' },
     { label: 'Where', value: event?.venue ? 'GUNI' : 'GUNI' },
     {
-      label: 'Entry',
-      value:
-        event?.registrationFee === '0.00'
-          ? 'Free'
-          : event?.registrationFee
-          ? `${event.currency} ${event.registrationFee}`
-          : 'Free',
-    },
-    {
       label: 'Status',
       value: phase === 'open' ? 'Open' : phase === 'not-open' ? 'Opening soon' : 'Closed',
     },
