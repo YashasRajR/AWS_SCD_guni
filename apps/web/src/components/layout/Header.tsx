@@ -117,7 +117,7 @@ export function Header() {
             <BuilderMark size={28} className="brand-builder-mark" />
             <span className="brand-name">
               <span className="brand-name-full">AWS Student Builder Group</span>
-              <span className="brand-name-short">AWS SBG</span>
+              <span className="brand-name-short">AWS SBG GUNI</span>
             </span>
           </NavLink>
 
