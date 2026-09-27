@@ -2469,7 +2469,7 @@ img.speaker-photo {
 .lanyard-tickets-row {
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: safe center;
   align-items: flex-start;
   gap: 36px;
   flex-wrap: nowrap;
