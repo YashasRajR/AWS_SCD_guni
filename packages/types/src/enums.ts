@@ -93,6 +93,7 @@ export const EMAIL_TEMPLATES = [
   'event-wrapped',
   'waitlisted',
   'registration-rejected',
+  'admin-invite',
 ] as const;
 export type EmailTemplate = (typeof EMAIL_TEMPLATES)[number];
 

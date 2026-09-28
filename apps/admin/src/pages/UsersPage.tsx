@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import type { RoleName, User } from '@scd/types';
 import { ROLE_NAMES } from '@scd/types';
 import { describeApiError } from '@scd/api-client';
@@ -29,6 +29,36 @@ export function UsersPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [rowError, setRowError] = useState<{ id: string; message: string } | null>(null);
   const [pendingRole, setPendingRole] = useState<Record<string, RoleName>>({});
+
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<RoleName>('ADMIN');
+  const [inviteBusy, setInviteBusy] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [inviteMessage, setInviteMessage] = useState<string | null>(null);
+
+  const invite = async (e: FormEvent) => {
+    e.preventDefault();
+    setInviteBusy(true);
+    setInviteError(null);
+    setInviteMessage(null);
+    try {
+      const result = await apiClient.post<{ user: UserWithRoles; created: boolean }>('/admin/users/invite', {
+        email: inviteEmail,
+        role: inviteRole,
+      });
+      setInviteMessage(
+        result.created
+          ? `Invite sent to ${result.user.email} — they'll get an email to set a password.`
+          : `${result.user.email} already had an account — ${inviteRole} granted.`,
+      );
+      setInviteEmail('');
+      reload();
+    } catch (err) {
+      setInviteError(describeApiError(err));
+    } finally {
+      setInviteBusy(false);
+    }
+  };
 
   const grantRole = async (user: UserWithRoles) => {
     const role = pendingRole[user.id];
@@ -127,6 +157,44 @@ export function UsersPage() {
             Grant or revoke roles for any registered account. Restricted to SUPER_ADMIN.
           </p>
         </div>
+      </div>
+
+      <div className="panel">
+        <h2 style={{ marginTop: 0 }}>Add admin</h2>
+        <p className="page-description">
+          Enter an email and a role. If they already have an account, the role is granted immediately.
+          Otherwise a new account is created and they're emailed a link to set their password.
+        </p>
+        <form className="resource-form" onSubmit={invite}>
+          <div className="form-field">
+            <label htmlFor="invite-email">Email</label>
+            <input
+              id="invite-email"
+              type="email"
+              value={inviteEmail}
+              placeholder="name@example.com"
+              required
+              onChange={(e) => setInviteEmail(e.target.value)}
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="invite-role">Role</label>
+            <select id="invite-role" value={inviteRole} onChange={(e) => setInviteRole(e.target.value as RoleName)}>
+              {ROLE_NAMES.map((role) => (
+                <option key={role} value={role}>
+                  {role}
+                </option>
+              ))}
+            </select>
+          </div>
+          {inviteError && <p className="form-error">{inviteError}</p>}
+          {inviteMessage && <p className="form-success">{inviteMessage}</p>}
+          <div className="form-actions">
+            <button type="submit" className="btn btn-primary" disabled={inviteBusy || !inviteEmail}>
+              {inviteBusy ? 'Adding…' : 'Add admin'}
+            </button>
+          </div>
+        </form>
       </div>
 
       <Table columns={columns} rows={items} getRowId={(r) => r.id} loading={loading} error={error} />

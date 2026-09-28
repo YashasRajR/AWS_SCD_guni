@@ -283,6 +283,14 @@ export function renderEmailTemplate(
         `We received a request to reset your password:\n${link}\n\nThis link expires in ${str('ttl', '1 hour')}. If you didn't request this, you can ignore this email.`,
       );
     }
+    case 'admin-invite': {
+      const link = str('link');
+      const role = str('role', 'admin');
+      return wrap(
+        `<p>Hi there,</p><p>You've been added as a <strong>${escapeHtml(role)}</strong> on AWS Student Community Day 2026. Set a password to activate your account.</p>${button('Set your password', link)}<p>Or paste this link into your browser:<br><span style="word-break:break-all;color:#1a56b0;">${escapeHtml(link)}</span></p><p>This link expires in ${escapeHtml(str('ttl', '1 hour'))}. Once set, sign in to the admin portal with this email address.</p>`,
+        `You've been added as a ${role} on AWS Student Community Day 2026. Set a password to activate your account:\n${link}\n\nThis link expires in ${str('ttl', '1 hour')}. Once set, sign in to the admin portal with this email address.`,
+      );
+    }
     case 'registration-confirmation': {
       const name = str('fullName', 'there');
       const number = str('registrationNumber');

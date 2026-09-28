@@ -1,5 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { randomBytes } from 'crypto';
+import type { RoleName } from '@scd/types';
 import type {
   ChangePasswordInput,
   ForgotPasswordInput,
@@ -13,7 +15,7 @@ import { getEnv } from '../../config/env.js';
 import { withTransaction } from '../../config/database.js';
 import { AppError } from '../../utils/errors.js';
 import { usersRepository } from '../users/users.repository.js';
-import { toPublicUser } from '../users/users.types.js';
+import { toPublicUser, toUserWithRoles, type UserWithRoles } from '../users/users.types.js';
 import { attendeesRepository } from '../attendees/attendees.repository.js';
 import { emailsService } from '../emails/emails.service.js';
 import { auditLogsService } from '../audit-logs/audit-logs.service.js';
@@ -111,6 +113,47 @@ export const authService = {
     const tokens = await issueSessionTokens(user.id, user.email, roles, permissions);
 
     return { user: toPublicUser(user), ...tokens };
+  },
+
+  /**
+   * Admin-portal onboarding: SUPER_ADMIN-only (gated at the route, same as
+   * assignRole/revokeRole). If the email already has an account, this is
+   * just a role grant. Otherwise it creates one with an unusable random
+   * password -- the invitee never sees it, they set their own via the same
+   * set-password link/token as a password reset, so there's no separate
+   * invite-auth path to secure.
+   */
+  async inviteAdmin(email: string, role: RoleName): Promise<{ user: UserWithRoles; created: boolean }> {
+    const existing = await usersRepository.findByEmail(email);
+    if (existing) {
+      await usersRepository.assignRole(existing.id, role);
+      const updated = await usersRepository.findByIdWithRoles(existing.id);
+      return { user: toUserWithRoles(updated!), created: false };
+    }
+
+    const placeholderPassword = randomBytes(32).toString('hex');
+    const passwordHash = await bcrypt.hash(placeholderPassword, BCRYPT_ROUNDS);
+
+    const user = await withTransaction(async (client) => {
+      const created = await usersRepository.create(email, passwordHash, client);
+      await usersRepository.assignRole(created.id, role, client);
+      return created;
+    });
+
+    const env = getEnv();
+    const resetToken = await authRepository.createPasswordResetToken(
+      user.id,
+      parseDurationMs(env.PASSWORD_RESET_TOKEN_TTL),
+    );
+    const resetLink = `${env.PUBLIC_APP_URL}/reset-password?token=${resetToken}`;
+    await emailsService.enqueue(user.id, user.email, 'admin-invite', "You've been added to AWS SCD 2026", {
+      link: resetLink,
+      ttl: env.PASSWORD_RESET_TOKEN_TTL,
+      role,
+    });
+
+    const withRoles = await usersRepository.findByIdWithRoles(user.id);
+    return { user: toUserWithRoles(withRoles!), created: true };
   },
 
   async login(input: LoginInput): Promise<AuthResult> {

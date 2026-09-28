@@ -5,6 +5,7 @@ import {
   roleNameSchema,
   userIdParamSchema,
   userIdAndRoleParamSchema,
+  inviteUserSchema,
 } from '@scd/validation';
 import { authenticate } from '../../middleware/authentication/index.js';
 import { requirePermission } from '../../middleware/authorization/index.js';
@@ -23,6 +24,14 @@ usersAdminRouter.get(
   requirePermission(PERMISSIONS.MANAGE_ROLES),
   validate(paginationQuerySchema, 'query'),
   asyncHandler(usersController.adminList),
+);
+
+usersAdminRouter.post(
+  '/invite',
+  authenticate,
+  requirePermission(PERMISSIONS.MANAGE_ROLES),
+  validate(inviteUserSchema),
+  asyncHandler(usersController.invite),
 );
 
 usersAdminRouter.post(

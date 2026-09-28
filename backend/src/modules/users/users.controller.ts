@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
-import type { PaginationQuery, RoleNameInput } from '@scd/validation';
+import type { InviteUserInput, PaginationQuery, RoleNameInput } from '@scd/validation';
 import { usersService } from './users.service.js';
+import { authService } from '../auth/auth.service.js';
 import { auditLogsService } from '../audit-logs/audit-logs.service.js';
 import { sendSuccess } from '../../utils/response.js';
 
@@ -9,6 +10,17 @@ export const usersController = {
   async adminList(req: Request, res: Response): Promise<void> {
     const params = req.query as unknown as PaginationQuery;
     sendSuccess(res, await usersService.adminList(params));
+  },
+
+  async invite(req: Request, res: Response): Promise<void> {
+    const { email, role } = req.body as InviteUserInput;
+    const result = await authService.inviteAdmin(email, role);
+    await auditLogsService.log(req, 'ADMIN_INVITED', 'user', result.user.id, { email, role, created: result.created });
+    sendSuccess(
+      res,
+      result,
+      result.created ? `Invite sent to ${email}.` : `${email} already had an account -- ${role} granted.`,
+    );
   },
 
   async assignRole(req: Request, res: Response): Promise<void> {
