@@ -8,7 +8,7 @@ import { errorHandler, notFoundHandler } from '../middleware/error-handler/index
 import { healthRouter } from '../routes/health.js';
 import { readyRouter } from '../routes/ready.js';
 import { apiRouter } from '../routes/index.js';
-import { resolveUploadDir } from '../integrations/storage/local-storage.js';
+import { uploadsServeRouter } from '../routes/uploads-serve.js';
 
 /**
  * Conceptual pipeline (per the architecture doc):
@@ -96,7 +96,7 @@ export function createApp(): Express {
       res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
       next();
     },
-    express.static(resolveUploadDir()),
+    uploadsServeRouter,
   );
 
   app.use('/api/v1', createApiRateLimiter(), apiRouter);

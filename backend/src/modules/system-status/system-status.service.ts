@@ -1,7 +1,5 @@
-import { access, constants as fsConstants } from 'node:fs/promises';
 import { checkDatabaseConnection, getPool } from '../../config/database.js';
 import { getEnv } from '../../config/env.js';
-import { resolveUploadDir } from '../../integrations/storage/local-storage.js';
 import type { IntegrationStatus, SystemStatus } from './system-status.types.js';
 
 /**
@@ -15,11 +13,8 @@ import type { IntegrationStatus, SystemStatus } from './system-status.types.js';
 export const systemStatusService = {
   async getStatus(): Promise<SystemStatus> {
     const env = getEnv();
-    const [databaseOk, storageOk, queueDepth, sheetsQueueDepth] = await Promise.all([
+    const [databaseOk, queueDepth, sheetsQueueDepth] = await Promise.all([
       checkDatabaseConnection(),
-      access(resolveUploadDir(), fsConstants.W_OK)
-        .then(() => true)
-        .catch(() => false),
       getPool()
         .query<{ count: string }>(
           `SELECT count(*)::text AS count FROM email_records WHERE status IN ('PENDING', 'RETRYING')`,
@@ -50,11 +45,13 @@ export const systemStatusService = {
       queueDepth,
     };
 
+    // Uploads are stored as Postgres blobs (see integrations/storage/db-storage.ts),
+    // so storage health is just database health -- no separate disk check.
     const storage: IntegrationStatus = {
-      name: 'Local disk',
+      name: 'Postgres (uploads table)',
       configured: true,
-      status: storageOk ? 'ok' : 'error',
-      detail: storageOk ? `Writable: ${resolveUploadDir()}` : 'Upload directory is not writable.',
+      status: databaseOk ? 'ok' : 'error',
+      detail: databaseOk ? 'Connected' : 'Connection failed',
     };
 
     const sheetsConfigured = Boolean(
