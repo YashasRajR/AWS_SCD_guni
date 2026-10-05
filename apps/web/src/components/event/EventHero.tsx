@@ -5,6 +5,7 @@ import { formatDate } from '../../lib/format.js';
 import { CountdownTimer } from './CountdownTimer.js';
 import { CloudQuestGameBoy } from '../ui/CloudQuestGameBoy.js';
 import { ShapeGrid } from '../ui/ShapeGrid.js';
+import { EventSealBadge } from '../ui/EventSealBadge.js';
 
 export function EventHero() {
   const { data: event, loading: eventLoading, notFound } = useEvent();
@@ -32,6 +33,7 @@ export function EventHero() {
         />
       </div>
       <div className="container hero-container" style={{ position: 'relative', zIndex: 1 }}>
+        <EventSealBadge />
         {eventLoading ? (
           <div style={{ minHeight: '260px', display: 'flex', alignItems: 'center' }}>
             <p className="mo">Loading event details…</p>

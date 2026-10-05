@@ -23,7 +23,7 @@ export function RegistrationCTA({
   const [confettiKey, setConfettiKey] = useState(0);
 
   const facts = [
-    { label: 'Date', value: event?.eventDate ? formatDate(event.eventDate) : '8 Oct' },
+    { label: 'Date', value: event?.eventDate ? formatDate(event.eventDate) : '6th October 2026' },
     { label: 'Where', value: event?.venue ? 'GUNI' : 'GUNI' },
     {
       label: 'Status',

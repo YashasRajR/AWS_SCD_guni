@@ -81,7 +81,7 @@ export function MyCertificatePage() {
               </svg>
               <h2 className="d3" style={{ margin: 0, fontSize: '18px' }}>Not available yet</h2>
               <p className="tx" style={{ color: 'var(--scd-muted)', maxWidth: '360px', fontSize: '13px' }}>
-                Your certificate unlocks once attendance is verified on 8 October 2026. Complete the check-in station to unlock your verified credential.
+                Your certificate unlocks once attendance is verified on 6th October 2026. Complete the check-in station to unlock your verified credential.
               </p>
               <span className="mo" style={{ color: 'var(--scd-muted)', fontSize: '10px', marginTop: '6px' }}>
                 Gated state · Wireframe 1j
@@ -137,14 +137,14 @@ export function MyCertificatePage() {
                     {attendeeName}
                   </h2>
                   <p className="tx" style={{ fontSize: '13px', color: 'var(--scd-fg)' }}>
-                    for active participation in AWS Students Community Day 2026, held at the Centre of Excellence, Ganpat University, Gujarat on 8 October 2026.
+                    for active participation in AWS Students Community Day 2026, held at the Centre of Excellence, Ganpat University, Gujarat on 6th October 2026.
                   </p>
                 </div>
 
                 <div className="r" style={{ justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid var(--scd-border)', paddingTop: '14px' }}>
                   <div className="c" style={{ gap: '2px' }}>
                     <p className="mo" style={{ fontSize: '9px', color: 'var(--scd-muted)' }}>DATE</p>
-                    <p className="lbl" style={{ fontSize: '11px' }}>8 October 2026</p>
+                    <p className="lbl" style={{ fontSize: '11px' }}>6th October 2026</p>
                   </div>
                   <div className="c" style={{ gap: '2px', textAlign: 'center' }}>
                     <p className="mo" style={{ fontSize: '9px', color: 'var(--scd-muted)' }}>VENUE</p>

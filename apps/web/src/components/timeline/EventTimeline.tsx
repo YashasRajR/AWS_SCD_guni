@@ -11,14 +11,14 @@ interface EventTimelineProps {
 }
 
 const DEFAULT_STATIONS: Array<Partial<TimelineItemType>> = [
-  { id: 'def-1', title: 'Registration & check-in', type: 'REGISTRATION', startTime: '2026-10-08T09:00:00+05:30', description: 'Volunteers verify registrations at the CoE entrance.' },
-  { id: 'def-2', title: 'Opening ceremony', type: 'OTHER', startTime: '2026-10-08T10:00:00+05:30', description: 'Welcome address, university dignitaries, and day overview.' },
-  { id: 'def-3', title: 'Keynote address', type: 'SESSION', startTime: '2026-10-08T11:00:00+05:30', description: 'Visionary cloud engineering keynote from AWS community leaders.' },
-  { id: 'def-4', title: 'Technical breakout tracks', type: 'SESSION', startTime: '2026-10-08T12:00:00+05:30', description: 'Concurrent technical sessions across architecture and serverless.' },
-  { id: 'def-5', title: 'Hands-on workshops', type: 'SESSION', startTime: '2026-10-08T14:00:00+05:30', description: 'Build live on AWS in guided interactive labs.' },
-  { id: 'def-6', title: 'Community activity & quiz', type: 'OTHER', startTime: '2026-10-08T16:00:00+05:30', description: 'Cloud trivia, student lightning demos, and prizes.' },
-  { id: 'def-7', title: 'Closing ceremony & awards', type: 'CLOSING', startTime: '2026-10-08T17:30:00+05:30', description: 'Certificates distribution, closing remarks, and high tea.' },
-  { id: 'def-8', title: 'Networking & community mixer', type: 'NETWORKING', startTime: '2026-10-08T18:00:00+05:30', description: 'Connect with mentors, sponsors, and student peers.' },
+  { id: 'def-1', title: 'Registration & check-in', type: 'REGISTRATION', startTime: '2026-10-06T08:30:00+05:30', description: 'Volunteers verify registrations at the CoE entrance.' },
+  { id: 'def-2', title: 'Opening ceremony', type: 'OTHER', startTime: '2026-10-06T09:30:00+05:30', description: 'Welcome address, university dignitaries, and day overview.' },
+  { id: 'def-3', title: 'Keynote address', type: 'SESSION', startTime: '2026-10-06T10:15:00+05:30', description: 'Visionary cloud engineering keynote from AWS community leaders.' },
+  { id: 'def-4', title: 'Technical breakout tracks', type: 'SESSION', startTime: '2026-10-06T11:15:00+05:30', description: 'Concurrent technical sessions across architecture and serverless.' },
+  { id: 'def-5', title: 'Hands-on workshops', type: 'SESSION', startTime: '2026-10-06T13:30:00+05:30', description: 'Build live on AWS in guided interactive labs.' },
+  { id: 'def-6', title: 'Community activity & quiz', type: 'OTHER', startTime: '2026-10-06T15:15:00+05:30', description: 'Cloud trivia, student lightning demos, and prizes.' },
+  { id: 'def-7', title: 'Closing ceremony & awards', type: 'CLOSING', startTime: '2026-10-06T16:15:00+05:30', description: 'Certificates distribution, closing remarks, and high tea.' },
+  { id: 'def-8', title: 'Networking & community mixer', type: 'NETWORKING', startTime: '2026-10-06T17:00:00+05:30', description: 'Connect with mentors, sponsors, and student peers.' },
 ];
 
 export function EventTimeline({ limit }: EventTimelineProps) {

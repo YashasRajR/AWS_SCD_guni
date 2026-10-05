@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 
 interface CountdownTimerProps {
-  /** ISO date/datetime string -- falls back to 8 October 2026 */
+  /** ISO date/datetime string -- falls back to 6th October 2026 at 08:30 AM */
   targetDate?: string | null;
 }
 
-const SCD_2026_DATE = '2026-10-08T09:00:00+05:30';
+const SCD_2026_DATE = '2026-10-06T08:30:00+05:30';
 
 interface Remaining {
   days: number;
@@ -31,7 +31,7 @@ function getRemaining(targetDate: string): Remaining {
 
 /**
  * Wireframe 1a's "days hrs min sec — flip tiles". Real live calculation
- * to 8 October 2026 at Ganpat University, Mehsana.
+ * to 6th October 2026 at 08:30 AM at Ganpat University, Mehsana.
  */
 export function CountdownTimer({ targetDate }: CountdownTimerProps) {
   const effectiveDate = targetDate && !Number.isNaN(new Date(targetDate).getTime()) ? targetDate : SCD_2026_DATE;

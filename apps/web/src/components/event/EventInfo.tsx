@@ -4,7 +4,7 @@ import { formatDate } from '../../lib/format.js';
 export function EventInfo() {
   const { data: event } = useEvent();
 
-  const dateStr = event?.eventDate ? formatDate(event.eventDate) : '8 Oct 2026';
+  const dateStr = event?.eventDate ? formatDate(event.eventDate) : '6th October 2026';
   const venueStr = event?.venue ? 'GUNI, Mehsana' : 'GUNI, Mehsana';
 
   return (

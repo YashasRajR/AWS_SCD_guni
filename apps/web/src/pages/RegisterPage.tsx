@@ -226,7 +226,7 @@ export function RegisterPage() {
               {step === 'success' ? 'Registration confirmed!' : 'Register free'}
             </h1>
             <p className="tx" style={{ color: 'var(--scd-muted)', fontSize: '13px' }}>
-              AWS Students Community Day 2026 · 8 October 2026 · Ganpat University
+              AWS Students Community Day 2026 · 6th October 2026 · Ganpat University
             </p>
 
             {error && (
@@ -674,11 +674,11 @@ export function RegisterPage() {
                   <div className="r" style={{ gap: '8px', flexWrap: 'wrap' }}>
                     <div className="kd" style={{ flex: 1, padding: '6px 8px' }}>
                       <p className="mo" style={{ fontSize: '10px' }}>Date</p>
-                      <p className="lbl" style={{ fontSize: '12px' }}>8 Oct 2026</p>
+                      <p className="lbl" style={{ fontSize: '12px' }}>6th October 2026</p>
                     </div>
                     <div className="kd" style={{ flex: 1, padding: '6px 8px' }}>
                       <p className="mo" style={{ fontSize: '10px' }}>Check-in</p>
-                      <p className="lbl" style={{ fontSize: '12px' }}>09:00 AM</p>
+                      <p className="lbl" style={{ fontSize: '12px' }}>08:30 AM</p>
                     </div>
                     <div className="kd" style={{ flex: 1, padding: '6px 8px' }}>
                       <p className="mo" style={{ fontSize: '10px' }}>Venue</p>

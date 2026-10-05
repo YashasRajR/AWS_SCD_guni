@@ -48,10 +48,10 @@ export function AboutEvent() {
       label: 'When',
       short:
         event?.startTime && event.endTime
-          ? `${formatTime(event.startTime)} – ${formatTime(event.endTime)}, 8 October.`
-          : '09:00 – 17:30, 8 October 2026.',
+          ? `${formatTime(event.startTime)} – ${formatTime(event.endTime)}, 6th October 2026.`
+          : '08:30 AM – 05:00 PM, 6th October 2026.',
       detail:
-        'Registration opens 09:00 sharp. Includes keynote, workshops, lunch, labs, and closing networking ceremony.',
+        'Registration opens 08:30 AM sharp. Includes keynote, workshops, lunch, labs, and closing networking ceremony.',
     },
   ];
 

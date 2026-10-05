@@ -58,7 +58,7 @@ function buildSixSlides(wrapped?: EventWrapped | null): Slide[] {
     {
       label: 'Thank you',
       caption: 'Thank you for building the future with AWS Community!',
-      subtext: 'Ganpat University · 8 October 2026',
+      subtext: 'Ganpat University · 6th October 2026',
       isShareCard: true,
     },
   ];
@@ -183,7 +183,7 @@ export function EventWrappedPage() {
 
     ctx.fillStyle = '#9a958c';
     ctx.font = '30px monospace';
-    ctx.fillText('8 October 2026 · Ganpat University', 80, 270);
+    ctx.fillText('6th October 2026 · Ganpat University', 80, 270);
 
     // Accent line
     ctx.fillStyle = '#FF9900';

@@ -124,15 +124,17 @@ async function main() {
 
     // --- Event -------------------------------------------------------------
     const eventRes = await client.query(
-      `INSERT INTO events (name, slug, description, event_date, venue, status)
-       VALUES ($1, $2, $3, $4, $5, 'PUBLISHED')
-       ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name
+      `INSERT INTO events (name, slug, description, event_date, start_time, end_time, venue, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'PUBLISHED')
+       ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, event_date = EXCLUDED.event_date, start_time = EXCLUDED.start_time, end_time = EXCLUDED.end_time
        RETURNING id`,
       [
         'AWS Student Community Day 2026',
         'aws-student-community-day-2026',
         'A student-focused AWS community event at Ganpat University.',
-        '2026-11-15',
+        '2026-10-06',
+        '2026-10-06T08:30:00+05:30',
+        '2026-10-06T17:00:00+05:30',
         'Ganpat University',
       ],
     );
@@ -515,14 +517,14 @@ async function main() {
 
     // --- Timeline Items -------------------------------------------------
     const TIMELINE_ITEMS = [
-      { title: 'Registration & check-in', type: 'REGISTRATION', startTime: '2026-10-08T09:00:00+05:30', endTime: '2026-10-08T10:00:00+05:30', description: 'Volunteers verify registrations at the CoE entrance.', displayOrder: 1 },
-      { title: 'Opening ceremony', type: 'OTHER', startTime: '2026-10-08T10:00:00+05:30', endTime: '2026-10-08T11:00:00+05:30', description: 'Welcome address, university dignitaries, and day overview.', displayOrder: 2 },
-      { title: 'Keynote address', type: 'SESSION', startTime: '2026-10-08T11:00:00+05:30', endTime: '2026-10-08T12:00:00+05:30', description: 'Visionary cloud engineering keynote from AWS community leaders.', displayOrder: 3 },
-      { title: 'Technical breakout tracks', type: 'SESSION', startTime: '2026-10-08T12:00:00+05:30', endTime: '2026-10-08T13:30:00+05:30', description: 'Concurrent technical sessions across architecture and serverless.', displayOrder: 4 },
-      { title: 'Hands-on workshops', type: 'SESSION', startTime: '2026-10-08T14:00:00+05:30', endTime: '2026-10-08T16:00:00+05:30', description: 'Build live on AWS in guided interactive labs.', displayOrder: 5 },
-      { title: 'Community activity & quiz', type: 'OTHER', startTime: '2026-10-08T16:00:00+05:30', endTime: '2026-10-08T17:30:00+05:30', description: 'Cloud trivia, student lightning demos, and prizes.', displayOrder: 6 },
-      { title: 'Closing ceremony & awards', type: 'CLOSING', startTime: '2026-10-08T17:30:00+05:30', endTime: '2026-10-08T18:00:00+05:30', description: 'Certificates distribution, closing remarks, and high tea.', displayOrder: 7 },
-      { title: 'Networking & community mixer', type: 'NETWORKING', startTime: '2026-10-08T18:00:00+05:30', endTime: '2026-10-08T19:00:00+05:30', description: 'Connect with mentors, sponsors, and student peers.', displayOrder: 8 },
+      { title: 'Registration & check-in', type: 'REGISTRATION', startTime: '2026-10-06T08:30:00+05:30', endTime: '2026-10-06T09:30:00+05:30', description: 'Volunteers verify registrations at the CoE entrance.', displayOrder: 1 },
+      { title: 'Opening ceremony', type: 'OTHER', startTime: '2026-10-06T09:30:00+05:30', endTime: '2026-10-06T10:15:00+05:30', description: 'Welcome address, university dignitaries, and day overview.', displayOrder: 2 },
+      { title: 'Keynote address', type: 'SESSION', startTime: '2026-10-06T10:15:00+05:30', endTime: '2026-10-06T11:15:00+05:30', description: 'Visionary cloud engineering keynote from AWS community leaders.', displayOrder: 3 },
+      { title: 'Technical breakout tracks', type: 'SESSION', startTime: '2026-10-06T11:15:00+05:30', endTime: '2026-10-06T12:45:00+05:30', description: 'Concurrent technical sessions across architecture and serverless.', displayOrder: 4 },
+      { title: 'Hands-on workshops', type: 'SESSION', startTime: '2026-10-06T13:30:00+05:30', endTime: '2026-10-06T15:15:00+05:30', description: 'Build live on AWS in guided interactive labs.', displayOrder: 5 },
+      { title: 'Community activity & quiz', type: 'OTHER', startTime: '2026-10-06T15:15:00+05:30', endTime: '2026-10-06T16:15:00+05:30', description: 'Cloud trivia, student lightning demos, and prizes.', displayOrder: 6 },
+      { title: 'Closing ceremony & awards', type: 'CLOSING', startTime: '2026-10-06T16:15:00+05:30', endTime: '2026-10-06T17:00:00+05:30', description: 'Certificates distribution, closing remarks, and high tea.', displayOrder: 7 },
+      { title: 'Networking & community mixer', type: 'NETWORKING', startTime: '2026-10-06T17:00:00+05:30', endTime: '2026-10-06T17:30:00+05:30', description: 'Connect with mentors, sponsors, and student peers.', displayOrder: 8 },
     ];
 
     for (const item of TIMELINE_ITEMS) {

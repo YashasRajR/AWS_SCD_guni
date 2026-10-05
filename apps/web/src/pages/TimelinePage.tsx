@@ -16,10 +16,10 @@ export function TimelinePage() {
           <div className="r" style={{ justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
             <div className="c" style={{ gap: '4px' }}>
               <h1 className="d1" style={{ fontSize: '36px', margin: 0 }}>
-                08 October 2026
+                6th October 2026
               </h1>
               <p className="tx" style={{ fontSize: '14px', maxWidth: '640px' }}>
-                The whole day, station by station. Times are provisional until programming lands. Tap any station to view its room and details.
+                The whole day, station by station (8:30 AM – 5:00 PM). Times are provisional until programming lands. Tap any station to view its room and details.
               </p>
             </div>
             <DownloadSchedulePdf />
