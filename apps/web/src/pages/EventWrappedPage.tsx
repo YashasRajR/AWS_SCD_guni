@@ -226,7 +226,7 @@ export function EventWrappedPage() {
 
     ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
     ctx.font = '28px system-ui, sans-serif';
-    ctx.fillText('Verified Attendee · Centre of Excellence, GUNI', 80, 1260);
+    ctx.fillText('Verified Attendee · GUNI Auditorium, Ganpat University', 80, 1260);
 
     // Trigger download
     const link = document.createElement('a');

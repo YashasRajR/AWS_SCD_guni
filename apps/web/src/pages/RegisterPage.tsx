@@ -682,7 +682,7 @@ export function RegisterPage() {
                     </div>
                     <div className="kd" style={{ flex: 1, padding: '6px 8px' }}>
                       <p className="mo" style={{ fontSize: '10px' }}>Venue</p>
-                      <p className="lbl" style={{ fontSize: '12px' }}>CoE, GUNI</p>
+                      <p className="lbl" style={{ fontSize: '12px' }}>GUNI Auditorium</p>
                     </div>
                   </div>
 

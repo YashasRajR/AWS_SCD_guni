@@ -10,7 +10,7 @@ const TRANSPORT_TABS = [
     label: 'Bus',
     title: 'By State Transport & Private Bus',
     details:
-      'GSRTC buses run frequently from Ahmedabad (Gita Mandir / Ranip) and Mehsana bus depots. Get down directly at Ganpat Vidyanagar stop right outside the main campus gate. 5 min walk to Centre of Excellence.',
+      'GSRTC buses run frequently from Ahmedabad (Gita Mandir / Ranip) and Mehsana bus depots. Get down directly at Ganpat Vidyanagar stop right outside the main campus gate. Short walk to GUNI Auditorium.',
   },
   {
     id: 'train',
@@ -31,12 +31,12 @@ const TRANSPORT_TABS = [
     label: 'Gate & Wayfinding',
     title: 'Campus Arrival & Check-in',
     details:
-      'Enter through Gate 2 (Main Gate). Follow AWS SCD banners towards the Centre of Excellence (CoE) Building. Registration and badge check-in volunteers are stationed at the ground floor foyer.',
+      'Enter through Gate 2 (Main Gate). Follow AWS SCD banners towards GUNI Auditorium. Registration and badge check-in volunteers are stationed at the main entrance foyer.',
   },
 ];
 
-const VENUE_ADDRESS = 'Centre of Excellence, Ganpat Vidyanagar, Mehsana - Gozaria Highway, Gujarat 384012';
-const MAPS_URL = 'https://www.google.com/maps/search/?api=1&query=Centre+of+Excellence+Ganpat+University+Mehsana';
+const VENUE_ADDRESS = 'GUNI Auditorium, Ganpat Vidyanagar, Mehsana - Gozaria Highway, Gujarat 384012';
+const MAPS_URL = 'https://maps.app.goo.gl/QaX5DEJtsTauPTE79';
 
 export function VenuePage() {
   const [activeTab, setActiveTab] = useState('bus');
@@ -76,7 +76,7 @@ export function VenuePage() {
             Where to find us
           </h1>
           <p className="tx" style={{ fontSize: '14px', maxWidth: '640px' }}>
-            Centre of Excellence, Ganpat University, Mehsana, Gujarat. Plan your travel, arrival gate, and room locations.
+            GUNI Auditorium, Ganpat University, Mehsana, Gujarat. Plan your travel, arrival gate, and room locations.
           </p>
         </PageContainer>
       </div>
@@ -107,7 +107,7 @@ export function VenuePage() {
                     CAMPUS · GANPAT UNIVERSITY
                   </p>
                   <p className="d2" style={{ fontSize: '20px', margin: '4px 0 0' }}>
-                    Centre of Excellence
+                    GUNI Auditorium
                   </p>
                   <p className="tx" style={{ color: '#cfc9be', fontSize: '12px' }}>
                     Kherva, Mehsana, Gujarat 384012
@@ -233,7 +233,7 @@ export function VenuePage() {
               <div className="kd" style={{ background: 'var(--scd-surface)', padding: '12px' }}>
                 <p className="mo" style={{ color: 'var(--scd-muted)', fontSize: '11px' }}>Campus info</p>
                 <p className="tx" style={{ fontSize: '12px' }}>
-                  Enter via Gate 2 → Follow signage to Centre of Excellence (CoE) → Check in at Ground Floor Foyer.
+                  Enter via Gate 2 → Follow signage to GUNI Auditorium → Check in at Main Entrance Foyer.
                 </p>
               </div>
             </div>

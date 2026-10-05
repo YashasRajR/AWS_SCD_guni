@@ -40,8 +40,8 @@ export function AboutEvent() {
     {
       id: 'where',
       label: 'Where',
-      short: event?.venue ?? 'Centre of Excellence, GUNI Campus.',
-      detail: 'Ganpat Vidyanagar, Mehsana, Gujarat 384012. State-of-the-art campus labs and auditorium.',
+      short: event?.venue ? `${event.venue} · GUNI Auditorium` : 'GUNI Auditorium, Ganpat University.',
+      detail: 'Ganpat Vidyanagar, Mehsana, Gujarat 384012. State-of-the-art campus auditorium and labs.',
     },
     {
       id: 'when',

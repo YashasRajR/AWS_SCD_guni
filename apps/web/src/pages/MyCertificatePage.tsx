@@ -137,7 +137,7 @@ export function MyCertificatePage() {
                     {attendeeName}
                   </h2>
                   <p className="tx" style={{ fontSize: '13px', color: 'var(--scd-fg)' }}>
-                    for active participation in AWS Students Community Day 2026, held at the Centre of Excellence, Ganpat University, Gujarat on 6th October 2026.
+                    for active participation in AWS Students Community Day 2026, held at the GUNI Auditorium, Ganpat University, Gujarat on 6th October 2026.
                   </p>
                 </div>
 

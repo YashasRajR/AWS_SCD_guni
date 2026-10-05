@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import type { TimelineItem as TimelineItemType } from '@scd/types';
-import { useTimeline } from '../../lib/queries.js';
+import { useAgenda, useSessions, useTimeline, useVenues } from '../../lib/queries.js';
 import { formatTime } from '../../lib/format.js';
+import { resolveSessionVenue } from '../../lib/session-venue.js';
 import { SkeletonText } from '../ui/Skeleton.js';
 import { ErrorState } from '../ui/ErrorState.js';
 import { EmptyState } from '../ui/EmptyState.js';
@@ -11,7 +12,7 @@ interface EventTimelineProps {
 }
 
 const DEFAULT_STATIONS: Array<Partial<TimelineItemType>> = [
-  { id: 'def-1', title: 'Registration & check-in', type: 'REGISTRATION', startTime: '2026-10-06T08:30:00+05:30', description: 'Volunteers verify registrations at the CoE entrance.' },
+  { id: 'def-1', title: 'Registration & check-in', type: 'REGISTRATION', startTime: '2026-10-06T08:30:00+05:30', description: 'Volunteers verify registrations at the GUNI Auditorium entrance.' },
   { id: 'def-2', title: 'Opening ceremony', type: 'OTHER', startTime: '2026-10-06T09:30:00+05:30', description: 'Welcome address, university dignitaries, and day overview.' },
   { id: 'def-3', title: 'Keynote address', type: 'SESSION', startTime: '2026-10-06T10:15:00+05:30', description: 'Visionary cloud engineering keynote from AWS community leaders.' },
   { id: 'def-4', title: 'Technical breakout tracks', type: 'SESSION', startTime: '2026-10-06T11:15:00+05:30', description: 'Concurrent technical sessions across architecture and serverless.' },
@@ -23,6 +24,9 @@ const DEFAULT_STATIONS: Array<Partial<TimelineItemType>> = [
 
 export function EventTimeline({ limit }: EventTimelineProps) {
   const { items, loading, error, reload } = useTimeline();
+  const { items: venues } = useVenues();
+  const { items: agenda } = useAgenda();
+  const { items: sessions } = useSessions();
   const [selectedStationId, setSelectedStationId] = useState<string | null>(null);
 
   const stations = useMemo(() => {
@@ -39,6 +43,56 @@ export function EventTimeline({ limit }: EventTimelineProps) {
   }, [items]);
 
   const activeStation = (selectedStationId ? stations.find((s) => s.id === selectedStationId) : null) ?? stations[0];
+
+  const matchingAgenda = useMemo(() => {
+    if (!activeStation?.title) return undefined;
+    const sT = activeStation.title.toLowerCase().trim();
+    return agenda.find((a) => {
+      if (!a.title) return false;
+      const aT = a.title.toLowerCase().trim();
+      return aT === sT || aT.includes(sT) || sT.includes(aT);
+    });
+  }, [activeStation, agenda]);
+
+  const matchingSession = useMemo(() => {
+    if (!activeStation?.title) return undefined;
+    const sT = activeStation.title.toLowerCase().trim();
+    return sessions.find((s) => {
+      if (!s.title) return false;
+      const title = s.title.toLowerCase().trim();
+      return title === sT || sT.includes(title) || title.includes(sT);
+    });
+  }, [activeStation, sessions]);
+
+  const stationVenue = useMemo(() => {
+    if (matchingAgenda?.venueId) {
+      const v = venues.find((venue) => venue.id === matchingAgenda.venueId);
+      if (v) return v;
+    }
+    if (matchingSession) {
+      const v = resolveSessionVenue(matchingSession, agenda, venues);
+      if (v) return v;
+    }
+    return venues.length > 0 ? venues[0] : undefined;
+  }, [matchingAgenda, matchingSession, agenda, venues]);
+
+  const stationLocation = useMemo(() => {
+    if (stationVenue) {
+      return stationVenue.room?.trim() || stationVenue.name?.trim() || stationVenue.location?.trim() || 'GUNI Auditorium';
+    }
+    return 'GUNI Auditorium';
+  }, [stationVenue]);
+
+  const stationSpeaker = useMemo(() => {
+    if (matchingSession?.speakers && matchingSession.speakers.length > 0) {
+      return matchingSession.speakers.map((s) => s.name).join(', ');
+    }
+    if (activeStation?.description && activeStation.description.includes('👤')) {
+      const parts = activeStation.description.split('👤');
+      if (parts[1]) return parts[1].trim();
+    }
+    return 'TBA';
+  }, [matchingSession, activeStation]);
 
   if (loading) return <SkeletonText lines={6} />;
   if (error && stations.length === 0) return <ErrorState onRetry={reload} />;
@@ -206,11 +260,11 @@ export function EventTimeline({ limit }: EventTimelineProps) {
             </div>
             <div className="kd" style={{ flex: '1 1 120px' }}>
               <p className="mo" style={{ fontSize: '10px' }}>Location</p>
-              <p className="lbl">Centre of Excellence, GUNI</p>
+              <p className="lbl">{stationLocation}</p>
             </div>
             <div className="kd" style={{ flex: '1 1 120px' }}>
               <p className="mo" style={{ fontSize: '10px' }}>Speaker / Lead</p>
-              <p className="lbl">TBA</p>
+              <p className="lbl">{stationSpeaker}</p>
             </div>
           </div>
           <h3 className="d3" style={{ margin: '4px 0 0' }}>{activeStation.title}</h3>

@@ -401,12 +401,12 @@ async function main() {
     // --- Venues ---------------------------------------------------------
     const VENUES = [
       {
-        name: 'Centre of Excellence (CoE)',
+        name: 'GUNI Auditorium',
         description: 'Main keynote hall equipped with high-density AV setups, livestream broadcast facilities, and keynote staging.',
-        location: 'Ganpat Vidyanagar, Mehsana - Gozaria Highway, Gujarat 384012',
-        room: 'Auditorium Ground Floor',
+        location: 'GUNI Auditorium Main Entrance, Ganpat Vidyanagar, Mehsana - Gozaria Highway, Gujarat 384012',
+        room: 'GUNI Auditorium Hall',
         capacity: 450,
-        mapUrl: 'https://maps.google.com/maps?q=Ganpat+University+Mehsana',
+        mapUrl: 'https://maps.app.goo.gl/QaX5DEJtsTauPTE79',
         status: 'PUBLISHED',
       },
       {
@@ -517,7 +517,7 @@ async function main() {
 
     // --- Timeline Items -------------------------------------------------
     const TIMELINE_ITEMS = [
-      { title: 'Registration & check-in', type: 'REGISTRATION', startTime: '2026-10-06T08:30:00+05:30', endTime: '2026-10-06T09:30:00+05:30', description: 'Volunteers verify registrations at the CoE entrance.', displayOrder: 1 },
+      { title: 'Registration & check-in', type: 'REGISTRATION', startTime: '2026-10-06T08:30:00+05:30', endTime: '2026-10-06T09:30:00+05:30', description: 'Volunteers verify registrations at the GUNI Auditorium entrance.', displayOrder: 1 },
       { title: 'Opening ceremony', type: 'OTHER', startTime: '2026-10-06T09:30:00+05:30', endTime: '2026-10-06T10:15:00+05:30', description: 'Welcome address, university dignitaries, and day overview.', displayOrder: 2 },
       { title: 'Keynote address', type: 'SESSION', startTime: '2026-10-06T10:15:00+05:30', endTime: '2026-10-06T11:15:00+05:30', description: 'Visionary cloud engineering keynote from AWS community leaders.', displayOrder: 3 },
       { title: 'Technical breakout tracks', type: 'SESSION', startTime: '2026-10-06T11:15:00+05:30', endTime: '2026-10-06T12:45:00+05:30', description: 'Concurrent technical sessions across architecture and serverless.', displayOrder: 4 },
