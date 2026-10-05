@@ -90,7 +90,7 @@ export function AgendaItem({ item, session, venue, compact = false }: AgendaItem
           </div>
           <p className="mo" style={{ color: 'var(--scd-muted)', fontSize: '11px' }}>
             {formatTime(item.startTime)} – {formatTime(item.endTime)}
-            {venue ? ` · ${venue.name}` : ''}
+            {venue ? ` · ${venue.room?.trim() || venue.name}` : ''}
             {session?.track ? ` · ${session.track}` : ''}
           </p>
           {speakers && (

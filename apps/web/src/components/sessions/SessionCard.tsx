@@ -2,6 +2,8 @@ import type { MouseEvent } from 'react';
 import type { Session } from '@scd/types';
 import { useSavedSessions } from '../../lib/useSavedSessions.js';
 import { useToast } from '../../lib/toast.js';
+import { useAgenda, useVenues } from '../../lib/queries.js';
+import { getSessionRoom } from '../../lib/session-venue.js';
 
 const TYPE_LABELS: Record<string, string> = {
   KEYNOTE: 'Keynote',
@@ -11,10 +13,25 @@ const TYPE_LABELS: Record<string, string> = {
   BREAK: 'Break',
 };
 
-export function SessionCard({ session, onOpen }: { session: Session; onOpen: () => void }) {
+export function SessionCard({
+  session,
+  onOpen,
+  room,
+}: {
+  session: Session;
+  onOpen?: () => void;
+  room?: string | null;
+}) {
   const { isSaved, toggleSession } = useSavedSessions();
   const { addToast } = useToast();
   const saved = isSaved(session.id);
+
+  // If room wasn't pre-resolved by parent (e.g. SessionGrid), fetch venues/agenda dynamically
+  const shouldFetch = room === undefined;
+  const { items: venues } = useVenues(shouldFetch);
+  const { items: agenda } = useAgenda(shouldFetch);
+
+  const resolvedRoom = room !== undefined ? room : getSessionRoom(session, agenda, venues);
 
   const handleSaveToggle = (e: MouseEvent) => {
     e.stopPropagation();
@@ -42,7 +59,7 @@ export function SessionCard({ session, onOpen }: { session: Session; onOpen: () 
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          onOpen();
+          onOpen?.();
         }
       }}
     >
@@ -70,7 +87,7 @@ export function SessionCard({ session, onOpen }: { session: Session; onOpen: () 
             {typeLabel}
             {session.durationMinutes ? ` · ${session.durationMinutes} min` : ''}
             {session.track ? ` · ${session.track}` : ''}
-            {' · Room TBA'}
+            {resolvedRoom ? ` · ${resolvedRoom}` : ' · Room TBA'}
           </p>
           {session.description && <p className="tx session-description">{session.description}</p>}
           {session.speakers && session.speakers.length > 0 && (

@@ -59,7 +59,7 @@ export async function buildSchedulePdf(input: SchedulePdfInput): Promise<Buffer>
       .fillColor('#ff9900')
       .text(`${formatTime(item.startTime)} – ${formatTime(item.endTime)}`, { continued: false });
     doc.fontSize(13).fillColor('#14181f').text(item.title);
-    const meta = [venue?.name, speakerNames].filter(Boolean).join('  ·  ');
+    const meta = [venue?.room?.trim() || venue?.name, speakerNames].filter(Boolean).join('  ·  ');
     if (meta) doc.fontSize(10).fillColor('#656d79').text(meta);
     if (session?.description) doc.fontSize(10).fillColor('#656d79').text(session.description);
     doc.moveDown(0.8);

@@ -38,16 +38,16 @@ export function useSessions() {
   return useResource<Session>('/sessions');
 }
 
-export function useAgenda() {
-  return useResource<AgendaItem>('/agenda');
+export function useAgenda(enabled = true) {
+  return useResource<AgendaItem>('/agenda', enabled);
 }
 
-export function useTimeline() {
-  return useResource<TimelineItem>('/timeline');
+export function useTimeline(enabled = true) {
+  return useResource<TimelineItem>('/timeline', enabled);
 }
 
-export function useVenues() {
-  return useResource<Venue>('/venues');
+export function useVenues(enabled = true) {
+  return useResource<Venue>('/venues', enabled);
 }
 
 export function useFAQs() {

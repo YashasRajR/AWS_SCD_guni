@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
 import { useAgenda, useSessions, useVenues } from '../lib/queries.js';
 import { formatTime } from '../lib/format.js';
+import { resolveSessionVenue } from '../lib/session-venue.js';
 import { PageContainer } from '../components/layout/PageContainer.js';
 import { SkeletonText } from '../components/ui/Skeleton.js';
 import { ErrorState } from '../components/ui/ErrorState.js';
@@ -26,8 +27,18 @@ export function SessionDetailPage() {
   const { addToast } = useToast();
 
   const session = sessions.find((s) => s.id === id);
-  const slot = agenda.find((a) => a.sessionId === id);
-  const venue = slot?.venueId ? venues.find((v) => v.id === slot.venueId) : undefined;
+  const slot = session
+    ? agenda.find((a) => a.sessionId === id) ||
+      agenda.find(
+        (a) =>
+          a.title &&
+          session.title &&
+          (a.title.toLowerCase().includes(session.title.toLowerCase()) ||
+            session.title.toLowerCase().includes(a.title.toLowerCase()))
+      )
+    : undefined;
+  const venue = session ? resolveSessionVenue(session, agenda, venues) : undefined;
+  const roomName = venue ? (venue.room?.trim() || venue.name?.trim()) : null;
   const related = session
     ? sessions.filter((s) => s.id !== session.id && s.track && s.track === session.track).slice(0, 3)
     : [];
@@ -84,7 +95,7 @@ export function SessionDetailPage() {
               <p className="mo" style={{ color: 'var(--scd-muted)', fontSize: '13px' }}>
                 {slot ? `${formatTime(slot.startTime)} – ${formatTime(slot.endTime)}` : 'Time TBA'}
                 {session.durationMinutes ? ` · ${session.durationMinutes} min` : ''}
-                {venue ? ` · ${venue.name}` : ' · Room TBA'}
+                {roomName ? ` · ${roomName}` : ' · Room TBA'}
               </p>
 
               {session.speakers && session.speakers.length > 0 && (

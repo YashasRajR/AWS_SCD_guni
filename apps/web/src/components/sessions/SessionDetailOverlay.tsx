@@ -5,6 +5,7 @@ import { formatTime } from '../../lib/format.js';
 import { useSavedSessions } from '../../lib/useSavedSessions.js';
 import { useToast } from '../../lib/toast.js';
 import { SlideOver } from '../ui/SlideOver.js';
+import { resolveSessionVenue } from '../../lib/session-venue.js';
 
 const TYPE_LABELS: Record<string, string> = {
   KEYNOTE: 'Keynote',
@@ -26,8 +27,18 @@ export function SessionDetailOverlay({ session, onClose }: { session: Session | 
   const { isSaved, toggleSession } = useSavedSessions();
   const { addToast } = useToast();
 
-  const slot = session ? agenda.find((a) => a.sessionId === session.id) : undefined;
-  const venue = slot?.venueId ? venues.find((v) => v.id === slot.venueId) : undefined;
+  const slot = session
+    ? agenda.find((a) => a.sessionId === session.id) ||
+      agenda.find(
+        (a) =>
+          a.title &&
+          session.title &&
+          (a.title.toLowerCase().includes(session.title.toLowerCase()) ||
+            session.title.toLowerCase().includes(a.title.toLowerCase()))
+      )
+    : undefined;
+  const venue = session ? resolveSessionVenue(session, agenda, venues) : undefined;
+  const roomName = venue ? (venue.room?.trim() || venue.name?.trim()) : null;
   const related = session
     ? sessions.filter((s) => s.id !== session.id && s.track && s.track === session.track).slice(0, 3)
     : [];
@@ -55,7 +66,7 @@ export function SessionDetailOverlay({ session, onClose }: { session: Session | 
           <p className="mo" style={{ color: 'var(--muted)', fontSize: '13px' }}>
             {slot ? `${formatTime(slot.startTime)} – ${formatTime(slot.endTime)}` : 'Time TBA'}
             {session.durationMinutes ? ` · ${session.durationMinutes} min` : ''}
-            {venue ? ` · ${venue.name}` : ' · Room TBA'}
+            {roomName ? ` · ${roomName}` : ' · Room TBA'}
           </p>
 
           {session.speakers && session.speakers.length > 0 && (

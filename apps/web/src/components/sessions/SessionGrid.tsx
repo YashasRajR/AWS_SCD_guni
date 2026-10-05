@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
-import { useSessions } from '../../lib/queries.js';
+import { useAgenda, useSessions, useVenues } from '../../lib/queries.js';
+import { getSessionRoom } from '../../lib/session-venue.js';
 import { SessionCard } from './SessionCard.js';
 import { SessionDetailOverlay } from './SessionDetailOverlay.js';
 import { SessionFilters } from './SessionFilters.js';
@@ -16,10 +17,20 @@ interface SessionGridProps {
 
 export function SessionGrid({ limit, filterable }: SessionGridProps) {
   const { items: sessions, loading, error, reload } = useSessions();
+  const { items: venues } = useVenues();
+  const { items: agenda } = useAgenda();
   const [activeType, setActiveType] = useState('ALL');
   const [search, setSearch] = useState('');
   const [openId, setOpenId] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
+
+  const roomsBySessionId = useMemo(() => {
+    const map = new Map<string, string | null>();
+    for (const s of sessions) {
+      map.set(s.id, getSessionRoom(s, agenda, venues));
+    }
+    return map;
+  }, [sessions, agenda, venues]);
 
   const typeOptions = useMemo(() => {
     const seen = new Set<string>();
@@ -122,7 +133,11 @@ export function SessionGrid({ limit, filterable }: SessionGridProps) {
         <div className="session-list c" ref={listRef} style={{ gap: '12px' }}>
           {shown.map((session) => (
             <div key={session.id} data-flip-id={session.id}>
-              <SessionCard session={session} onOpen={() => setOpenId(session.id)} />
+              <SessionCard
+                session={session}
+                room={roomsBySessionId.get(session.id)}
+                onOpen={() => setOpenId(session.id)}
+              />
             </div>
           ))}
         </div>

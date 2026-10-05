@@ -47,4 +47,9 @@ describe('SessionCard', () => {
     renderWithProviders(<SessionCard session={{ ...SESSION, sessionType: 'KEYNOTE' }} />);
     expect(screen.getByText('Keynote')).toBeInTheDocument();
   });
+
+  it('renders the room when provided from venue', () => {
+    renderWithProviders(<SessionCard session={SESSION} room="Auditorium Ground Floor" />);
+    expect(screen.getByText(/Auditorium Ground Floor/)).toBeInTheDocument();
+  });
 });
