@@ -1,3 +1,9 @@
+<!-- profile-card:start -->
+<p align="center">
+  <a href="https://github.com/YashasRajR"><img src="https://raw.githubusercontent.com/YashasRajR/YashasRajR/main/cards/headers/AWS_SCD_guni.svg" width="100%" alt="AWS Student Community Day, GUNI" /></a>
+</p>
+<!-- profile-card:end -->
+
 # AWS Student Community Day 2026
 
 A mobile-first platform for AWS Student Community Day at Ganpat University:
